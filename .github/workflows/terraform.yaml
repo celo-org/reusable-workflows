@@ -18,7 +18,7 @@ on:
       working-dir:
         required: true
         type: string
-      token-format: "access_token"
+      token-format:
         required: false
         type: string
       access-token-scopes:
