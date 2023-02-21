@@ -1,0 +1,99 @@
+---
+name: 'Run Container Workflow'
+on: 
+  workflow_call:
+    inputs:
+      workload-id-provider:
+        required: true
+        type: string
+      service-account:
+        required: true
+        type: string
+      artifact-registry:
+        required: true
+        type: string
+      tag:
+        required: true
+        type: string
+      context:
+        required: true
+        type: string
+      build-args:
+        required: false
+        type: string
+      vuln-type:
+        required: false
+        type: string
+        default: "os,library"
+      severity:
+        required: false
+        type: string
+        default: "UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL"
+
+jobs:
+  Container-workflow:
+    runs-on: ubuntu-latest
+    permissions: # Must change the job token permissions to use JWT auth
+      contents: read
+      id-token: write
+
+    steps:
+      - name: 'Checkout'
+        uses: actions/checkout@755da8c3cf115ac066823e79a1e1788f8940201b
+
+      - id: auth
+        name: 'Authenticate to Google Cloud'
+        uses: 'google-github-actions/auth@ef5d53e30bbcd8d0836f4288f5e50ff3e086997d'
+        with:
+          workload_identity_provider: ${{ inputs.workload-id-provider }}
+          service_account: ${{ inputs.service-account }}
+          access_token_lifetime: '20m'
+
+      - name: 'Set up Cloud SDK'
+        uses: 'google-github-actions/setup-gcloud@877d4953d2c70a0ba7ef3290ae968eb24af233bb'
+
+      - name: Split location name
+        id: split
+        env:
+          REGISTRY: ${{ inputs.artifact-registry }}
+        run: echo "location=${REGISTRY%%/*}" >> $GITHUB_OUTPUT
+
+      - name: 'Configure docker for gcloud auth'
+        run: 'gcloud auth configure-docker ${{ steps.split.outputs.location }}'
+
+      - id: docker-build-push
+        name: Build Docker image and push to Google Artifact Registry
+        uses: docker/build-push-action@3b5e8027fcad23fda98b2e3ac259d8d67585f671
+        with:
+          platforms: linux/amd64
+          push: true
+          context: ${{ inputs.context }}
+          build-args: ${{ inputs.build-args }}
+          tags: |
+             ${{ inputs.artifact-registry }}:${{ inputs.tag }}
+             ${{ inputs.artifact-registry }}:${{ github.sha }}
+
+      - uses: sigstore/cosign-installer@main
+      - name: Sign container image
+        env:
+          COSIGN_EXPERIMENTAL: "true"
+        run: |
+          cosign sign ${{ inputs.artifact-registry }}@${{ steps.docker-build-push.outputs.digest }}
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        env:
+          REGISTRY: ${{ inputs.artifact-registry }}
+
+        with:
+          image-ref: "${{ inputs.artifact-registry }}:${{ github.sha }}"
+          vuln-type: "${{ inputs.vuln-type }}"
+          severity: "UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL"
+          format: "sarif"
+          output: "trivy-results.sarif"
+
+      - name: Upload Trivy scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v2
+        if: always()
+        with:
+          sarif_file: "trivy-results.sarif"
