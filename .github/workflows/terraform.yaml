@@ -53,8 +53,15 @@ jobs:
           workload_identity_provider: ${{ inputs.workload-id-provider }}
           service_account: ${{ inputs.service-account }}
           token_format: ${{ inputs.token-format }}
-          access_token_scopes: ${{ inputs.access_token_scopes }}
+          access_token_scopes: ${{ inputs.access-token-scopes }}
           access_token_lifetime: '20m'
+
+
+      - name: set terraform variables
+        if: steps.auth.outputs.access_token != ''
+        shell: bash
+        run: |
+             echo "TF_VAR_google_credentials=${{ steps.auth.outputs.access_token }}" >> $GITHUB_ENV
 
       - uses: hashicorp/setup-terraform@62a66eef78e1543742cc8fabf333a1abddc00d37
         with:
