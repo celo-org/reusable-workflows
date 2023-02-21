@@ -21,9 +21,6 @@ on:
 jobs:
   Terraform-Plan:
     runs-on: ubuntu-latest
-    permissions: # Must change the job token permissions to use JWT auth
-      contents: read
-      id-token: write
     defaults:
       run:
         working-directory: ${{ inputs.working-dir}}
