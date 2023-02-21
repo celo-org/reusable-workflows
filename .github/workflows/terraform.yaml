@@ -18,6 +18,13 @@ on:
       working-dir:
         required: true
         type: string
+      token-format: "access_token"
+        required: false
+        type: string
+      access-token-scopes:
+        required: false
+        type: string
+       
 jobs:
   Terraform:
     runs-on: ubuntu-latest
@@ -45,6 +52,8 @@ jobs:
         with:
           workload_identity_provider: ${{ inputs.workload-id-provider }}
           service_account: ${{ inputs.service-account }}
+          token_format: ${{ inputs.token-format }}
+          access_token_scopes: ${{ inputs.access_token_scopes }}
           access_token_lifetime: '20m'
 
       - uses: hashicorp/setup-terraform@62a66eef78e1543742cc8fabf333a1abddc00d37
