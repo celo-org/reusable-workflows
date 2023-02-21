@@ -1,6 +1,6 @@
 ---
 name: 'Run Container Workflow'
-on: workflow_call:
+on: workflow_call
     inputs:
       workload-id-provider:
         required: true
