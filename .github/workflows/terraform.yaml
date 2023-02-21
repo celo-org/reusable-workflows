@@ -19,7 +19,7 @@ on:
         required: true
         type: string
 jobs:
-  Terraform-Plan:
+  Terraform:
     runs-on: ubuntu-latest
     defaults:
       run:
