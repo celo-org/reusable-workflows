@@ -46,7 +46,7 @@ jobs:
         uses: 'google-github-actions/auth@ef5d53e30bbcd8d0836f4288f5e50ff3e086997d'
         with:
           workload_identity_provider: ${{ inputs.workload-id-provider }}
-          service_account: ${{ inputs.service-account
+          service_account: ${{ inputs.service-account }}
           access_token_lifetime: '20m'
 
       - id: 'deploy'
