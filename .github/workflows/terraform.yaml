@@ -35,8 +35,8 @@ jobs:
         id: get_auth_token
         uses: docker://us-docker.pkg.dev/clabs-secrets-and-permissions/public-images/akeyless-actions:latest
         with:
-          api-url: ${{ input.akeyless-api-gateway }}
-          access-id: ${{ input.akeyless-github-access-id }}
+          api-url: ${{ inputs.akeyless-api-gateway }}
+          access-id: ${{ inputs.akeyless-github-access-id }}
 
       # Uses Google workload identity federation to authenticate without keys, in security circle project.  Variables defined in security circle
       - id: 'auth'
