@@ -21,6 +21,9 @@ on:
       context:
         required: true
         type: string
+      build-args:
+        required: false
+        type: string
       
 jobs:
   Container-workflow:
@@ -55,6 +58,7 @@ jobs:
           platforms: linux/amd64
           push: true
           context: ${{ inputs.context }}
+          args: ${{ inputs.build-args }}
           tags: |
              ${{ inputs.artifact-registry }}:${{ inputs.tag }}
              ${{ inputs.artifact-registry }}:${{ github.sha }}
