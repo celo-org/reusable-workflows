@@ -46,10 +46,10 @@ jobs:
 
       - name: Split location name
         id: split
-        env:
+#        env:
 #          REGISTRY: ${{ inputs.artifact-registry }}
 #        run: echo "::set-output name=location::${REGISTRY%%/*}"
-         run: echo "::set-output name=location::${${{ inputs.artifact-registry }}%%/*}"
+        run: echo "::set-output name=location::${${{ inputs.artifact-registry }}%%/*}"
 #        run: echo '::set-output name=location::'"$(echo "${{inputs.artifact-registry}}" | jq -s --raw-input 'split("\n")[0] | split(",")' | tr "\n" " ")"
 
       - name: 'Configure docker for gcloud auth'
