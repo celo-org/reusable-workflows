@@ -1,0 +1,59 @@
+---
+name: 'Run Container Workflow'
+on:
+  workflow_call:
+    inputs:
+      gcp-project:
+        required: true
+        type: string
+      artifact-registry:
+        required: true
+        type: string
+      workload-id-provider:
+        required: true
+        type: string
+      service-account:
+        required: true
+        type: string
+      app-name:
+        required: true
+        type: string
+      tag:
+        required: true
+        type: string
+      env-vars:
+        required: false
+        type: string
+
+jobs:
+  cloudrun-workflow:
+    runs-on: ubuntu-latest
+    permissions: # Must change the job token permissions to use JWT auth
+      contents: read
+      id-token: write
+    steps:
+      - name: 'Checkout'
+        uses: actions/checkout@e2f20e631ae6d7dd3b768f56a5d2af784dd54791
+
+      # Pulls Environment variables from repo_common.env for easy configuration across all workflows
+      - uses: cardinalby/export-env-action@0e5a72e485827a0c9ce6570c12840da1f93302f9
+        with:
+          envFile: ./.github/workflows/repo_common.env 
+          expand: 'true'
+
+      - id: auth
+        name: 'Authenticate to Google Cloud'
+        uses: 'google-github-actions/auth@ef5d53e30bbcd8d0836f4288f5e50ff3e086997d'
+        with:
+          workload_identity_provider: ${{ inputs.workload-id-provider }}
+          service_account: ${{ inputs.service-account
+          access_token_lifetime: '20m'
+
+      - id: 'deploy'
+        if: github.ref != 'refs/heads/main'
+        uses: 'google-github-actions/deploy-cloudrun@530b4b6c6355648c5ef3ec32a4744d4e0659a016'
+        with:
+          project_id: ${{ inputs.gcp-project }}
+          env_vars: ${{ inputs.env-vars }}
+          service: ${{ inputs.app-name }}
+          image: ${{ inputs.artifact-registry }}:${{ inputs.tag }}
