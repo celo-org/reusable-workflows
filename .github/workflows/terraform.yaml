@@ -100,7 +100,7 @@ jobs:
              echo "TF_VAR_aws_role_arn_prod=${{ env.PROD_ARN }}" >> $GITHUB_ENV
              echo "TF_VAR_aws_security_account=${{ inputs.aws-security-account }}" >> $GITHUB_ENV
              echo "TF_VAR_aws_dev_account=${{ inputs.aws-dev-account }}" >> $GITHUB_ENV
-             echo "TF_VAR_aws_prod_account=${{ input.aws-prod-account }}" >> $GITHUB_ENV
+             echo "TF_VAR_aws_prod_account=${{ inputs.aws-prod-account }}" >> $GITHUB_ENV
              echo "TF_VAR_google_credentials=${{ steps.auth.outputs.access_token }}" >> $GITHUB_ENV
 
       - uses: hashicorp/setup-terraform@62a66eef78e1543742cc8fabf333a1abddc00d37
