@@ -46,7 +46,7 @@ jobs:
 
       - name: Split location name
         id: split
-        run: echo "::set-output name=location::${{ inputs.artifact-registry }}#*/"
+        run: echo "::set-output name=location::${{ inputs.artifact-registry#*/ }}"
 
       - name: 'Configure docker for gcloud auth'
         #run: 'gcloud auth configure-docker ${{ inputs.artifact-location }}'
