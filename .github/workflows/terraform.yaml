@@ -88,15 +88,19 @@ jobs:
 
 
       - name: set terraform variables
+        env:
+          SECURITY_ARN: "arn:aws:iam::${{ inputs.aws-security-account }}:role/github_actions_OIDC"
+          DEV_ARN: "arn:aws:iam::${{ inputs.aws-dev-account }}:role/github_actions_OIDC"
+          PROD_ARN: "arn:aws:iam::${{ inputs.aws-prod-account }}:role/github_actions_OIDC"
         shell: bash
         run: |
              echo "TF_VAR_aws_web_identity_token=${{ env.GITHUB_AUTH_JWT  }}"  >> $GITHUB_ENV
              echo "TF_VAR_aws_role_arn_security=${{ env.SECURITY_ARN }}" >> $GITHUB_ENV
              echo "TF_VAR_aws_role_arn_dev=${{ env.DEV_ARN }}" >> $GITHUB_ENV
              echo "TF_VAR_aws_role_arn_prod=${{ env.PROD_ARN }}" >> $GITHUB_ENV
-             echo "TF_VAR_aws_security_account=${{ env.AWS_SECURITY_ACCOUNT }}" >> $GITHUB_ENV
-             echo "TF_VAR_aws_dev_account=${{ env.AWS_DEV_ACCOUNT }}" >> $GITHUB_ENV
-             echo "TF_VAR_aws_prod_account=${{ env.AWS_PROD_ACCOUNT }}" >> $GITHUB_ENV
+             echo "TF_VAR_aws_security_account=${{ inputs.aws-security-account }}" >> $GITHUB_ENV
+             echo "TF_VAR_aws_dev_account=${{ inputs.aws-dev-account }}" >> $GITHUB_ENV
+             echo "TF_VAR_aws_prod_account=${{ input.aws-prod-account }}" >> $GITHUB_ENV
              echo "TF_VAR_google_credentials=${{ steps.auth.outputs.access_token }}" >> $GITHUB_ENV
 
       - uses: hashicorp/setup-terraform@62a66eef78e1543742cc8fabf333a1abddc00d37
