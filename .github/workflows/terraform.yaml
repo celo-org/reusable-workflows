@@ -65,16 +65,40 @@ jobs:
           access_token_scopes: ${{ inputs.access-token-scopes }}
           access_token_lifetime: '20m'
 
+
+      - name: Check for aws account variables
+        id: aws-account-check
+        shell: bash
+        run: |
+          if [ "${{ inputs.aws-security-account }}" != '' ]; then
+            echo "security=true" >> $GITHUB_OUTPUT;
+          else
+            echo "security=false" >> $GITHUB_OUTPUT;
+          fi
+
+          if [ "${{ inputs.aws-prod-account }}" != '' ]; then
+            echo "prod=true" >> $GITHUB_OUTPUT;
+          else
+            echo "prod=false" >> $GITHUB_OUTPUT;
+          fi
+
+          if [ "${{ inputs.aws-dev-account }}" != '' ]; then
+            echo "dev=true" >> $GITHUB_OUTPUT;
+          else
+            echo "dev=false" >> $GITHUB_OUTPUT;
+          fi
+
+
       - name: Configure AWS Credentials - Security
+        if: ${{ steps.aws-account-check.outputs.security == 'true' }}
         uses: aws-actions/configure-aws-credentials@67fbcbb121271f7775d2e7715933280b06314838
-        if:  ${{ inputs.aws-security-account }} != ""
         with:
           aws-region: us-east-2
           role-to-assume: arn:aws:iam::${{ inputs.aws-security-account }}:role/github_actions_OIDC
           audience: https://github.com/celo-org
 
       - name: Configure AWS Credentials - DEV
-        if:  ${{ inputs.aws-dev-account }} != ""
+        if: ${{ steps.aws-account-check.outputs.dev == 'true' }}
         uses: aws-actions/configure-aws-credentials@67fbcbb121271f7775d2e7715933280b06314838
         with:
           aws-region: us-east-2
@@ -82,7 +106,7 @@ jobs:
           audience: https://github.com/celo-org
 
       - name: Configure AWS Credentials - PROD
-        if:  ${{ inputs.aws-prod-account }} != ""
+        if: ${{ steps.aws-account-check.outputs.prod == 'true' }}
         uses: aws-actions/configure-aws-credentials@67fbcbb121271f7775d2e7715933280b06314838
         with:
           aws-region: us-east-2
