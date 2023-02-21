@@ -1,7 +1,6 @@
 ---
 name: 'Run Container Workflow'
-on:
-  workflow_call:
+on: workflow_call:
     inputs:
       workload-id-provider:
         required: true
@@ -60,12 +59,12 @@ jobs:
           context: ${{ inputs.context }}
           args: ${{ inputs.build-args }}
           tags: |
-             ${{ inputs.artifact-registry }}:${{ inputs.tag }}
-             ${{ inputs.artifact-registry }}:${{ github.sha }}
+             ${{ inputs.artifact-location }}/${{ inputs.artifact-registry }}:${{ inputs.tag }}
+             ${{ inputs.artifact-location }}/${{ inputs.artifact-registry }}:${{ github.sha }}
 
       - uses: sigstore/cosign-installer@main
       - name: Sign container image
         env:
           COSIGN_EXPERIMENTAL: "true"
         run: |
-          cosign sign ${{ inputs.artifact-registry }}@${{ steps.docker-build-push.outputs.digest }}
+          cosign sign ${{inputs.artifact-location}}/${{ inputs.artifact-registry }}@${{ steps.docker-build-push.outputs.digest }}
