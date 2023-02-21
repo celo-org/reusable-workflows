@@ -24,6 +24,9 @@ jobs:
     permissions: # Must change the job token permissions to use JWT auth
       contents: read
       id-token: write
+    defaults:
+      run:
+        working-directory: ${{ matrix.working-dir}}
     steps:
       - name: 'Checkout'
         uses: actions/checkout@e2f20e631ae6d7dd3b768f56a5d2af784dd54791
