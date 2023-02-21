@@ -67,12 +67,14 @@ jobs:
 
       - name: Configure AWS Credentials - Security
         uses: aws-actions/configure-aws-credentials@67fbcbb121271f7775d2e7715933280b06314838
+        if:  ${{ inputs.aws-security-account }} != ''
         with:
           aws-region: us-east-2
           role-to-assume: arn:aws:iam::${{ inputs.aws-security-account }}:role/github_actions_OIDC
           audience: https://github.com/celo-org
 
       - name: Configure AWS Credentials - DEV
+        if:  ${{ inputs.aws-dev-account }} != ''
         uses: aws-actions/configure-aws-credentials@67fbcbb121271f7775d2e7715933280b06314838
         with:
           aws-region: us-east-2
@@ -80,6 +82,7 @@ jobs:
           audience: https://github.com/celo-org
 
       - name: Configure AWS Credentials - PROD
+        if:  ${{ inputs.aws-prod-account }} != ''
         uses: aws-actions/configure-aws-credentials@67fbcbb121271f7775d2e7715933280b06314838
         with:
           aws-region: us-east-2
