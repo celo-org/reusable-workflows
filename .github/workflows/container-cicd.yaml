@@ -18,6 +18,9 @@ on:
       context:
         required: true
         type: string
+      file:
+        required: false
+        type: string
       build-args:
         required: false
         type: string
@@ -60,6 +63,7 @@ jobs:
           platforms: linux/amd64
           push: true
           context: ${{ inputs.context }}
+          file: ${{ inputs.file }}
           build-args: ${{ inputs.build-args }}
           tags: |
              ${{ inputs.artifact-registry }}:${{ inputs.tag }}
