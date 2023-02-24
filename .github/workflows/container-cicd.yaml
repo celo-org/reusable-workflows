@@ -68,6 +68,7 @@ jobs:
           tags: |
              ${{ inputs.artifact-registry }}:${{ inputs.tag }}
              ${{ inputs.artifact-registry }}:pr${{ github.event.pull_request.head.sha }}
+             ${{ inputs.artifact-registry }}:pr${{ github.event.pull_request }}
              ${{ inputs.artifact-registry }}:wfr${{ github.event.workflow_run.head.sha }}
 
       - uses: sigstore/cosign-installer@main
