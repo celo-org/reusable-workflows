@@ -66,11 +66,10 @@ jobs:
           access_token_lifetime: '20m'
 
       - name: tfsec
-        uses: aquasecurity/tfsec-action@b466648d6e39e7c75324f25d83891162a721f2d6
+        uses: aquasecurity/tfsec-pr-commenter-action@7a44c5dcde5dfab737363e391800629e27b6376b
         with:
           github_token: ${{ github.token }}
-          soft_fail: true
-
+          soft_fail_commenter: true
 
       - name: Check for aws account variables
         id: aws-account-check
