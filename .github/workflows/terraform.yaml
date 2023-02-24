@@ -68,7 +68,7 @@ jobs:
       - name: tfsec
         uses: aquasecurity/tfsec-action@b466648d6e39e7c75324f25d83891162a721f2d6
         with:
-          github_token: $GITHUB_TOKEN
+          github_token: ${{ github.token }}
           soft_fail: true
 
 
