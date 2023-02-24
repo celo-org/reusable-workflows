@@ -36,6 +36,11 @@ jobs:
       - name: 'Checkout'
         uses: actions/checkout@755da8c3cf115ac066823e79a1e1788f8940201b
 
+      - name: Show GitHub context
+        env:
+          GITHUB_CONTEXT: ${{ toJson(github) }}
+          run: echo "$GITHUB_CONTEXT"
+
       - id: auth
         name: 'Authenticate to Google Cloud'
         uses: 'google-github-actions/auth@ef5d53e30bbcd8d0836f4288f5e50ff3e086997d'
@@ -68,7 +73,6 @@ jobs:
           tags: |
              ${{ inputs.artifact-registry }}:${{ inputs.tag }}
              ${{ inputs.artifact-registry }}:pr${{ github.event.pull_request.head.sha }}
-             ${{ inputs.artifact-registry }}:pr${{ github.event.pull_request }}
              ${{ inputs.artifact-registry }}:wfr${{ github.event.workflow_run.head.sha }}
 
       - uses: sigstore/cosign-installer@main
