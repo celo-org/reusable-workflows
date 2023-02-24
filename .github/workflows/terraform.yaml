@@ -65,6 +65,8 @@ jobs:
           access_token_scopes: ${{ inputs.access-token-scopes }}
           access_token_lifetime: '20m'
 
+      - name: tfsec
+        uses: aquasecurity/tfsec-action@b466648d6e39e7c75324f25d83891162a721f2d6
 
       - name: Check for aws account variables
         id: aws-account-check
