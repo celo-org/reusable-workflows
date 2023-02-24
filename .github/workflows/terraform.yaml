@@ -66,6 +66,7 @@ jobs:
           access_token_lifetime: '20m'
 
       - name: tfsec
+        if: ${{ github.event_name == 'pull_request' }}
         uses: aquasecurity/tfsec-pr-commenter-action@7a44c5dcde5dfab737363e391800629e27b6376b
         with:
           github_token: ${{ github.token }}
