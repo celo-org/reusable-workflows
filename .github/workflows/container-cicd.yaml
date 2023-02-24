@@ -67,7 +67,8 @@ jobs:
           build-args: ${{ inputs.build-args }}
           tags: |
              ${{ inputs.artifact-registry }}:${{ inputs.tag }}
-             ${{ inputs.artifact-registry }}:${{ github.event.workflow_run.head.sha }}
+             ${{ inputs.artifact-registry }}:pr${{ github.event.pull_request.head.sha }}
+             ${{ inputs.artifact-registry }}:wfr${{ github.event.workflow_run.head.sha }}
 
       - uses: sigstore/cosign-installer@main
       - name: Sign container image
