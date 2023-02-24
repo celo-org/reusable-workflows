@@ -39,7 +39,7 @@ jobs:
       - name: Show GitHub context
         env:
           GITHUB_CONTEXT: ${{ toJson(github) }}
-          run: echo "$GITHUB_CONTEXT"
+        run: echo "$GITHUB_CONTEXT"
 
       - id: auth
         name: 'Authenticate to Google Cloud'
