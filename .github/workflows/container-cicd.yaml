@@ -102,7 +102,6 @@ jobs:
         run: |
           cosign sign ${{ inputs.artifact-registry }}@${{ steps.docker-build-pr.outputs.digest }}
 
-      - uses: sigstore/cosign-installer@main
       - name: Sign container image
         if: ${{ github.event_name == 'push' }}
         env:
