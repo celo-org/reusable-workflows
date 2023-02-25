@@ -24,6 +24,18 @@ on:
       build-args:
         required: false
         type: string
+      trivy:
+        required: false
+        type: boolean
+        default: false
+      vuln-type:
+        required: false
+        type: string
+        default: "os,library"
+      severity:
+        required: false
+        type: string
+        default: "UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL"
 
 jobs:
   Container-workflow:
@@ -35,11 +47,6 @@ jobs:
     steps:
       - name: 'Checkout'
         uses: actions/checkout@755da8c3cf115ac066823e79a1e1788f8940201b
-
-      - name: Show GitHub context
-        env:
-          GITHUB_CONTEXT: ${{ toJson(github) }}
-        run: echo "$GITHUB_CONTEXT"
 
       - id: auth
         name: 'Authenticate to Google Cloud'
@@ -103,4 +110,34 @@ jobs:
         run: |
           cosign sign ${{ inputs.artifact-registry }}@${{ steps.docker-build-push.outputs.digest }}
 
+      - name: Run Trivy vulnerability scanner
+        if: ${{ github.event_name == 'pull_request' }} && ${{ inputs.trivy == true }}
+        uses: aquasecurity/trivy-action@master
+        env:
+          REGISTRY: ${{ inputs.artifact-registry }}
+        with:
+          image-ref: "${{ inputs.artifact-registry }}:${{ github.event.pull_request.head.sha }}"
+          vuln-type: "${{ inputs.vuln-type }}"
+          severity: "UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL"
+          format: "sarif"
+          output: "trivy-results.sarif"
+
+
+      - name: Run Trivy vulnerability scanner
+        if: ${{ github.event_name == 'push' }} && ${{ inputs.trivy == true }}
+        uses: aquasecurity/trivy-action@master
+        env:
+          REGISTRY: ${{ inputs.artifact-registry }}
+        with:
+          image-ref: "${{ inputs.artifact-registry }}:${{ github.sha }}"
+          vuln-type: "${{ inputs.vuln-type }}"
+          severity: "UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL"
+          format: "sarif"
+          output: "trivy-results.sarif"
+
+      - name: Upload Trivy scan results to GitHub Security tab
+        if: ${{ inputs.trivy == true }}
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: "trivy-results.sarif"
 
