@@ -36,6 +36,11 @@ on:
         required: false
         type: string
         default: "UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL"
+      timeout: ${{ inputs.trivy_timeout }}
+        required: false
+        type: string
+        default: 5m
+
 
 jobs:
   Container-workflow:
@@ -115,4 +120,5 @@ jobs:
         uses: github/codeql-action/upload-sarif@v2
         with:
           sarif_file: "trivy-results.sarif"
+          timeout: ${{ inputs.trivy_timeout }}
 
