@@ -110,7 +110,7 @@ jobs:
           REGISTRY: ${{ inputs.artifact-registry }}
         with:
           image-ref: "${{ inputs.artifact-registry }}:${{ steps.set-sha-var.outputs.sha }}"
-          timeout: ${{ inputs.trivy_timeout }}
+          timeout: ${{ inputs.trivy-timeout }}
           vuln-type: "${{ inputs.vuln-type }}"
           severity: "UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL"
           format: "sarif"
