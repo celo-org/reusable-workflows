@@ -109,31 +109,45 @@ jobs:
         run: |
           cosign sign ${{ inputs.artifact-registry }}@${{ steps.docker-build-push.outputs.digest }}
 
+      - name: Set sha variable
+        if: ${{ inputs.trivy == true }}
+        id: set-sha-var
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" == 'pull_request' ]; then
+            echo "sha=${{ github.event.pull_request.head.sha }}" >> $GITHUB_OUTPUT;
+          else
+            echo "sha=${{ github.sha }}" >> $GITHUB_OUTPUT;
+          fi
+        
+
       - name: Run Trivy vulnerability scanner
-        if: ${{ github.event_name == 'pull_request' }} && ${{ inputs.trivy == true }}
+#        if: ${{ github.event_name == 'pull_request' }} && ${{ inputs.trivy == true }}
+        if: ${{ inputs.trivy == true }}
         uses: aquasecurity/trivy-action@master
         env:
           REGISTRY: ${{ inputs.artifact-registry }}
         with:
-          image-ref: "${{ inputs.artifact-registry }}:${{ github.event.pull_request.head.sha }}"
+#          image-ref: "${{ inputs.artifact-registry }}:${{ github.event.pull_request.head.sha }}"
+          image-ref: "${{ inputs.artifact-registry }}:${{ steps.set-sha-var.outputs.sha }}"
           vuln-type: "${{ inputs.vuln-type }}"
           severity: "UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL"
           format: "sarif"
           output: "trivy-results.sarif"
 
-
-      - name: Run Trivy vulnerability scanner
-        if: ${{ github.event_name == 'push' }} && ${{ inputs.trivy == true }}
-        uses: aquasecurity/trivy-action@master
-        env:
-          REGISTRY: ${{ inputs.artifact-registry }}
-        with:
-          image-ref: "${{ inputs.artifact-registry }}:${{ github.sha }}"
-          vuln-type: "${{ inputs.vuln-type }}"
-          severity: "UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL"
-          format: "sarif"
-          output: "trivy-results.sarif"
-
+#
+#      - name: Run Trivy vulnerability scanner
+#        if: ${{ github.event_name == 'push' }} && ${{ inputs.trivy == true }}
+#        uses: aquasecurity/trivy-action@master
+#        env:
+#          REGISTRY: ${{ inputs.artifact-registry }}
+#        with:
+#          image-ref: "${{ inputs.artifact-registry }}:${{ github.sha }}"
+#          vuln-type: "${{ inputs.vuln-type }}"
+#          severity: "UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL"
+#          format: "sarif"
+#          output: "trivy-results.sarif"
+#
       - name: Upload Trivy scan results to GitHub Security tab
         if: ${{ inputs.trivy == true }}
         uses: github/codeql-action/upload-sarif@v2
