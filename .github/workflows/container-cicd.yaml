@@ -73,7 +73,9 @@ jobs:
           tags: |
              ${{ inputs.artifact-registry }}:${{ inputs.tag }}
              ${{ inputs.artifact-registry }}:pr${{ github.event.pull_request.head.sha }}
-             ${{ inputs.artifact-registry }}:pr${{ github.event.push.commits[0].id }}
+             ${{ inputs.artifact-registry }}:pr${{ github.event.commits[0].id }}
+             ${{ inputs.artifact-registry }}:pr${{ github.event.commits[0] }}
+
 
              ${{ inputs.artifact-registry }}:wfr${{ github.event.workflow_run.head.sha }}
 
