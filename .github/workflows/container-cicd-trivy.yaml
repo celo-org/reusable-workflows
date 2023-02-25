@@ -98,6 +98,7 @@ jobs:
         run: |
           cosign sign ${{ inputs.artifact-registry }}@${{ steps.docker-build-pr.outputs.digest }}
 
+      - uses: sigstore/cosign-installer@main
       - name: Sign container image
         if: ${{ github.event_name == 'push' }}
         env:
@@ -110,7 +111,6 @@ jobs:
         uses: aquasecurity/trivy-action@master
         env:
           REGISTRY: ${{ inputs.artifact-registry }}
-
         with:
           image-ref: "${{ inputs.artifact-registry }}:${{ github.event.pull_request.head.sha }}"
           vuln-type: "${{ inputs.vuln-type }}"

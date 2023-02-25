@@ -61,7 +61,7 @@ jobs:
       - name: 'Configure docker for gcloud auth'
         run: 'gcloud auth configure-docker ${{ steps.split.outputs.location }}'
 
-      - id: docker-build-push
+      - id: docker-build-pr
         if: ${{ github.event_name == 'pull_request' }}
         name: Build Docker image and push to Google Artifact Registry
         uses: docker/build-push-action@3b5e8027fcad23fda98b2e3ac259d8d67585f671
@@ -72,7 +72,7 @@ jobs:
           file: ${{ inputs.file }}
           build-args: ${{ inputs.build-args }}
           tags: |
-             ${{ inputs.artifact-registry }}:pr${{ github.event.pull_request.head.sha }}
+             ${{ inputs.artifact-registry }}:${{ github.event.pull_request.head.sha }}
 
       - id: docker-build-push
         if: ${{ github.event_name == 'push' }}
@@ -85,12 +85,22 @@ jobs:
           file: ${{ inputs.file }}
           build-args: ${{ inputs.build-args }}
           tags: |
-             ${{ inputs.artifact-registry }}:pr${{ github.sha }}
-
+             ${{ inputs.artifact-registry }}:${{ github.sha }}
 
       - uses: sigstore/cosign-installer@main
       - name: Sign container image
+        if: ${{ github.event_name == 'pull_request' }}
+        env:
+          COSIGN_EXPERIMENTAL: "true"
+        run: |
+          cosign sign ${{ inputs.artifact-registry }}@${{ steps.docker-build-pr.outputs.digest }}
+
+      - uses: sigstore/cosign-installer@main
+      - name: Sign container image
+        if: ${{ github.event_name == 'push' }}
         env:
           COSIGN_EXPERIMENTAL: "true"
         run: |
           cosign sign ${{ inputs.artifact-registry }}@${{ steps.docker-build-push.outputs.digest }}
+
+
