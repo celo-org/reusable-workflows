@@ -68,49 +68,7 @@ jobs:
       - name: 'Configure docker for gcloud auth'
         run: 'gcloud auth configure-docker ${{ steps.split.outputs.location }}'
 
-      - id: docker-build-pr
-        if: ${{ github.event_name == 'pull_request' }}
-        name: Build Docker image and push to Google Artifact Registry
-        uses: docker/build-push-action@3b5e8027fcad23fda98b2e3ac259d8d67585f671
-        with:
-          platforms: linux/amd64
-          push: true
-          context: ${{ inputs.context }}
-          file: ${{ inputs.file }}
-          build-args: ${{ inputs.build-args }}
-          tags: |
-             ${{ inputs.artifact-registry }}:${{ github.event.pull_request.head.sha }}
-
-      - id: docker-build-push
-        if: ${{ github.event_name == 'push' }}
-        name: Build Docker image and push to Google Artifact Registry
-        uses: docker/build-push-action@3b5e8027fcad23fda98b2e3ac259d8d67585f671
-        with:
-          platforms: linux/amd64
-          push: true
-          context: ${{ inputs.context }}
-          file: ${{ inputs.file }}
-          build-args: ${{ inputs.build-args }}
-          tags: |
-             ${{ inputs.artifact-registry }}:${{ github.sha }}
-
-      - uses: sigstore/cosign-installer@main
-      - name: Sign container image
-        if: ${{ github.event_name == 'pull_request' }}
-        env:
-          COSIGN_EXPERIMENTAL: "true"
-        run: |
-          cosign sign ${{ inputs.artifact-registry }}@${{ steps.docker-build-pr.outputs.digest }}
-
-      - name: Sign container image
-        if: ${{ github.event_name == 'push' }}
-        env:
-          COSIGN_EXPERIMENTAL: "true"
-        run: |
-          cosign sign ${{ inputs.artifact-registry }}@${{ steps.docker-build-push.outputs.digest }}
-
       - name: Set sha variable
-        if: ${{ inputs.trivy == true }}
         id: set-sha-var
         shell: bash
         run: |
@@ -119,35 +77,39 @@ jobs:
           else
             echo "sha=${{ github.sha }}" >> $GITHUB_OUTPUT;
           fi
-        
+ 
+      - id: docker-build-push
+        name: Build Docker image and push to Google Artifact Registry
+        uses: docker/build-push-action@3b5e8027fcad23fda98b2e3ac259d8d67585f671
+        with:
+          platforms: linux/amd64
+          push: true
+          context: ${{ inputs.context }}
+          file: ${{ inputs.file }}
+          build-args: ${{ inputs.build-args }}
+          tags: |
+             ${{ inputs.artifact-registry }}:tag
+             ${{ inputs.artifact-registry }}:${{ steps.set-sha-var.outputs.sha }}
+
+      - uses: sigstore/cosign-installer@main
+      - name: Sign container image
+        env:
+          COSIGN_EXPERIMENTAL: "true"
+        run: |
+          cosign sign ${{ inputs.artifact-registry }}@${{ steps.docker-build-push.outputs.digest }}
 
       - name: Run Trivy vulnerability scanner
-#        if: ${{ github.event_name == 'pull_request' }} && ${{ inputs.trivy == true }}
         if: ${{ inputs.trivy == true }}
         uses: aquasecurity/trivy-action@master
         env:
           REGISTRY: ${{ inputs.artifact-registry }}
         with:
-#          image-ref: "${{ inputs.artifact-registry }}:${{ github.event.pull_request.head.sha }}"
           image-ref: "${{ inputs.artifact-registry }}:${{ steps.set-sha-var.outputs.sha }}"
           vuln-type: "${{ inputs.vuln-type }}"
           severity: "UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL"
           format: "sarif"
           output: "trivy-results.sarif"
 
-#
-#      - name: Run Trivy vulnerability scanner
-#        if: ${{ github.event_name == 'push' }} && ${{ inputs.trivy == true }}
-#        uses: aquasecurity/trivy-action@master
-#        env:
-#          REGISTRY: ${{ inputs.artifact-registry }}
-#        with:
-#          image-ref: "${{ inputs.artifact-registry }}:${{ github.sha }}"
-#          vuln-type: "${{ inputs.vuln-type }}"
-#          severity: "UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL"
-#          format: "sarif"
-#          output: "trivy-results.sarif"
-#
       - name: Upload Trivy scan results to GitHub Security tab
         if: ${{ inputs.trivy == true }}
         uses: github/codeql-action/upload-sarif@v2
