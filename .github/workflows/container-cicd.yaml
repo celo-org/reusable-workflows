@@ -36,7 +36,7 @@ on:
         required: false
         type: string
         default: "UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL"
-      timeout: ${{ inputs.trivy_timeout }}
+      trivy-timeout: 
         required: false
         type: string
         default: 5m
