@@ -93,7 +93,7 @@ jobs:
           file: ${{ inputs.file }}
           build-args: ${{ inputs.build-args }}
           tags: |
-             ${{ inputs.artifact-registry }}:tag
+             ${{ inputs.artifact-registry }}:${{ inputs.tag }}
              ${{ inputs.artifact-registry }}:${{ steps.set-sha-var.outputs.sha }}
 
       - uses: sigstore/cosign-installer@main
