@@ -64,11 +64,13 @@ jobs:
       - name: 'Set up Cloud SDK'
         uses: 'google-github-actions/setup-gcloud@877d4953d2c70a0ba7ef3290ae968eb24af233bb'
 
-      - name: Split location name
+      - name: Split location and app  names
         id: split
         env:
           REGISTRY: ${{ inputs.artifact-registry }}
-        run: echo "location=${REGISTRY%%/*}" >> $GITHUB_OUTPUT
+        run: |
+            echo "location=${REGISTRY%%/*}" >> $GITHUB_OUTPUT
+            echo "app_name=${REGISTRY##*/}" >> $GITHUB_OUTPUT
 
       - name: 'Configure docker for gcloud auth'
         run: 'gcloud auth configure-docker ${{ steps.split.outputs.location }}'
@@ -95,6 +97,13 @@ jobs:
           tags: |
              ${{ inputs.artifact-registry }}:${{ inputs.tag }}
              ${{ inputs.artifact-registry }}:${{ steps.set-sha-var.outputs.sha }}
+          cache-from: type=registry,ref=${{ inputs.artifact-registry }}:${{ inputs.tag }}
+          cache-to: type=registry,ref=${{ inputs.artifact-registry }}:${{ inputs.tag }},mode=max
+
+
+#          cache-from: type=registry,ref=${{  steps.split.outputs.app_name }}:${{ inputs.tag }}
+#          cache-to: type=registry,ref=${{ steps.split.outputs.app_name }}:${{ inputs.tag }},mode=max
+
 
       - uses: sigstore/cosign-installer@main
       - name: Sign container image
