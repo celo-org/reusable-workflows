@@ -103,17 +103,12 @@ jobs:
           cache-from: type=registry,ref=${{ inputs.artifact-registry }}:${{ inputs.tag }}
           cache-to: type=registry,ref=${{ inputs.artifact-registry }}:${{ inputs.tag }},mode=max
 
-
-#          cache-from: type=registry,ref=${{  steps.split.outputs.app_name }}:${{ inputs.tag }}
-#          cache-to: type=registry,ref=${{ steps.split.outputs.app_name }}:${{ inputs.tag }},mode=max
-
-
       - uses: sigstore/cosign-installer@main
       - name: Sign container image
         env:
           COSIGN_EXPERIMENTAL: "true"
         run: |
-          cosign sign ${{ inputs.artifact-registry }}@${{ steps.docker-build-push.outputs.digest }}
+          cosign sign --yes ${{ inputs.artifact-registry }}@${{ steps.docker-build-push.outputs.digest }}
 
       - name: Run Trivy vulnerability scanner
         if: ${{ inputs.trivy == true }}
