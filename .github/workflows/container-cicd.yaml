@@ -100,7 +100,7 @@ jobs:
           tags: |
              ${{ inputs.artifact-registry }}:${{ inputs.tag }}
              ${{ inputs.artifact-registry }}:${{ steps.set-sha-var.outputs.sha }}
-          cache-from: type=registry,ref=${{ inputs.artifact-registry }}:${{ inputs.tag }}
+          #cache-from: type=registry,ref=${{ inputs.artifact-registry }}:${{ inputs.tag }}
           #cache-to: type=registry,ref=${{ inputs.artifact-registry }}:${{ inputs.tag }},mode=max
 
       - uses: sigstore/cosign-installer@main
