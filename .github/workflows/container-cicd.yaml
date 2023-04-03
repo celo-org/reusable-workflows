@@ -87,12 +87,16 @@ jobs:
  
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
+        with:
+          platforms: linux/amd64,linux/arm64
+
+
 
       - id: docker-build-push
         name: Build Docker image and push to Google Artifact Registry
         uses: docker/build-push-action@3b5e8027fcad23fda98b2e3ac259d8d67585f671
         with:
-          platforms: linux/amd64
+          platforms: linux/amd64,linux/arm64
           push: true
           context: ${{ inputs.context }}
           file: ${{ inputs.file }}
