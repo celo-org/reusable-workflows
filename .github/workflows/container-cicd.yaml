@@ -100,8 +100,10 @@ jobs:
           tags: |
              ${{ inputs.artifact-registry }}:${{ inputs.tag }}
              ${{ inputs.artifact-registry }}:${{ steps.set-sha-var.outputs.sha }}
-          cache-from: type=registry,ref=${{ inputs.artifact-registry }}:${{ inputs.tag }}
-          cache-to: type=registry,ref=${{ inputs.artifact-registry }}:${{ inputs.tag }},mode=max
+#          cache-from: type=registry,ref=${{ inputs.artifact-registry }}:${{ inputs.tag }}
+#          cache-to: type=registry,ref=${{ inputs.artifact-registry }}:${{ inputs.tag }},mode=max
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
       
       - name: Print metadata
         shell: bash
