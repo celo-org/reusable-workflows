@@ -102,6 +102,11 @@ jobs:
              ${{ inputs.artifact-registry }}:${{ steps.set-sha-var.outputs.sha }}
           cache-from: type=registry,ref=${{ inputs.artifact-registry }}:${{ inputs.tag }}
           cache-to: type=registry,ref=${{ inputs.artifact-registry }}:${{ inputs.tag }},mode=max
+      
+      - name: Print metadata
+        shell: bash
+        run: |
+          echo ${{ steps.docker-build-push.outputs.metadata }}
 
       - uses: sigstore/cosign-installer@main
       - name: Sign container image
