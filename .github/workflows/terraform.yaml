@@ -46,7 +46,7 @@ jobs:
       # it gets back after authenticating, which can be used for certain things (such as ansible)
       - name: Akeyless Get Secrets
         id: get_auth_token
-        uses: docker://us-docker.pkg.dev/clabs-secrets-and-permissions/public-images/akeyless-actions:latest
+        uses: docker://us-west1-docker.pkg.dev/devopsre/akeyless/akeyless-action:latest
         with:
           api-url: ${{ inputs.akeyless-api-gateway }}
           access-id: ${{ inputs.akeyless-github-access-id }}
