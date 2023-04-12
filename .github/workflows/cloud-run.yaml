@@ -56,5 +56,4 @@ jobs:
           project_id: ${{ inputs.gcp-project }}
           env_vars: ${{ inputs.env-vars }}
           service: ${{ inputs.app-name }}
-          service_account: ${{ inputs.service-account }}
           image: ${{ inputs.artifact-registry }}:${{ inputs.tag }}
