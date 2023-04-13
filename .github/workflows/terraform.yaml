@@ -41,16 +41,6 @@ jobs:
       - name: 'Checkout'
         uses: actions/checkout@e2f20e631ae6d7dd3b768f56a5d2af784dd54791
 
-      # Akeyless Get Secrets will take the specified dynamic or static secrets and set them to their corresponding environment variables.  It will also
-      # export github's JWT Token as AKEYLESS_AUTH_JWT (which their terraform provider uses for JWT authentication, and AUTH_TOKEN - The akeyless auth token
-      # it gets back after authenticating, which can be used for certain things (such as ansible)
-      - name: Akeyless Get Secrets
-        id: get_auth_token
-        uses: docker://us-west1-docker.pkg.dev/devopsre/akeyless/akeyless-action:latest
-        with:
-          api-url: ${{ inputs.akeyless-api-gateway }}
-          access-id: ${{ inputs.akeyless-github-access-id }}
-
       # Uses Google workload identity federation to authenticate without keys, in security circle project.  Variables defined in security circle
       - id: 'auth'
         name: 'Authenticate to Google Cloud'
@@ -61,6 +51,20 @@ jobs:
           token_format: ${{ inputs.token-format }}
           access_token_scopes: ${{ inputs.access-token-scopes }}
           access_token_lifetime: '20m'
+
+      - name: 'Configure docker for gcloud auth'
+        run: 'gcloud auth configure-docker us-west1-docker.pkg.dev'
+
+
+      # Akeyless Get Secrets will take the specified dynamic or static secrets and set them to their corresponding environment variables.  It will also
+      # export github's JWT Token as AKEYLESS_AUTH_JWT (which their terraform provider uses for JWT authentication, and AUTH_TOKEN - The akeyless auth token
+      # it gets back after authenticating, which can be used for certain things (such as ansible)
+      - name: Akeyless Get Secrets
+        id: get_auth_token
+        uses: docker://us-west1-docker.pkg.dev/devopsre/akeyless/akeyless-action:latest
+        with:
+          api-url: ${{ inputs.akeyless-api-gateway }}
+          access-id: ${{ inputs.akeyless-github-access-id }}
 
       - name: tfsec
         if: ${{ github.event_name == 'pull_request' }}
