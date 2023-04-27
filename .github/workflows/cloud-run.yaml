@@ -35,12 +35,6 @@ jobs:
       - name: 'Checkout'
         uses: actions/checkout@e2f20e631ae6d7dd3b768f56a5d2af784dd54791
 
-      # Pulls Environment variables from repo_common.env for easy configuration across all workflows
-      - uses: cardinalby/export-env-action@0e5a72e485827a0c9ce6570c12840da1f93302f9
-        with:
-          envFile: ./.github/workflows/repo_common.env 
-          expand: 'true'
-
       - id: auth
         name: 'Authenticate to Google Cloud'
         uses: 'google-github-actions/auth@ef5d53e30bbcd8d0836f4288f5e50ff3e086997d'
