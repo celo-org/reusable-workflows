@@ -24,6 +24,10 @@ on:
       build-args:
         required: false
         type: string
+      provenance:
+        required: false
+        type: string
+        default: true
       trivy:
         required: false
         type: boolean
@@ -102,6 +106,7 @@ jobs:
              ${{ inputs.artifact-registry }}:${{ steps.set-sha-var.outputs.sha }}
           cache-from: type=registry,ref=${{ inputs.artifact-registry }}:buildcache
           cache-to: type=registry,ref=${{ inputs.artifact-registry }}:buildcache,mode=max
+          provenance: ${{ inputs.provenance }}
       
       - uses: sigstore/cosign-installer@main
       - name: Sign container image
