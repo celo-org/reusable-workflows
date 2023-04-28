@@ -124,7 +124,8 @@ jobs:
         env:
           COSIGN_EXPERIMENTAL: "true"
         run: |
-          cosign sign --yes ${{ inputs.artifact-registry }}@${{ steps.docker-build-push.outputs.digest }}
+#          cosign sign --yes ${{ inputs.artifact-registry }}@${{ steps.docker-build-push.outputs.digest }}
+          cosign sign --yes ${{ inputs.artifact-registry }}@${{ inputs.strip-sig == true && steps.set-sha-var.outputs.strip-sha || steps.docker-build-push.outputs.digest }}
 
       - name: Run Trivy vulnerability scanner
         if: ${{ inputs.trivy == true }}
