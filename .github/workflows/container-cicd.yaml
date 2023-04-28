@@ -26,7 +26,7 @@ on:
         type: string
       provenance:
         required: false
-        type: boolean
+        type: string
         default: true
       trivy:
         required: false
