@@ -104,8 +104,8 @@ jobs:
           tags: |
              ${{ inputs.artifact-registry }}:${{ inputs.tag }}
              ${{ inputs.artifact-registry }}:${{ steps.set-sha-var.outputs.sha  }}
-          #cache-from: type=registry,ref=${{ inputs.artifact-registry }}:buildcache
-          #cache-to: type=registry,ref=${{ inputs.artifact-registry }}:buildcache,mode=max
+          cache-from: type=registry,ref=${{ inputs.artifact-registry }}:buildcache
+          cache-to: type=registry,ref=${{ inputs.artifact-registry }}:buildcache,mode=max
           provenance: ${{ inputs.provenance }}
       
       - uses: sigstore/cosign-installer@main
