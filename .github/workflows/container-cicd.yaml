@@ -82,7 +82,6 @@ jobs:
       - name: Set sha variable
         id: set-sha-var
         shell: bash
-        env:
         run: |
           if [ "${{ github.event_name }}" == 'pull_request' ]; then
             echo "sha=${{ github.event.pull_request.head.sha }}" >> $GITHUB_OUTPUT
