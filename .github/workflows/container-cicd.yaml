@@ -115,7 +115,7 @@ jobs:
           build-args: ${{ inputs.build-args }}
           tags: |
              ${{ inputs.artifact-registry }}:${{ inputs.tag }}
-             ${{ inputs.artifact-registry }}:${{ inputs.strip-sha == true && steps.set-sha-var.ouputs.strip-sha || steps.set-sha-var.outputs.sha  }}
+             ${{ inputs.artifact-registry }}:${{ inputs.strip-sig == true && steps.set-sha-var.ouputs.strip-sha || steps.set-sha-var.outputs.sha  }}
           cache-from: type=registry,ref=${{ inputs.artifact-registry }}:buildcache
           cache-to: type=registry,ref=${{ inputs.artifact-registry }}:buildcache,mode=max
           provenance: ${{ inputs.provenance }}
