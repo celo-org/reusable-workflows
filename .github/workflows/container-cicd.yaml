@@ -119,12 +119,13 @@ jobs:
           cache-to: type=registry,ref=${{ inputs.artifact-registry }}:buildcache,mode=max
           provenance: ${{ inputs.provenance }}
       
+#          cosign sign --yes ${{ inputs.artifact-registry }}@${{ steps.docker-build-push.outputs.digest }}
       - uses: sigstore/cosign-installer@main
       - name: Sign container image
         env:
           COSIGN_EXPERIMENTAL: "true"
+
         run: |
-#          cosign sign --yes ${{ inputs.artifact-registry }}@${{ steps.docker-build-push.outputs.digest }}
           cosign sign --yes ${{ inputs.artifact-registry }}@${{ inputs.strip-sig == true && steps.set-sha-var.outputs.strip-sha || steps.docker-build-push.outputs.digest }}
 
       - name: Run Trivy vulnerability scanner
