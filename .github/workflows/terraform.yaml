@@ -39,7 +39,9 @@ jobs:
         working-directory: ${{ inputs.working-dir}}
     steps:
       - name: 'Checkout'
-        uses: actions/checkout@e2f20e631ae6d7dd3b768f56a5d2af784dd54791
+        uses: actions/checkout@v3
+          with:
+            ref: ${{ if github_event_name == 'pull_request' && github.event.pull_request.head.ref || 'master' }}
 
       # Uses Google workload identity federation to authenticate without keys, in security circle project.  Variables defined in security circle
       - id: 'auth'
@@ -159,6 +161,7 @@ jobs:
           echo "$PLAN" >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV       
 
+
         # Pulls the plan out and posts it to github pull request with nice formatting and report
       - name: Post Plan to GitHub PR
         uses: mshick/add-pr-comment@5cd99bf9c186219af43341076f1fe9c09e5a9934
@@ -187,6 +190,18 @@ jobs:
             </details>
 
             *Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`, Working Directory: \`${{ inputs.working-dir }}\`, Workflow: \`${{ github.workflow }}\`*`;
+
+      - name: Render terraform docs inside the README.md and push changes back to PR branch
+        id: docs
+        if: github_event_name == 'pull_request'
+        uses: terraform-docs/gh-actions@v1.0.0
+        with:
+          working-dir: ${{ inputs.working-dir }}
+          output-file: README.md
+          output-method: inject
+          recursive: true
+          git-push: "true"
+
 
       - name: Terraform Apply
         id: apply
