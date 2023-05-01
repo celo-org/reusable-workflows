@@ -207,7 +207,6 @@ jobs:
           find-dir: ${{ inputs.working-dir }}
           output-file: README.md
           output-method: inject
-          recursive: true
           git-push: "true"
 
 
