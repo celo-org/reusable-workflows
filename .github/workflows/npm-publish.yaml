@@ -13,15 +13,15 @@ on:
       package-dir:
         required: true
         type: string
-      akeyless-api-gateway:
-        required: true
-        type: string
-      akeyless-github-access-id:
-        required: true
-        type: string
-      akeyless-token-path:
-        required: true
-        type: string
+#      akeyless-api-gateway:
+#        required: true
+#        type: string
+#      akeyless-github-access-id:
+#        required: true
+#        type: string
+#      akeyless-token-path:
+#        required: true
+#        type: string
     secrets:
       npm-token:
         required: true
