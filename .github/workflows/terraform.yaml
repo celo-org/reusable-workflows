@@ -38,18 +38,9 @@ jobs:
       run:
         working-directory: ${{ inputs.working-dir}}
     steps:
-
-      - name: 'Checkout - PR'
-        if: github.event_name == 'pull_request'
+      - name: 'Checkout'
         uses: actions/checkout@v3
         with:
-          ref: ${{ github.event.pull_request.head.ref }}
-
-      - name: 'Checkout - Master'
-        if: github.event_name != 'pull_request'
-        uses: actions/checkout@v3
-        with:
-          ref: master
 
       # Uses Google workload identity federation to authenticate without keys, in security circle project.  Variables defined in security circle
       - id: 'auth'
@@ -197,16 +188,6 @@ jobs:
             </details>
 
             *Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`, Working Directory: \`${{ inputs.working-dir }}\`, Workflow: \`${{ github.workflow }}\`*`;
-
-      - name: Render terraform docs inside the README.md and push changes back to PR branch
-        id: docs
-        if: github.event_name == 'pull_request'
-        uses: terraform-docs/gh-actions@v1.0.0
-        with:
-          find-dir: ${{ inputs.working-dir }}
-          output-file: README.md
-          output-method: inject
-          git-push: "true"
 
 
       - name: Terraform Apply
