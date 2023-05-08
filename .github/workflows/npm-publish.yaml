@@ -44,14 +44,19 @@ jobs:
 #          static-secrets: "{\"${{ inputs.akeyless-token-path }}\":\"NPM_TOKEN\"}"
 #
 
+# Setup Node JS with input from node version and set the registry url (defaults to npm registry)
       - name: 'Setup Node JS'
         uses: actions/setup-node@v3
         with:
           node-version: ${{ inputs.node-version }}
           registry-url: ${{ inputs.registry-url }} 
+# We use yarn so npm ci (the ci/cd version of install won't work without a json.package lock file, so must use yarn here too
       - run: yarn install
       - run: yarn build
+# You must cd into the package directory to run publish, you can't do it from the root directory
       - run: cd ${{ inputs.package-dir }} && npm publish 
         env:
+# this is the access token in NPM.  Note, even though it recommends you use granular over classic access tokens, they won't work.
+# you'll have to choose classic token, then pick automation token from the next screen.
           NODE_AUTH_TOKEN: ${{ secrets.npm-token }}
 
