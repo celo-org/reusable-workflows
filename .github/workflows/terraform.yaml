@@ -319,13 +319,13 @@ jobs:
 
       - name: Terraform Apply
         id: apply
-        if: github.ref == "refs/heads/main" && github.event_name == 'push' && steps.plan.outcome == 'success'
+        if: github.ref == "refs/heads/main' && github.event_name == 'push' && steps.plan.outcome == 'success'
         shell: bash
         run: terraform apply -no-color -auto-approve "tfplan"
 
       - name: Post Apply output to GitHub PR after merging
         uses: mshick/add-pr-comment@a65df5f64fc741e91c59b8359a4bc56e57aaf5b1 #v2
-        if: github.ref == 'refs/heads/main" && steps.plan.outputs.exitcode == '2'
+        if: github.ref == 'refs/heads/main' && steps.plan.outputs.exitcode == '2'
         env:
           APPLY: "terraform\n${{ steps.apply.outputs.stdout }}"
         with:
