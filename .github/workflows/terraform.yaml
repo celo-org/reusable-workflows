@@ -319,7 +319,7 @@ jobs:
 
       - name: Terraform Apply
         id: apply
-        if: github.ref == "refs/heads/main' && github.event_name == 'push' && steps.plan.outcome == 'success'
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push' && steps.plan.outcome == 'success'
         shell: bash
         run: terraform apply -no-color -auto-approve "tfplan"
 
