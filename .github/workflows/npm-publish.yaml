@@ -59,10 +59,8 @@ jobs:
         run: |
           if ! grep version ${{inputs.package-dir }}/package.json | grep alpha; then
                 echo "tag=alpha" >> $GITHUB_OUTPUT
-          else
-            if ! grep version ${{inputs.package-dir }}/package.json | grep beta; then
+          elif ! grep version ${{inputs.package-dir }}/package.json | grep beta; then
                 echo "tag=beta" >> $GITHUB_OUTPUT
-            fi
           fi
 
 # You must cd into the package directory to run publish, you can't do it from the root directory
