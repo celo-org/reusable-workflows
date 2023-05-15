@@ -56,8 +56,6 @@ jobs:
       - name: Set tag
         id: set-tag
         shell: bash
-
-        run: cd ${{ inputs.package-dir }} && echo "tag=$(grep version package.json | grep 'alpha\|beta' | awk -F'-' '{print $NF}')" | tr -d '",'  >> $GITHUB_OUTPUT
         run: |
           grep version ${{inputs.package-dir }}/package.json | grep alpha
           if [ $? == 0 ]
