@@ -47,7 +47,7 @@ jobs:
       # Uses Google workload identity federation to authenticate without keys, in security circle project.  Variables defined in security circle
       - id: 'auth'
         name: 'Authenticate to Google Cloud'
-        uses: 'google-github-actions/auth@ceee102ec2387dd9e844e01b530ccd4ec87ce955'
+        uses: 'google-github-actions/auth@v1.1.1
         with:
           workload_identity_provider: ${{ inputs.workload-id-provider }}
           service_account: ${{ inputs.service-account }}
@@ -91,7 +91,7 @@ jobs:
 
       - name: Configure AWS Credentials - Security
         if: ${{ steps.aws-account-check.outputs.security == 'true' }}
-        uses: aws-actions/configure-aws-credentials@67fbcbb121271f7775d2e7715933280b06314838
+        uses: aws-actions/configure-aws-credentials@v2.0.0
         with:
           aws-region: us-east-2
           role-to-assume: arn:aws:iam::${{ inputs.aws-security-account }}:role/github_actions_OIDC
@@ -99,7 +99,7 @@ jobs:
 
       - name: Configure AWS Credentials - PROD
         if: ${{ steps.aws-account-check.outputs.prod == 'true' }}
-        uses: aws-actions/configure-aws-credentials@67fbcbb121271f7775d2e7715933280b06314838
+        uses: aws-actions/configure-aws-credentials@v2.0.0
         with:
           aws-region: us-east-2
           role-to-assume: arn:aws:iam::${{ inputs.aws-prod-account  }}:role/github_actions_OIDC
@@ -119,106 +119,9 @@ jobs:
              echo "TF_VAR_aws_prod_account=${{ inputs.aws-prod-account }}" >> $GITHUB_ENV
              echo "TF_VAR_google_credentials=${{ steps.auth.outputs.access_token }}" >> $GITHUB_ENV
 
-      - uses: hashicorp/setup-terraform@62a66eef78e1543742cc8fabf333a1abddc00d37
+      - uses: hashicorp/setup-terraform@v2.0.3
         with:
           terraform_wrapper: true
-
-#      - name: Terraform fmt
-#        id: fmt
-#        run: terraform fmt -check
-#
-#      - name: Terraform Init
-#        id: init
-#        run: terraform init -input=false
-#
-#      - name: Terraform Validate
-#        id: validate
-#        run: terraform validate -no-color
-#
-#      - name: Terraform Plan
-#        id: plan
-#        run: terraform plan -no-color -input=false -out=tfplan  "-detailed-exitcode"
-#        continue-on-error: true
-#
-#      - name: Terraform Show Plan
-#        id: showplan
-#        run: terraform show tfplan "-no-color"
-#
-#        # Removes the refreshing from the plan output and then moves the + and - all the way to the left of the pull request to trigger github's colors
-#      - name: Reformat Plan
-#        shell: bash
-#        if:  steps.plan.outputs.exitcode == '2'
-#        run: |
-#              echo '${{ steps.showplan.outputs.stdout }}' | head -n -3 | grep -v "data\..*\..*\[\".*\"\]: Read" | grep -v 'data\.akeyless_secret\.okta_api_key: Read' | grep -v 'Refreshing state...' | sed -E 's/^([[:space:]]+)([-+])/\2\1/g' > plan.txt  
-#
-#        # Saves the plan in an environment variable so we can pull it back out
-#      - name: Put Plan in Env Var
-#        shell: bash
-#        if: steps.plan.outputs.exitcode == '2'
-#        run: |
-#          PLAN=$(cat plan.txt)
-#          echo $PLAN
-#          echo "PLAN<<EOF" >> $GITHUB_ENV
-#          echo "$PLAN" >> $GITHUB_ENV
-#          echo "EOF" >> $GITHUB_ENV       
-#
-#
-#        # Pulls the plan out and posts it to github pull request with nice formatting and report
-#      - name: Post Plan to GitHub PR
-#        uses: mshick/add-pr-comment@5cd99bf9c186219af43341076f1fe9c09e5a9934
-#        if: github.event_name == 'pull_request' && steps.plan.outputs.exitcode == '2'
-#        with:
-#          repo-token: ${{ github.token }}
-#          repo-token-user-login: 'github-actions[bot]'
-#          message: |
-#            #### Terraform Format and Style 🖌\`${{ steps.fmt.outcome }}\`
-#            #### Terraform Initialization ⚙️\`${{ steps.init.outcome }}\`
-#            #### Terraform Validation 🤖\`${{ steps.validate.outcome }}\`
-#            <details><summary>Validation Output</summary>
-#
-#            ```diff
-#            ${{ steps.validate.outputs.stdout }}
-#            ```           
-#            </details>
-#
-#            #### Terraform Plan 📖\`${{ steps.plan.outcome }}\`
-#
-#            <details><summary>Show Plan</summary>
-#
-#            ```diff
-#            ${{ env.PLAN }}
-#            ```           
-#            </details>
-#
-#            *Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`, Working Directory: \`${{ inputs.working-dir }}\`, Workflow: \`${{ github.workflow }}\`*`;
-#
-#
-#      - name: Terraform Apply
-#        id: apply
-#        if: github.ref == 'refs/heads/main' && steps.plan.outcome == 'success'
-#        run: terraform apply -no-color -auto-approve "tfplan"
-#        continue-on-error: false
-#
-#      - uses: mshick/add-pr-comment@5cd99bf9c186219af43341076f1fe9c09e5a9934
-#        if: github.ref == 'refs/heads/main' && steps.plan.outputs.exitcode == '2'
-#        env:
-#          APPLY: "terraform\n${{ steps.apply.outputs.stdout }}"
-#        with:
-#          allow-repeats: true
-#          repo-token: ${{ github.token }}
-#          repo-token-user-login: 'github-actions[bot]'
-#          message: |
-#            #### Terraform Apply \`${{ steps.apply.outcome }}\`
-#            <details><summary>Show Apply</summary>
-#      
-#            ```diff
-#            ${{ env.APPLY }}
-#            ```
-#      
-#            </details>
-#
-#            *Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`, Working Directory: \`${{ inputs.working-dir }}\`, Workflow: \`${{ github.workflow }}\`*`;
-#
 
       - name: Terraform Init
         id: init
