@@ -58,11 +58,11 @@ jobs:
         shell: bash
         run: |
           grep version ${{inputs.package-dir }}/package.json | grep alpha
-          if [ $? == 0 ]
+          if [ $? == 0 ]; then
                 echo "tag=alpha"
-          elif
+          else
             grep version ${{inputs.package-dir }}/package.json | grep beta
-            if [ $? == 0 ]
+            if [ $? == 0 ]; then
                 echo "tag=beta"
             fi
           fi
