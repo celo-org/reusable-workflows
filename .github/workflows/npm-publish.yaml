@@ -50,7 +50,7 @@ jobs:
         with:
           node-version: ${{ inputs.node-version }}
           registry-url: ${{ inputs.registry-url }} 
-# We use yarn so npm ci (the ci/cd version of install won't work without a json.package lock file, so must use yarn here too
+# Clabs usse yarn so npm ci (the ci/cd version of npm install) won't work without a json.package lock file, so must use yarn here too
       - run: yarn install
       - run: yarn build
       - name: Set tag
