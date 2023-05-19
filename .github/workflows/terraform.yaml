@@ -190,6 +190,7 @@ jobs:
         uses: mshick/add-pr-comment@a65df5f64fc741e91c59b8359a4bc56e57aaf5b1 # v2
         if: github.event_name == 'pull_request' && steps.plan.outputs.exitcode == '2'
         with:
+          allow-repeats: true
           repo-token: ${{ github.token }}
           message-id: Plan ${{ inputs.module-dir }}
           message: |
