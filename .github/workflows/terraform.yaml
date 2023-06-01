@@ -10,10 +10,10 @@ on:
         required: true
         type: string
       akeyless-api-gateway:
-        required: true
+        required: false
         type: string
       akeyless-github-access-id:
-        required: true
+        required: false
         type: string
       working-dir:
         required: true
