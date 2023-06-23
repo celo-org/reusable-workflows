@@ -13,15 +13,15 @@ on:
       package-dir:
         required: true
         type: string
-#      akeyless-api-gateway:
-#        required: true
-#        type: string
-#      akeyless-github-access-id:
-#        required: true
-#        type: string
-#      akeyless-token-path:
-#        required: true
-#        type: string
+      akeyless-api-gateway:
+        required: true
+        type: string
+      akeyless-github-access-id:
+        required: true
+        type: string
+      akeyless-token-path:
+        required: true
+        type: string
     secrets:
       npm-token:
         required: true
@@ -34,15 +34,13 @@ jobs:
       - name: 'Checkout'
         uses: actions/checkout@v3
       
-#      - name: Akeyless Get Secrets
-#        id: get_auth_token
-#        uses: docker://us-west1-docker.pkg.dev/devopsre/akeyless-public/akeyless-action:latest
-#        with:
-#          api-url: ${{ inputs.akeyless-api-gateway }}
-#          access-id: ${{ inputs.akeyless-github-access-id }}
-#          #static-secrets: '{"/path/to/static/secret":"NPM_TOKEN"}'
-#          static-secrets: "{\"${{ inputs.akeyless-token-path }}\":\"NPM_TOKEN\"}"
-#
+      - name: Akeyless Get Secrets
+        id: get_auth_token
+        uses: docker://us-west1-docker.pkg.dev/devopsre/akeyless-public/akeyless-action:latest
+        with:
+          api-url: ${{ inputs.akeyless-api-gateway }}
+          access-id: ${{ inputs.akeyless-github-access-id }}
+          static-secrets: "{\"${{ inputs.akeyless-token-path }}\":\"NPM_TOKEN\"}"
 
 # Setup Node JS with input from node version and set the registry url (defaults to npm registry)
       - name: 'Setup Node JS'
@@ -50,7 +48,7 @@ jobs:
         with:
           node-version: ${{ inputs.node-version }}
           registry-url: ${{ inputs.registry-url }} 
-# Clabs usse yarn so npm ci (the ci/cd version of npm install) won't work without a json.package lock file, so must use yarn here too
+# Clabs uses yarn so npm ci (the ci/cd version of npm install) won't work without a json.package lock file, so must use yarn here too
       - run: yarn install
       - run: yarn build
       - name: Set tag
@@ -74,5 +72,5 @@ jobs:
         env:
 # this is the access token in NPM.  Note, even though it recommends you use granular over classic access tokens, they won't work.
 # you'll have to choose classic token, then pick automation token from the next screen.
-          NODE_AUTH_TOKEN: ${{ secrets.npm-token }}
+          NODE_AUTH_TOKEN: ${{ env.NPM_TOKEN }}
 
