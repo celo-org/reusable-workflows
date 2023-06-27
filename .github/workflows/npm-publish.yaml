@@ -22,11 +22,6 @@ on:
       akeyless-token-path:
         required: true
         type: string
-    secrets:
-      npm-token:
-        required: true
-
-
 jobs:
   Npm-publish:
     runs-on: ubuntu-latest
