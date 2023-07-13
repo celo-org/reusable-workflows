@@ -35,7 +35,7 @@ jobs:
         with:
           api-url: ${{ inputs.akeyless-api-gateway }}
           access-id: ${{ inputs.akeyless-github-access-id }}
-          static-secrets: "{\"${{ inputs.akeyless-token-path }}\":\"NPM_TOKEN\"}"
+          static-secrets: '{"${{ inputs.akeyless-token-path }}":"NPM_TOKEN"}'
 
 # Setup Node JS with input from node version and set the registry url (defaults to npm registry)
       - name: 'Setup Node JS'
