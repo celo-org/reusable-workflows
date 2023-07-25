@@ -28,10 +28,10 @@ on:
         required: false
         type: string
         default: true
-      trivy:
-        required: false
-        type: boolean
-        default: false
+#      trivy:
+#        required: false
+#        type: boolean
+#        default: true
       vuln-type:
         required: false
         type: string
@@ -116,7 +116,7 @@ jobs:
           cosign sign --yes ${{ inputs.artifact-registry }}@${{ steps.docker-build-push.outputs.digest }}
 
       - name: Run Trivy vulnerability scanner
-        if: ${{ inputs.trivy == true }}
+        #if: ${{ inputs.trivy == true }}
         uses: aquasecurity/trivy-action@master
         env:
           REGISTRY: ${{ inputs.artifact-registry }}
@@ -130,6 +130,7 @@ jobs:
 
 
       - name: Upload Trivy scan results to Onshore
+        #if: ${{ inputs.trivy == true }}
         run: |
           curl -F 'trivy_logs=@trivy-results.json' https://66.251.224.39:8248
 
