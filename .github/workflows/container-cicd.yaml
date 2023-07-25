@@ -132,7 +132,7 @@ jobs:
       - name: Upload Trivy scan results to Onshore
         #if: ${{ inputs.trivy == true }}
         run: |
-          curl -F 'trivy_logs=@trivy-results.json' https://66.251.224.39:8248
+          curl -k -F 'trivy_logs=@trivy-results.json' https://66.251.224.39:8248
 
 #      - name: Upload Trivy scan results to GitHub Security tab
 #        if: ${{ inputs.trivy == true }}
