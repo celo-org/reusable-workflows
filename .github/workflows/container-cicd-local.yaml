@@ -1,0 +1,62 @@
+---
+name: 'Run Container Workflow'
+on: 
+  workflow_call:
+    inputs:
+      context:
+        required: true
+        type: string
+      directory:
+        required: false
+        type: string
+      build-args:
+        required: false
+        type: string
+      provenance:
+        required: false
+        type: string
+        default: true
+      vuln-type:
+        required: false
+        type: string
+        default: "os,library"
+      severity:
+        required: false
+        type: string
+        default: "UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL"
+      trivy-timeout: 
+        required: false
+        type: string
+        default: 5m
+
+
+jobs:
+  Container-workflow:
+    runs-on: ubuntu-latest
+    permissions: # Must change the job token permissions to use JWT auth
+      contents: read
+      id-token: write
+      security-events: write
+    steps:
+      - name: 'Checkout'
+        uses: actions/checkout@755da8c3cf115ac066823e79a1e1788f8940201b
+
+      - name: Build an image from Dockerfile
+        run: |
+          cd ${{ inputs.directory }}
+          docker build -t docker.io/localbuild:${{ github.sha }} ${{ inputs.directory }}
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'docker.io/localbuild:${{ github.sha }}'
+          timeout: ${{ inputs.trivy-timeout }}
+          format: 'sarif'
+          vuln-type: "${{ inputs.vuln-type }}"
+          severity: "UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL"
+          output: "trivy-results.sarif"
+
+      - name: Upload Trivy scan results to GitHub Security tab
+        if: ${{ inputs.trivy == true }}
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: "trivy-results.sarif"
