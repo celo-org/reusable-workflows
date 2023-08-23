@@ -45,9 +45,6 @@ jobs:
       - name: Build an image from Dockerfile
         run: |
           docker build -t docker.io/localbuild:${{ github.sha }} --file ${{ inputs.dockerfile }} ${{ inputs.context }}
-      - name: Setup tmate session
-        if: ${{ failure() }}
-        uses: mxschmitt/action-tmate@v3
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with:
