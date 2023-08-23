@@ -3,10 +3,13 @@ name: 'Run Container Workflow'
 on: 
   workflow_call:
     inputs:
-      directory:
+      context:
         required: false
         type: string
         default: "."
+      dockerfile:
+        required: true
+        type: string
       build-args:
         required: false
         type: string
@@ -41,8 +44,7 @@ jobs:
 
       - name: Build an image from Dockerfile
         run: |
-          cd ${{ inputs.directory }}
-          docker build -t docker.io/localbuild:${{ github.sha }} .
+          docker build -t docker.io/localbuild:${{ github.sha }} --file ${{ inputs.dockerfile }} ${{ inputs.context }}
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with:
