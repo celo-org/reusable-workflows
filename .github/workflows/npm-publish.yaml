@@ -24,7 +24,6 @@ on:
         type: string
 jobs:
   Npm-publish:
-    runs-on: ["self-hosted", "monorepo-npm"]
     steps:
       - name: 'Checkout'
         uses: actions/checkout@v3
