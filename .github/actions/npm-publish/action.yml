@@ -45,6 +45,12 @@ runs:
         node-version: ${{ inputs.node-version }}
         registry-url: ${{ inputs.registry-url }}
 
+    # Install yarn package manager
+    - name: 'Setup yarn'
+      shell: bash
+      run: |
+        npm install --global yarn
+
     # Clabs uses yarn so npm ci (the ci/cd version of npm install) won't work
     # without a json.package lock file, so must use yarn here too
     - run: yarn install
