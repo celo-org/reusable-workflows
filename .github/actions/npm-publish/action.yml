@@ -9,6 +9,10 @@ inputs:
     description: "NPM registry URL"
     required: false
     default: "https://registry.npmjs.org"
+  package-access:
+    description: "public|restricted access for package"
+    required: false
+    default: restricted
   package-dir:
     description: "Package directory"
     required: true
@@ -52,7 +56,7 @@ runs:
     # without a json.package lock file, so must use yarn here too
     - uses: bahmutov/npm-install@v1
       with:
-        working-directory: .
+        working-directory: ${{ inputs.package-dir }}
 
     - run: yarn build
       shell: bash
@@ -76,7 +80,7 @@ runs:
           cd ${{ inputs.package-dir }} && npm publish --provenance
         else
           cd ${{ inputs.package-dir }} && \
-          npm publish --tag ${{ steps.set-tag.outputs.tag }} --provenance
+          npm publish --tag ${{ steps.set-tag.outputs.tag }} --provenance --access ${{ inputs.package-access }}
         fi
       shell: bash
       env:
