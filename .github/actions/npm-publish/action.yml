@@ -16,6 +16,9 @@ inputs:
   package-dir:
     description: "Package directory"
     required: true
+  install-dir:
+    description: "Package where execute the yarn/npm install"
+    required: true
   akeyless-api-gateway:
     description: "Akeyless API Gateway"
     required: true
@@ -56,7 +59,7 @@ runs:
     # without a json.package lock file, so must use yarn here too
     - uses: bahmutov/npm-install@v1
       with:
-        working-directory: ${{ inputs.package-dir }}
+        working-directory: ${{ inputs.install-dir }}
 
     - run: yarn build
       shell: bash
