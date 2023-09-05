@@ -53,8 +53,9 @@ runs:
 
     # Clabs uses yarn so npm ci (the ci/cd version of npm install) won't work
     # without a json.package lock file, so must use yarn here too
-    - run: yarn install
-      shell: bash
+    - uses: bahmutov/npm-install@v1
+      with:
+        working-directory: .
 
     - run: yarn build
       shell: bash
