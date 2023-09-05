@@ -2,9 +2,6 @@
 name: "NPM publish package"
 description: "Publish a npm package on npmjs.org"
 inputs:
-  package-json-checksum:
-    description: "Checksum of package.json"
-    required: true
   node-version:
     description: "Node version"
     required: true
