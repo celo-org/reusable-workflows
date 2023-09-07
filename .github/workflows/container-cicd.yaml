@@ -125,8 +125,8 @@ jobs:
           timeout: ${{ inputs.trivy-timeout }}
           vuln-type: "${{ inputs.vuln-type }}"
           severity: "UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL"
-          format: "json"
-          output: "trivy-results.json"
+          format: "sarif"
+          output: "trivy-results.sarif"
 
 
 #      - name: Upload Trivy scan results to Onshore
