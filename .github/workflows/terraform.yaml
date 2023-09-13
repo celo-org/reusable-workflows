@@ -192,9 +192,9 @@ jobs:
         with:
           allow-repeats: true
           repo-token: ${{ github.token }}
-          message-id: Plan ${{ inputs.module-dir }}
+          message-id: Plan ${{ inputs.working-dir }}
           message: |
-            ### Terraform for ${{ inputs.module-dir }}\`
+            ### Terraform for ${{ inputs.working-dir }}\`
             #### Terraform Format and Style 🖌\`${{ steps.fmt.outcome }}\`
             #### Terraform Initialization ⚙️\`${{ steps.init.outcome }}\`
             #### Terraform Validation 🤖\`${{ steps.validate.outcome }}\`
@@ -234,10 +234,10 @@ jobs:
           APPLY: "terraform\n${{ steps.apply.outputs.stdout }}"
         with:
           allow-repeats: true
-          message-id: Apply ${{ inputs.module-dir }}
+          message-id: Apply ${{ inputs.working-dir }}
           repo-token: ${{ github.token }}
           message: |
-            ### Terraform for ${{ inputs.module-dir }}\`
+            ### Terraform for ${{ inputs.working-dir }}\`
             #### Terraform Apply \`${{ steps.apply.outcome }}\`
             <details><summary>Show Apply</summary>
             ```diff
