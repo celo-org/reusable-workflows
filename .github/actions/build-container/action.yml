@@ -43,13 +43,12 @@ runs:
         file: ${{ inputs.dockerfile }}
         context: ${{ inputs.context }}
         push: ${{ tojson(inputs.push) }}
-        tags: |
-          ${{ inputs.registry }}:${{ inputs.tag }}
+        tags: ${{ inputs.registry }}:${{ inputs.tag }}
         load: ${{ tojson(inputs.load) }}
         build-args: GETH_COMMIT={{ github.sha }}
         cache-from: type=registry,ref=${{ inputs.artifact-registry }}:buildcache
         cache-to: type=registry,ref=${{ inputs.artifact-registry }}:buildcache,mode=max
-        provenance: true
+        provenance: ${{ tojson(true) }}
 
     - uses: sigstore/cosign-installer@main
 
