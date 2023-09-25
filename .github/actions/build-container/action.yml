@@ -40,6 +40,8 @@ inputs:
 runs:
   using: "composite"
   steps:
+    - uses: actions/checkout@v3
+
     - name: Login at GCP Artifact Registry
       uses: ./.github/actions/auth-gcp-artifact-registry
       if: inputs.gcp-login
