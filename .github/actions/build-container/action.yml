@@ -42,7 +42,7 @@ runs:
   steps:
     - name: Login at GCP Artifact Registry
       uses: ./.github/actions/auth-gcp-artifact-registry
-      if: ${{ inputs.gcp-login == true }}
+      if: inputs.gcp-login
       with:
         workload-id-provider: '${{ inputs.workload-id-provider }}'
         service-account: '${{ inputs.service-account }}'
