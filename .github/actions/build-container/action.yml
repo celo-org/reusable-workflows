@@ -40,15 +40,28 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - uses: actions/checkout@v3
-
-    - name: Login at GCP Artifact Registry
-      uses: ./.github/actions/auth-gcp-artifact-registry
-      if: inputs.gcp-login
+    - id: auth
+      name: 'Authenticate to Google Cloud'
+      uses: 'google-github-actions/auth@v1'
       with:
-        workload-id-provider: '${{ inputs.workload-id-provider }}'
-        service-account: '${{ inputs.service-account }}'
-        artifact-registry: '${{ inputs.registry }}'
+        workload_identity_provider: ${{ inputs.workload-id-provider }}
+        service_account: ${{ inputs.service-account }}
+        access_token_lifetime: '20m'
+
+    - name: 'Set up Cloud SDK'
+      uses: 'google-github-actions/setup-gcloud@v1'
+
+    - name: Split location and app names
+      env:
+        REGISTRY: ${{ inputs.registry }}
+      shell: bash
+      run: |
+          echo "location=${REGISTRY%%/*}" >> $GITHUB_OUTPUT
+          echo "app_name=${REGISTRY##*/}" >> $GITHUB_OUTPUT
+
+    - name: 'Configure docker for gcloud auth'
+      shell: bash
+      run: 'gcloud auth configure-docker ${{ steps.split.outputs.location }}'
 
     - name: Set up QEMU
       uses: docker/setup-qemu-action@v2
