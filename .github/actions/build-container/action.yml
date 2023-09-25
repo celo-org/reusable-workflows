@@ -46,8 +46,8 @@ runs:
         tags: ${{ inputs.registry }}:${{ inputs.tag }}
         load: ${{ fromJSON(inputs.load) }}
         build-args: GETH_COMMIT={{ github.sha }}
-        cache-from: type=registry,ref=${{ inputs.artifact-registry }}:buildcache
-        cache-to: type=registry,ref=${{ inputs.artifact-registry }}:buildcache,mode=max
+        cache-from: type=registry,ref=${{ inputs.registry }}:buildcache
+        cache-to: type=registry,ref=${{ inputs.registry }}:buildcache,mode=max
         provenance: ${{ fromJSON(true) }}
 
     - uses: sigstore/cosign-installer@main
@@ -57,13 +57,13 @@ runs:
         COSIGN_EXPERIMENTAL: "true"
       shell: bash
       run: |
-        cosign sign --yes ${{ inputs.artifact-registry }}@${{ steps.docker-build-push.outputs.digest }}
+        cosign sign --yes ${{ inputs.registry }}@${{ steps.docker-build-push.outputs.digest }}
 
     - name: Run Trivy vulnerability scanner
       if: ${{ inputs.trivy == true }}
       uses: aquasecurity/trivy-action@master
       env:
-        REGISTRY: ${{ inputs.artifact-registry }}
+        REGISTRY: ${{ inputs.registry }}
       with:
         image-ref: "${{ inputs.registry }}:${{ inputs.tag }}"
         timeout: 5m
