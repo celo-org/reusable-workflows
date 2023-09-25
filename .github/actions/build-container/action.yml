@@ -44,7 +44,7 @@ runs:
         context: ${{ inputs.context }}
         push: ${{ fromJSON(inputs.push) }}
         tags: ${{ inputs.registry }}:${{ inputs.tag }}
-        load: ${{ fromJSON(true) }}
+        load: ${{ fromJSON(inputs.load) }}
         build-args: GETH_COMMIT={{ github.sha }}
         cache-from: type=registry,ref=${{ inputs.artifact-registry }}:buildcache
         cache-to: type=registry,ref=${{ inputs.artifact-registry }}:buildcache,mode=max
