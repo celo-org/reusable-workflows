@@ -26,10 +26,28 @@ inputs:
     description: "Image tag"
     required: true
     default: latest
+  gcp-login:
+    description: "Authenticate to GCP Artifact Registry using workload identity"
+    required: true
+    default: 'false'
+  workload-id-provider: 
+    description: "Workload identity provider"
+    required: false
+  service-account: 
+    description: "Service account to use"
+    required: false
 
 runs:
   using: "composite"
   steps:
+    - name: Login at GCP Artifact Registry
+      uses: ./.github/actions/auth-gcp-artifact-registry
+      if: ${{ inputs.gcp-login == true }}
+      with:
+        workload-id-provider: '${{ inputs.workload-id-provider }}'
+        service-account: '${{ inputs.service-account }}'
+        artifact-registry: '${{ inputs.registry }}'
+
     - name: Set up QEMU
       uses: docker/setup-qemu-action@v2
 
