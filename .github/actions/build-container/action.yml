@@ -12,11 +12,11 @@ inputs:
     description: "Dockerfile path"
     required: true
   push:
-    description: "Push the image to the remote repository"
+    description: "Push the image to the remote repository. Either push or load must be true"
     required: true
     default: 'true'
   load:
-    description: "Load the image in the local runner"
+    description: "Load the image in the local runner. Cannot be true if #platforms > 1"
     required: true
     default: 'false'
   registry:
