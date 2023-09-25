@@ -1,0 +1,80 @@
+name: "Build docker image"
+description: "Build a docker image"
+inputs:
+  platforms:
+    description: "Image platform(s)"
+    required: true
+    default: linux/amd64
+  context:
+    description: "Dockerfile Build context path"
+    required: true
+  dockerfile:
+    description: "Dockerfile path"
+    required: true
+  push:
+    description: "Push the image to the remote repository"
+    required: true
+    default: 'true'
+  load:
+    description: "Load the image in the local runner"
+    required: true
+    default: 'false'
+  registry:
+    description: "Registry to push the image to"
+    required: true
+  tag:
+    description: "Image tag"
+    required: true
+    default: latest
+
+runs:
+  using: "composite"
+  steps:
+    - name: Set up QEMU
+      uses: docker/setup-qemu-action@v2
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
+
+    - name: Build container image
+      uses: docker/build-push-action@v4
+      with:
+        platforms: ${{ inputs.platforms }}
+        file: ${{ inputs.dockerfile }}
+        context: ${{ inputs.context }}
+        push: ${{ tojson(inputs.push) }}
+        tags: |
+          ${{ inputs.registry }}:${{ inputs.tag }}
+        load: ${{ tojson(inputs.load) }}
+        build-args: GETH_COMMIT={{ github.sha }}
+        cache-from: type=registry,ref=${{ inputs.artifact-registry }}:buildcache
+        cache-to: type=registry,ref=${{ inputs.artifact-registry }}:buildcache,mode=max
+        provenance: true
+
+    - uses: sigstore/cosign-installer@main
+
+    - name: Sign container image
+      env:
+        COSIGN_EXPERIMENTAL: "true"
+      shell: bash
+      run: |
+        cosign sign --yes ${{ inputs.artifact-registry }}@${{ steps.docker-build-push.outputs.digest }}
+
+    - name: Run Trivy vulnerability scanner
+      if: ${{ inputs.trivy == true }}
+      uses: aquasecurity/trivy-action@master
+      env:
+        REGISTRY: ${{ inputs.artifact-registry }}
+      with:
+        image-ref: "${{ inputs.registry }}:${{ inputs.tag }}"
+        timeout: 5m
+        vuln-type: "os,library"
+        severity: "UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL"
+        format: "sarif"
+        output: "trivy-results.sarif"
+
+    - name: Upload Trivy scan results to GitHub Security tab
+      if: ${{ inputs.trivy == true }}
+      uses: github/codeql-action/upload-sarif@v2
+      with:
+        sarif_file: "trivy-results.sarif"
