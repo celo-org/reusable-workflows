@@ -68,6 +68,8 @@ runs:
 
     - name: Setup tmate session
       uses: mxschmitt/action-tmate@v3
+      env:
+        REGISTRY: ${{ inputs.registry }}
       with:
         limit-access-to-actor: true
 
