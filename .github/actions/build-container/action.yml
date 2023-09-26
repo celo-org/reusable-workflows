@@ -27,12 +27,6 @@ inputs:
     description: "Image tag"
     required: true
     default: latest
-  workload-id-provider: 
-    description: "Workload identity provider"
-    required: false
-  service-account: 
-    description: "Service account to use"
-    required: false
 
 runs:
   using: "composite"
