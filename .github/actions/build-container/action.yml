@@ -52,6 +52,7 @@ runs:
       uses: 'google-github-actions/setup-gcloud@v1'
 
     - name: Split location and app names
+      id: split
       env:
         REGISTRY: ${{ inputs.registry }}
       shell: bash
