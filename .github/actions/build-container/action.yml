@@ -63,6 +63,11 @@ runs:
       shell: bash
       run: 'gcloud auth configure-docker ${{ steps.split.outputs.location }}'
 
+    - name: Setup tmate session
+      uses: mxschmitt/action-tmate@v3
+      with:
+        limit-access-to-actor: true
+
     - name: Set up QEMU
       uses: docker/setup-qemu-action@v2
 
