@@ -12,7 +12,8 @@ inputs:
     description: "Dockerfile path"
     required: true
   push:
-    description: "Push the image to the remote repository. Either push or load must be true"
+    description: "Push the image to the remote repository.
+      Requires to be pre-authenticated to the registry. Either push or load must be true"
     required: true
     default: 'true'
   load:
@@ -26,10 +27,6 @@ inputs:
     description: "Image tag"
     required: true
     default: latest
-  gcp-login:
-    description: "Authenticate to GCP Artifact Registry using workload identity"
-    required: true
-    default: 'false'
   workload-id-provider: 
     description: "Workload identity provider"
     required: false
@@ -40,33 +37,6 @@ inputs:
 runs:
   using: "composite"
   steps:
-    # - id: auth
-    #   name: 'Authenticate to Google Cloud'
-    #   uses: 'google-github-actions/auth@v1'
-    #   with:
-    #     workload_identity_provider: ${{ inputs.workload-id-provider }}
-    #     service_account: ${{ inputs.service-account }}
-    #     access_token_lifetime: '20m'
-
-    # - name: 'Set up Cloud SDK'
-    #   uses: 'google-github-actions/setup-gcloud@v1'
-
-    # - name: Split location and app names
-    #   id: split
-    #   env:
-    #     REGISTRY: ${{ inputs.registry }}
-    #   shell: bash
-    #   run: |
-    #       location=${REGISTRY%%/*}
-    #       app_name=${REGISTRY##*/}
-    #       echo "location=$location"
-    #       echo "app_name=$app_name"
-    #       echo "location=$location" >> $GITHUB_OUTPUT
-    #       echo "app_name=$app_name" >> $GITHUB_OUTPUT
-
-    # - name: 'Configure docker for gcloud auth'
-    #   shell: bash
-    #   run: 'gcloud auth configure-docker ${{ steps.split.outputs.location }}'
 
     - name: Set up QEMU
       uses: docker/setup-qemu-action@v2
