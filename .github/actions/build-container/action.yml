@@ -57,10 +57,12 @@ runs:
         REGISTRY: ${{ inputs.registry }}
       shell: bash
       run: |
-          echo "location=${REGISTRY%%/*}"
-          echo "app_name=${REGISTRY##*/}"
-          echo "location=${REGISTRY%%/*}" >> $GITHUB_OUTPUT
-          echo "app_name=${REGISTRY##*/}" >> $GITHUB_OUTPUT
+          location=${REGISTRY%%/*}
+          app_name=${REGISTRY##*/}
+          echo "location=$location"
+          echo "app_name=$app_name"
+          echo "location=$location" >> $GITHUB_OUTPUT
+          echo "app_name=$app_name" >> $GITHUB_OUTPUT
 
     - name: 'Configure docker for gcloud auth'
       shell: bash
