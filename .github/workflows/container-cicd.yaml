@@ -30,7 +30,7 @@ on:
         type: string
       provenance:
         required: false
-        type: string
+        type: boolean
         default: true
       trivy:
         required: false
@@ -61,12 +61,25 @@ jobs:
       - name: 'Checkout'
         uses: actions/checkout@v3
       
+      - name: Split location and app names
+        id: split
+        env:
+          REGISTRY: ${{ inputs.artifact-registry }}
+        shell: bash
+        run: |
+            location=${REGISTRY%%/*}
+            app_name=${REGISTRY##*/}
+            echo "location=$location"
+            echo "app_name=$app_name"
+            echo "location=$location" >> $GITHUB_OUTPUT
+            echo "app_name=$app_name" >> $GITHUB_OUTPUT
+
       - name: Authenticate to Google Cloud
         uses: ./github/actions/auth-gcp-artifact-registry
         with:
           workload-id-provider: ${{ inputs.workload-id-provider }}
           service-account: ${{ inputs.service-account }}
-          artifact-registry: ${{ inputs.artifact-registry }}
+          docker-gcp-registries: ${{ steps.split.outputs.location }}
 
       - name: Build, push and scan the container
         uses: celo-org/reusable-workflows/.github/actions/build-container@jcortejoso/build-docker-composite-action

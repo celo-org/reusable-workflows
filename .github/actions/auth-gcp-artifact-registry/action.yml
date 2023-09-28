@@ -7,9 +7,10 @@ inputs:
   service-account:
     description: "Service account to use"
     required: true
-  artifact-registry:
-    description: "Artifact registry to push the image to"
+  docker-gcp-registries:
+    description: "GCP Artifact registry to login into. Check https://cloud.google.com/artifact-registry/docs/docker/authentication"
     required: true
+    default: us-west1-docker.pkg.dev,us-central1-docker.pkg.dev
   
 runs:
   using: "composite"
@@ -25,19 +26,6 @@ runs:
     - name: 'Set up Cloud SDK'
       uses: 'google-github-actions/setup-gcloud@v1'
 
-    - name: Split location and app names
-      id: split
-      env:
-        REGISTRY: ${{ inputs.artifact-registry }}
-      shell: bash
-      run: |
-          location=${REGISTRY%%/*}
-          app_name=${REGISTRY##*/}
-          echo "location=$location"
-          echo "app_name=$app_name"
-          echo "location=$location" >> $GITHUB_OUTPUT
-          echo "app_name=$app_name" >> $GITHUB_OUTPUT
-
     - name: 'Configure docker for gcloud auth'
       shell: bash
-      run: 'gcloud auth configure-docker ${{ steps.split.outputs.location }}'
+      run: 'gcloud auth configure-docker ${{ inputs.docker-gcp-registries }}'
