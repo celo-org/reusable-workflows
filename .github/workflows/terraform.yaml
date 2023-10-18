@@ -36,7 +36,7 @@ on:
      
 jobs:
   Terraform:
-    runs-on: ubuntu-latest
+    runs-on: ['self-hosted', 'org', '8-cpu']
     defaults:
       run:
         working-directory: ${{ inputs.working-dir}}
