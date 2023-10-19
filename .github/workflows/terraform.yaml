@@ -1,6 +1,6 @@
 ---
 name: 'Terraform plan'
-on: 
+on:
   workflow_call:
     inputs:
       workload-id-provider:
@@ -33,13 +33,17 @@ on:
       prod-branch:
         required: true
         type: string
-     
+
 jobs:
-  Terraform:
-    runs-on: ['self-hosted', 'org', '8-cpu']
+  terraform:
+    runs-on: ['self-hosted', 'org', 'terraform']
+    container:
+      image: us-west1-docker.pkg.dev/devopsre/actions-runner-controller/generic:latest
+      options: --user 0
     defaults:
       run:
-        working-directory: ${{ inputs.working-dir}}
+        working-directory: ${{ inputs.working-dir }}
+        shell: bash
     steps:
       - name: 'Checkout'
         uses: actions/checkout@v3
@@ -47,7 +51,7 @@ jobs:
       # Uses Google workload identity federation to authenticate without keys, in security circle project.  Variables defined in security circle
       - id: 'auth'
         name: 'Authenticate to Google Cloud'
-        uses: 'google-github-actions/auth@v1.1.1'
+        uses: 'google-github-actions/auth@v1'
         with:
           workload_identity_provider: ${{ inputs.workload-id-provider }}
           service_account: ${{ inputs.service-account }}
@@ -105,21 +109,20 @@ jobs:
           role-to-assume: arn:aws:iam::${{ inputs.aws-prod-account  }}:role/github_actions_OIDC
           audience: https://github.com/celo-org
 
-
       - name: set terraform variables
         env:
           SECURITY_ARN: "arn:aws:iam::${{ inputs.aws-security-account }}:role/github_actions_OIDC"
           PROD_ARN: "arn:aws:iam::${{ inputs.aws-prod-account }}:role/github_actions_OIDC"
         shell: bash
         run: |
-             echo "TF_VAR_aws_web_identity_token=${{ env.GITHUB_AUTH_JWT  }}"  >> $GITHUB_ENV
+             echo "TF_VAR_aws_web_identity_token=${{ env.GITHUB_AUTH_JWT }}" >> $GITHUB_ENV
              echo "TF_VAR_aws_role_arn_security=${{ env.SECURITY_ARN }}" >> $GITHUB_ENV
              echo "TF_VAR_aws_role_arn_prod=${{ env.PROD_ARN }}" >> $GITHUB_ENV
              echo "TF_VAR_aws_security_account=${{ inputs.aws-security-account }}" >> $GITHUB_ENV
              echo "TF_VAR_aws_prod_account=${{ inputs.aws-prod-account }}" >> $GITHUB_ENV
              echo "TF_VAR_google_credentials=${{ steps.auth.outputs.access_token }}" >> $GITHUB_ENV
 
-      - uses: hashicorp/setup-terraform@v2.0.3
+      - uses: hashicorp/setup-terraform@v2
         with:
           terraform_wrapper: true
 
@@ -180,7 +183,7 @@ jobs:
             PLAN='Terraform plan is too long to be posted in the PR comment. Please check the Action run to verify it'
           fi
           echo "$PLAN"
-          { 
+          {
               echo "PLAN<<EOF"
               echo "$PLAN"
               echo "EOF"
@@ -202,7 +205,7 @@ jobs:
 
             ```diff
             ${{ steps.validate.outputs.stdout }}
-            ```           
+            ```
             </details>
 
             #### Terraform Plan 📖\`${{ steps.plan.outcome }}\`
@@ -211,11 +214,11 @@ jobs:
 
             ```diff
             ${{ env.PLAN }}
-            ```      
-     
+            ```
+
             </details>
 
-            *Pusher: @${{ github.actor }}* 
+            *Pusher: @${{ github.actor }}*
             *Action: ${{ github.event_name }}*
             *Working Directory: ${{ env.WORKDIR }}*
             *Workflow: ${{ github.workflow }}*
@@ -244,10 +247,8 @@ jobs:
             ${{ env.APPLY }}
             ```
             </details>
-            *Pusher: @${{ github.actor }}* 
+            *Pusher: @${{ github.actor }}*
             *Action: ${{ github.event_name }}*
             *Working Directory: ${{ env.WORKDIR }}*
             *Workflow: ${{ github.workflow }}*
             *Execution link: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}*
-
-
