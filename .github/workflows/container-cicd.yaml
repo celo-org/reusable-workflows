@@ -82,7 +82,7 @@ jobs:
           docker-gcp-registries: ${{ steps.split.outputs.location }}
 
       - name: Build, push and scan the container
-        uses: celo-org/reusable-workflows/.github/actions/build-container@jcortejoso/build-docker-composite-action
+        uses: .github/actions/build-container
         with:
           platforms: ${{ inputs.platforms }}
           registry: ${{ inputs.artifact-registry }}
