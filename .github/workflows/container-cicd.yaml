@@ -75,7 +75,7 @@ jobs:
             echo "app_name=$app_name" >> $GITHUB_OUTPUT
 
       - name: Authenticate to Google Cloud
-        uses: ./github/actions/auth-gcp-artifact-registry
+        uses: .github/actions/auth-gcp-artifact-registry
         with:
           workload-id-provider: ${{ inputs.workload-id-provider }}
           service-account: ${{ inputs.service-account }}
