@@ -75,14 +75,14 @@ jobs:
             echo "app_name=$app_name" >> $GITHUB_OUTPUT
 
       - name: Authenticate to Google Cloud
-        uses: ./.github/actions/auth-gcp-artifact-registry
+        uses: celo-org/reusable-workflows/.github/actions/auth-gcp-artifact-registry@main
         with:
           workload-id-provider: ${{ inputs.workload-id-provider }}
           service-account: ${{ inputs.service-account }}
           docker-gcp-registries: ${{ steps.split.outputs.location }}
 
       - name: Build, push and scan the container
-        uses: ./.github/actions/build-container
+        uses: celo-org/reusable-workflows/.github/actions/build-container@main
         with:
           platforms: ${{ inputs.platforms }}
           registry: ${{ inputs.artifact-registry }}
