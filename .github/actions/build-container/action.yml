@@ -27,6 +27,10 @@ inputs:
     description: "Image tag"
     required: true
     default: latest
+  trivy:
+    description: "Run trivy scan"
+    required: true
+    default: 'true'
 
 runs:
   using: "composite"
