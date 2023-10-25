@@ -32,23 +32,22 @@ jobs:
       contents: read
       id-token: write
     steps:
-      - name: 'Checkout'
-        uses: actions/checkout@e2f20e631ae6d7dd3b768f56a5d2af784dd54791
+      - name: Checkout
+        uses: actions/checkout@v4
 
       - id: auth
-        name: 'Authenticate to Google Cloud'
-        uses: 'google-github-actions/auth@ef5d53e30bbcd8d0836f4288f5e50ff3e086997d'
+        name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v1
         with:
           workload_identity_provider: ${{ inputs.workload-id-provider }}
           service_account: ${{ inputs.service-account }}
           access_token_lifetime: '20m'
 
-      - id: 'deploy'
+      - id: deploy
         if: github.ref != 'refs/heads/main'
-        uses: 'google-github-actions/deploy-cloudrun@530b4b6c6355648c5ef3ec32a4744d4e0659a016'
+        uses: google-github-actions/deploy-cloudrun@v1
         with:
           project_id: ${{ inputs.gcp-project }}
           env_vars: ${{ inputs.env-vars }}
           service: ${{ inputs.app-name }}
-          service_account: ${{ inputs.service-account }}
           image: ${{ inputs.artifact-registry }}:${{ inputs.tag }}

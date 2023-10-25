@@ -23,10 +23,10 @@ jobs:
       id-token: write
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
          
       - name: Set up Go
-        uses: actions/setup-go@6edd4406fa81c3da01a34fa6f6343087c207a568
+        uses: actions/setup-go@v4
         with:
           go-version: ${{ env.GO_VERSION }}
 
@@ -61,5 +61,3 @@ jobs:
       - name: Run tests
         working-directory: ${{ env.GO_WORKING_DIRECTORY }}
         run: go test -race -vet=off -v ./...
-
-

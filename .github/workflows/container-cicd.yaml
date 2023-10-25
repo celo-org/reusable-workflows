@@ -36,19 +36,6 @@ on:
         required: false
         type: boolean
         default: true
-      #vuln-type:
-      #  required: false
-      #  type: string
-      #  default: "os,library"
-      #severity:
-      #  required: false
-      #  type: string
-      #  default: "UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL"
-      #trivy-timeout: 
-      #  required: false
-      #  type: string
-      #  default: 5m
-
 
 jobs:
   auth-build-push-scan-container:
@@ -59,7 +46,7 @@ jobs:
       security-events: write
     steps:
       - name: 'Checkout'
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       
       - name: Split location and app names
         id: split
