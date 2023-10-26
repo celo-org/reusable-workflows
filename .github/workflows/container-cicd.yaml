@@ -18,7 +18,7 @@ on:
       platforms:
         required: true
         type: string
-        default: "linux/amd64"
+        default: 'linux/amd64'
       context:
         required: true
         type: string
