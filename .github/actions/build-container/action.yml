@@ -73,7 +73,7 @@ runs:
         REGISTRY: ${{ inputs.registry }}
       with:
         image-ref: "${{ inputs.registry }}:${{ inputs.tag }}"
-        timeout: 5m
+        timeout: 15m
         vuln-type: "os,library"
         severity: "UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL"
         format: "sarif"
