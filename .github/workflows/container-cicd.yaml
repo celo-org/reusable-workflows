@@ -12,7 +12,7 @@ on:
       artifact-registry:
         required: true
         type: string
-      tag:
+      tags:
         required: true
         type: string
       platforms:
@@ -72,7 +72,7 @@ jobs:
         with:
           platforms: ${{ inputs.platforms }}
           registry: ${{ inputs.artifact-registry }}
-          tag: ${{ inputs.tag }}
+          tags: ${{ inputs.tag }}
           context: ${{ inputs.context }}
           dockerfile: ${{ inputs.file }}
           push: ${{ fromJSON(true) }}

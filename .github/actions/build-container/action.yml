@@ -23,8 +23,8 @@ inputs:
   registry:
     description: "Registry to push the image to"
     required: true
-  tag:
-    description: "Image tag"
+  tags:
+    description: "CSV list of tags to apply to the image"
     required: true
     default: latest
   trivy:
@@ -42,6 +42,27 @@ runs:
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v2
 
+    - name: Conditionally format tags with full image + repo definition
+      id: process_tags
+      shell: bash
+      run: |
+        raw_tags="${{ inputs.tags }}"
+
+        processed_tags=()
+
+        # split tag field on comma character and add project + registry + image_name 
+        IFS=',' read -ra tags <<< "$raw_tags"
+        for tag in "${tags[@]}"; do
+          processed_tags+=("${{ inputs.registry }}:$tag")
+        done
+
+        # format full tags into csv for docker/build-push-action
+        output_str=$(printf "%s," "${processed_tags[@]}")
+
+        # export first processed tag in list for trivy scan
+        echo "first_tag=${processed_tags[0]}" >> $GITHUB_OUTPUT
+        echo "processed=$output_str" >> $GITHUB_OUTPUT
+
     - name: Build container image
       uses: docker/build-push-action@v4
       id: docker-build-push
@@ -50,7 +71,7 @@ runs:
         file: ${{ inputs.dockerfile }}
         context: ${{ inputs.context }}
         push: ${{ fromJSON(inputs.push) }}
-        tags: ${{ inputs.registry }}:${{ inputs.tag }}
+        tags: ${{ steps.process_tags.outputs.processed }}
         load: ${{ fromJSON(inputs.load) }}
         build-args: GETH_COMMIT={{ github.sha }}
         cache-from: type=registry,ref=${{ inputs.registry }}:buildcache
@@ -72,7 +93,7 @@ runs:
       env:
         REGISTRY: ${{ inputs.registry }}
       with:
-        image-ref: "${{ inputs.registry }}:${{ inputs.tag }}"
+        image-ref: "${{ steps.process_tags.outputs.first_tag }}"
         timeout: 15m
         vuln-type: "os,library"
         severity: "UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL"
