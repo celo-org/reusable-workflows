@@ -46,22 +46,41 @@ runs:
       id: process_tags
       shell: bash
       run: |
-        raw_tags="${{ inputs.tags }}"
+        function process_tags() {
+            local registry="${{ inputs.registry }}"
+            local raw_tags="${{ inputs.tags }}"
+            local processed_tags=()
 
-        processed_tags=()
+            # split tag field on comma character and add project + registry + image_name 
+            IFS=',' read -ra tags <<< "$raw_tags"
+            for tag in "${tags[@]}"; do
+                case "$tag" in 
+                *:*)
+                    # tag includes ':' - assume preprocessed and just pass to output
+                    processed_tags+=("$tag")
+                    ;;
+                *)
+                    # tag needs to include full host + repo definition
+                    processed_tags+=("$registry:$tag")
+                    ;;
+                esac
+            done
 
-        # split tag field on comma character and add project + registry + image_name 
-        IFS=',' read -ra tags <<< "$raw_tags"
-        for tag in "${tags[@]}"; do
-          processed_tags+=("${{ inputs.registry }}:$tag")
-        done
+            # format full tags into csv for docker/build-push-action
+            output_str=$(printf "%s," "${processed_tags[@]}")
 
-        # format full tags into csv for docker/build-push-action
-        output_str=$(printf "%s," "${processed_tags[@]}")
+            # export first processed tag in list for trivy scan
+            echo "first_tag=${processed_tags[0]}" >> $GITHUB_OUTPUT
+            echo "processed=$output_str" >> $GITHUB_OUTPUT
 
-        # export first processed tag in list for trivy scan
-        echo "first_tag=${processed_tags[0]}" >> $GITHUB_OUTPUT
-        echo "processed=$output_str" >> $GITHUB_OUTPUT
+            if [[ -n "$TRACE" ]]; then
+                echo "processed_tags=${processed_tags[@]}"
+                echo "output_str=$output_str"
+                echo "first_tag=${processed_tags[0]}"
+            fi
+        }
+
+        process_tags
 
     - name: Build container image
       uses: docker/build-push-action@v4
