@@ -9,6 +9,11 @@ on:
       service-account:
         required: true
         type: string
+      access-token-lifetime:
+        description: "GCP token expiration timeout"
+        required: false
+        type: string
+        default: "20m" 
       artifact-registry:
         required: true
         type: string
@@ -65,6 +70,7 @@ jobs:
         with:
           workload-id-provider: ${{ inputs.workload-id-provider }}
           service-account: ${{ inputs.service-account }}
+          access-token-lifetime: ${{ inputs.access-token-lifetime }}
           docker-gcp-registries: ${{ steps.split.outputs.location }}
 
       - name: Build, push and scan the container
