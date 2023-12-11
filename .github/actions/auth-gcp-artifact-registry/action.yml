@@ -25,7 +25,7 @@ runs:
       with:
         workload_identity_provider: ${{ inputs.workload-id-provider }}
         service_account: ${{ inputs.service-account }}
-        access_token_lifetime: ${{ inputs.access-token-lifetime }}
+        access_token_lifetime: '${{ inputs.access-token-lifetime }}'
 
     - name: 'Set up Cloud SDK'
       uses: 'google-github-actions/setup-gcloud@v1'
