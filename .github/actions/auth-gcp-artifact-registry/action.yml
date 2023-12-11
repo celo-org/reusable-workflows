@@ -7,6 +7,10 @@ inputs:
   service-account:
     description: "Service account to use"
     required: true
+  access-token-lifetime:
+    description: "GCP token expiration timeout"
+    required: false
+    default: "20m"
   docker-gcp-registries:
     description: "GCP Artifact registry to login into. Check https://cloud.google.com/artifact-registry/docs/docker/authentication"
     required: true
@@ -21,7 +25,7 @@ runs:
       with:
         workload_identity_provider: ${{ inputs.workload-id-provider }}
         service_account: ${{ inputs.service-account }}
-        access_token_lifetime: '20m'
+        access_token_lifetime: ${{ inputs.access-token-lifetime }}
 
     - name: 'Set up Cloud SDK'
       uses: 'google-github-actions/setup-gcloud@v1'
