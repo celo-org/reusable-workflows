@@ -37,9 +37,6 @@ on:
 jobs:
   terraform:
     runs-on: ['self-hosted', 'org', 'terraform']
-    container:
-      image: us-west1-docker.pkg.dev/devopsre/actions-runner-controller/generic:latest
-      options: --user 0
     defaults:
       run:
         working-directory: ${{ inputs.working-dir }}
