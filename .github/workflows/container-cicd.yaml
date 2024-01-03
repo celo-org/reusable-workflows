@@ -81,6 +81,7 @@ jobs:
           tags: ${{ inputs.tags }}
           context: ${{ inputs.context }}
           dockerfile: ${{ inputs.file }}
+          build-args: ${{ inputs.build-args }}
           push: ${{ fromJSON(true) }}
           load: ${{ fromJSON(false) }}
           trivy: ${{ fromJSON(inputs.trivy) }}
