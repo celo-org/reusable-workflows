@@ -20,6 +20,9 @@ inputs:
     description: "Load the image in the local runner. Cannot be true if #platforms > 1"
     required: true
     default: 'false'
+  build-args:
+    description: "List of build-time variables"
+    required: false
   registry:
     description: "Registry to push the image to"
     required: true
@@ -92,9 +95,10 @@ runs:
         push: ${{ fromJSON(inputs.push) }}
         tags: ${{ steps.process_tags.outputs.processed }}
         load: ${{ fromJSON(inputs.load) }}
-        build-args: GETH_COMMIT={{ github.sha }}
+        build-args: ${{ inputs.build-args }}
         cache-from: type=registry,ref=${{ inputs.registry }}:buildcache
         cache-to: type=registry,ref=${{ inputs.registry }}:buildcache,mode=max
+        attests: type=sbom,generator=image
         provenance: ${{ fromJSON(true) }}
 
     - uses: sigstore/cosign-installer@main
