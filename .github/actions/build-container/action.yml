@@ -98,7 +98,6 @@ runs:
         build-args: ${{ inputs.build-args }}
         cache-from: type=registry,ref=${{ inputs.registry }}:buildcache
         cache-to: type=registry,ref=${{ inputs.registry }}:buildcache,mode=max
-        attests: type=sbom,generator=image
         provenance: ${{ fromJSON(true) }}
 
     - uses: sigstore/cosign-installer@main
