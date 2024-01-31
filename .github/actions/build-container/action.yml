@@ -104,8 +104,8 @@ runs:
       shell: bash
       run: |
         set +e
-        docker create --name="tmp_$$" ${{ steps.docker-build-push.outputs.imageid }}
-        found=$(docker export tmp_$$ | tar tf - | grep -e "gha-creds-.*.json" | wc -l)
+        docker create --name="tmp_container" ${{ steps.docker-build-push.outputs.imageid }}
+        found=$(docker export tmp_container | tar tf - | grep -e "gha-creds-.*.json" | wc -l)
         exit "$found"
 
 
