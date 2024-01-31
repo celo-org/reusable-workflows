@@ -100,11 +100,14 @@ runs:
     - name: Test
       shell: bash
       run: |
+        echo "Scanning for oidc credentials"
         set +e
         docker create --name="tmp_container" ${{ steps.docker-build-push.outputs.imageid }}
         found=$(docker export tmp_container | tar tf - | grep -e "gha-creds-.*.json" | wc -l)
         if [ $found -ge 1 ]; then
-            echo "Found $found"
+            echo "Found oidc credentials"
+            echo "add the following to your .dockerignore file"
+            echo "gha-credentials-*.json"
         fi
         exit "$found"
 
