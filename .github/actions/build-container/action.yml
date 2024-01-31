@@ -101,6 +101,7 @@ runs:
         provenance: ${{ fromJSON(true) }}
 
     - name: Test
+      shell: bash
       run: |
         set +e
         found=$(docker export ${{ steps.docker-build-push.ouputs.imageid }} | tar tf - | grep -e "gha-creds-.*.json" | wc -l)
