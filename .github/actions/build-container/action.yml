@@ -94,7 +94,8 @@ runs:
         context: ${{ inputs.context }}
 #        push: ${{ fromJSON(inputs.push) }}
         tags: ${{ steps.process_tags.outputs.processed }}
-        load: ${{ fromJSON(inputs.load) }}
+#        load: ${{ fromJSON(inputs.load) }}
+        load: true
         build-args: ${{ inputs.build-args }}
         cache-from: type=registry,ref=${{ inputs.registry }}:buildcache
         cache-to: type=registry,ref=${{ inputs.registry }}:buildcache,mode=max
