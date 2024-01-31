@@ -107,8 +107,6 @@ runs:
       if: ${{ inputs.push }} == 'true'
       uses: docker/build-push-action@v5
       with:
-        push: true
-        tags: ${{ env.LATEST_TAG }}
         platforms: ${{ inputs.platforms }}
         file: ${{ inputs.dockerfile }}
         context: ${{ inputs.context }}
