@@ -10,7 +10,7 @@ inputs:
   access-token-lifetime:
     description: "GCP token expiration timeout"
     required: false
-    default: "20m"
+    default: "5m"
   docker-gcp-registries:
     description: "GCP Artifact registry to login into. Check https://cloud.google.com/artifact-registry/docs/docker/authentication"
     required: true
