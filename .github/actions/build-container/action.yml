@@ -103,6 +103,9 @@ runs:
         set +e
         docker create --name="tmp_container" ${{ steps.docker-build-push.outputs.imageid }}
         found=$(docker export tmp_container | tar tf - | grep -e "gha-creds-.*.json" | wc -l)
+        if [ $found -ge 1 ]; then
+            echo "Found $found"
+        fi
         exit "$found"
 
     - name: Build and push
