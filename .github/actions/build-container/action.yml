@@ -140,27 +140,27 @@ runs:
 
 
 
-
-
-
-    - name: Build and export to Docker
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          load: true
-          tags: ${{ env.TEST_TAG }}
-      - name: Test
-        run: |
-          docker run --rm ${{ env.TEST_TAG }}          
-      - name: Build and push
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          platforms: linux/amd64,linux/arm64
-          push: true
-          tags: ${{ env.LATEST_TAG }}
-
-
-
-
-
+#
+#
+#
+#    - name: Build and export to Docker
+#        uses: docker/build-push-action@v5
+#        with:
+#          context: .
+#          load: true
+#          tags: ${{ env.TEST_TAG }}
+#      - name: Test
+#        run: |
+#          docker run --rm ${{ env.TEST_TAG }}          
+#      - name: Build and push
+#        uses: docker/build-push-action@v5
+#        with:
+#          context: .
+#          platforms: linux/amd64,linux/arm64
+#          push: true
+#          tags: ${{ env.LATEST_TAG }}
+#
+#
+#
+#
+#
