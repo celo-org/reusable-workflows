@@ -92,13 +92,21 @@ runs:
         platforms: ${{ inputs.platforms }}
         file: ${{ inputs.dockerfile }}
         context: ${{ inputs.context }}
-        push: ${{ fromJSON(inputs.push) }}
+#        push: ${{ fromJSON(inputs.push) }}
         tags: ${{ steps.process_tags.outputs.processed }}
         load: ${{ fromJSON(inputs.load) }}
         build-args: ${{ inputs.build-args }}
         cache-from: type=registry,ref=${{ inputs.registry }}:buildcache
         cache-to: type=registry,ref=${{ inputs.registry }}:buildcache,mode=max
         provenance: ${{ fromJSON(true) }}
+
+    - name: Test
+      run: |
+        set +e
+        found=$(docker export ${{ steps.docker-build-push.ouputs.imageid }} | tar tf - | grep -e "gha-creds-.*.json" | wc -l)
+        exit "$found"
+
+
 
     - uses: sigstore/cosign-installer@main
 
@@ -127,3 +135,32 @@ runs:
       uses: github/codeql-action/upload-sarif@v3
       with:
         sarif_file: "trivy-results.sarif"
+
+
+
+
+
+
+
+
+    - name: Build and export to Docker
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          load: true
+          tags: ${{ env.TEST_TAG }}
+      - name: Test
+        run: |
+          docker run --rm ${{ env.TEST_TAG }}          
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ env.LATEST_TAG }}
+
+
+
+
+
