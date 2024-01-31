@@ -85,6 +85,18 @@ runs:
 
         process_tags
 
+    - name: Build and export to Docker
+      uses: docker/build-push-action@v5
+      with:
+        context: ${{ inputs.context }}
+        load: true
+        tags: test
+
+    - name: Test
+      run: |
+        # docker run --entrypoint=bash --rm ${{ env.TEST_TAG }} find / -name <CREDENTIALS_FILE>
+        # Some logic to fail if file is found
+
     - name: Build container image
       uses: docker/build-push-action@v5
       id: docker-build-push
