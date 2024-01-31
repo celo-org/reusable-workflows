@@ -103,7 +103,8 @@ runs:
     - name: Test
       run: |
         set +e
-        found=$(docker export ${{ steps.docker-build-push.ouputs.imageid }} | tar tf - | grep -e "gha-creds-.*.json" | wc -l)
+        docker create --name="tmp_$$" ${{ steps.docker-build-push.outputs.imageid }}
+        found=$(docker export tmp_$$ | tar tf - | grep -e "gha-creds-.*.json" | wc -l)
         exit "$found"
 
 
