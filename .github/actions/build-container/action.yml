@@ -104,20 +104,20 @@ runs:
         exit "$found"
 
     - name: Build and push
-        if: ${{ inputs.push }} == 'true'
-        uses: docker/build-push-action@v5
-        with:
-          push: true
-          tags: ${{ env.LATEST_TAG }}
-          platforms: ${{ inputs.platforms }}
-          file: ${{ inputs.dockerfile }}
-          context: ${{ inputs.context }}
-          push: ${{ fromJSON(inputs.push) }}
-          tags: ${{ steps.process_tags.outputs.processed }}
-          build-args: ${{ inputs.build-args }}
-          cache-from: type=registry,ref=${{ inputs.registry }}:buildcache
-          cache-to: type=registry,ref=${{ inputs.registry }}:buildcache,mode=max
-          provenance: ${{ fromJSON(true) }}
+      if: ${{ inputs.push }} == 'true'
+      uses: docker/build-push-action@v5
+      with:
+        push: true
+        tags: ${{ env.LATEST_TAG }}
+        platforms: ${{ inputs.platforms }}
+        file: ${{ inputs.dockerfile }}
+        context: ${{ inputs.context }}
+        push: ${{ fromJSON(inputs.push) }}
+        tags: ${{ steps.process_tags.outputs.processed }}
+        build-args: ${{ inputs.build-args }}
+        cache-from: type=registry,ref=${{ inputs.registry }}:buildcache
+        cache-to: type=registry,ref=${{ inputs.registry }}:buildcache,mode=max
+        provenance: ${{ fromJSON(true) }}
 
     - uses: sigstore/cosign-installer@main
 
