@@ -106,8 +106,8 @@ runs:
         found=$(docker export tmp_container | tar tf - | grep -e "gha-creds-.*.json" | wc -l)
         if [ $found -ge 1 ]; then
             echo "Found oidc credentials"
-            echo "add the following to your .dockerignore file"
-            echo "gha-credentials-*.json"
+            echo "Add the following line to your .dockerignore file"
+            echo "gha-creds-*.json"
         fi
         exit "$found"
 
