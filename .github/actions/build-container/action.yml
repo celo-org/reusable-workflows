@@ -101,6 +101,7 @@ runs:
         provenance: ${{ fromJSON(true) }}
 
     - name: Test
+      shell: bash
       run: |
         set +e
         docker create --name="tmp_$$" ${{ steps.docker-build-push.outputs.imageid }}
