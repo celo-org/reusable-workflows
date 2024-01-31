@@ -1,6 +1,10 @@
 name: "Build docker image"
 description: "Build a docker image"
 inputs:
+  runner_platorm:
+    description: "Platform of the github runner for build testing"
+    required: false
+    default: linux/amd64
   platforms:
     description: "Image platform(s)"
     required: true
@@ -12,14 +16,9 @@ inputs:
     description: "Dockerfile path"
     required: true
   push:
-    description: "Push the image to the remote repository.
-      Requires to be pre-authenticated to the registry. Either push or load must be true"
+    description: "Push the image to the remote repository. Requires to be pre-authenticated to the registry. Either push or load must be true"
     required: true
     default: 'true'
-  load:
-    description: "Load the image in the local runner. Cannot be true if #platforms > 1"
-    required: true
-    default: 'false'
   build-args:
     description: "List of build-time variables"
     required: false
@@ -89,18 +88,12 @@ runs:
       uses: docker/build-push-action@v5
       id: docker-build-push
       with:
-        #platforms: ${{ inputs.platforms }}
-        platforms: linux/amd64
+        platforms: ${{ inputs.runner_platform }}
         file: ${{ inputs.dockerfile }}
         context: ${{ inputs.context }}
-#        push: ${{ fromJSON(inputs.push) }}
         tags: ${{ steps.process_tags.outputs.processed }}
-#        load: ${{ fromJSON(inputs.load) }}
         load: true
         build-args: ${{ inputs.build-args }}
-        #cache-from: type=registry,ref=${{ inputs.registry }}:buildcache
-#        cache-to: type=registry,ref=${{ inputs.registry }}:buildcache,mode=max
-        #provenance: ${{ fromJSON(true) }}
 
     - name: Test
       shell: bash
@@ -110,7 +103,21 @@ runs:
         found=$(docker export tmp_container | tar tf - | grep -e "gha-creds-.*.json" | wc -l)
         exit "$found"
 
-
+    - name: Build and push
+        if: ${{ inputs.push == 'true' }}
+        uses: docker/build-push-action@v5
+        with:
+          push: true
+          tags: ${{ env.LATEST_TAG }}
+          platforms: ${{ inputs.platforms }}
+          file: ${{ inputs.dockerfile }}
+          context: ${{ inputs.context }}
+          push: ${{ fromJSON(inputs.push) }}
+          tags: ${{ steps.process_tags.outputs.processed }}
+          build-args: ${{ inputs.build-args }}
+          cache-from: type=registry,ref=${{ inputs.registry }}:buildcache
+          cache-to: type=registry,ref=${{ inputs.registry }}:buildcache,mode=max
+          provenance: ${{ fromJSON(true) }}
 
     - uses: sigstore/cosign-installer@main
 
@@ -139,32 +146,3 @@ runs:
       uses: github/codeql-action/upload-sarif@v3
       with:
         sarif_file: "trivy-results.sarif"
-
-
-
-
-
-#
-#
-#
-#    - name: Build and export to Docker
-#        uses: docker/build-push-action@v5
-#        with:
-#          context: .
-#          load: true
-#          tags: ${{ env.TEST_TAG }}
-#      - name: Test
-#        run: |
-#          docker run --rm ${{ env.TEST_TAG }}          
-#      - name: Build and push
-#        uses: docker/build-push-action@v5
-#        with:
-#          context: .
-#          platforms: linux/amd64,linux/arm64
-#          push: true
-#          tags: ${{ env.LATEST_TAG }}
-#
-#
-#
-#
-#
