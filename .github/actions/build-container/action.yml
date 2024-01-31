@@ -98,7 +98,7 @@ runs:
         load: true
         build-args: ${{ inputs.build-args }}
         cache-from: type=registry,ref=${{ inputs.registry }}:buildcache
-        cache-to: type=registry,ref=${{ inputs.registry }}:buildcache,mode=max
+#        cache-to: type=registry,ref=${{ inputs.registry }}:buildcache,mode=max
         provenance: ${{ fromJSON(true) }}
 
     - name: Test
