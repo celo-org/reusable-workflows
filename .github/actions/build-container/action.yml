@@ -98,9 +98,9 @@ runs:
 #        load: ${{ fromJSON(inputs.load) }}
         load: true
         build-args: ${{ inputs.build-args }}
-        cache-from: type=registry,ref=${{ inputs.registry }}:buildcache
+        #cache-from: type=registry,ref=${{ inputs.registry }}:buildcache
 #        cache-to: type=registry,ref=${{ inputs.registry }}:buildcache,mode=max
-        provenance: ${{ fromJSON(true) }}
+        #provenance: ${{ fromJSON(true) }}
 
     - name: Test
       shell: bash
