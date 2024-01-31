@@ -89,7 +89,8 @@ runs:
       uses: docker/build-push-action@v5
       id: docker-build-push
       with:
-#        platforms: ${{ inputs.platforms }}
+        #platforms: ${{ inputs.platforms }}
+        platforms: linux/amd64
         file: ${{ inputs.dockerfile }}
         context: ${{ inputs.context }}
 #        push: ${{ fromJSON(inputs.push) }}
