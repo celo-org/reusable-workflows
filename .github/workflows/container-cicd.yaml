@@ -83,5 +83,4 @@ jobs:
           dockerfile: ${{ inputs.file }}
           build-args: ${{ inputs.build-args }}
           push: ${{ fromJSON(true) }}
-          load: ${{ fromJSON(false) }}
           trivy: ${{ fromJSON(inputs.trivy) }}
