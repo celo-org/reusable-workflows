@@ -122,6 +122,15 @@ jobs:
              echo "TF_VAR_aws_prod_account=${{ inputs.aws-prod-account }}" >> $GITHUB_ENV
              echo "TF_VAR_google_credentials=${{ steps.auth.outputs.access_token }}" >> $GITHUB_ENV
 
+      - name: Akeyless Get Secrets
+        id: get_auth_token
+        if: ${{ inputs.gh-token }} == true
+        uses: docker://us-west1-docker.pkg.dev/devopsre/akeyless-public/akeyless-action:latest
+        with:
+          api-url: https://api.gateway.akeyless.celo-networks-dev.org
+          access-id: p-kf9vjzruht6l
+          dynamic-secrets: '{"/dynamic-secrets/keys/github/all/members=read":"TF_VAR_GITHUB_TOKEN"}'
+
       - uses: hashicorp/setup-terraform@v3
         with:
           terraform_wrapper: true
