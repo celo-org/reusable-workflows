@@ -200,7 +200,7 @@ jobs:
           } >> "$GITHUB_ENV"
 
       - name: Post Plan to GitHub PR
-        uses: mshick/add-pr-comment@7c0890544fb33b0bdd2e59467fbacb62e028a096 # v2
+        uses: mshick/add-pr-comment@b8f338c590a895d50bcbfa6c5859251edc8952fc # v2
         if: github.event_name == 'pull_request' && steps.plan.outputs.exitcode == '2'
         with:
           repo-token: ${{ github.token }}
@@ -239,7 +239,7 @@ jobs:
         run: terraform apply -no-color -auto-approve "tfplan"
 
       - name: Post Apply output to GitHub PR after merging
-        uses: mshick/add-pr-comment@7c0890544fb33b0bdd2e59467fbacb62e028a096 # v2
+        uses: mshick/add-pr-comment@b8f338c590a895d50bcbfa6c5859251edc8952fc # v2
         if: github.ref == 'refs/heads/master' && steps.plan.outputs.exitcode == '2'
         env:
           APPLY: "terraform\n${{ steps.apply.outputs.stdout }}"
