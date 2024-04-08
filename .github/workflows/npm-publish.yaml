@@ -30,8 +30,9 @@ on:
         required: true
         type: string
       check-auth-only:
-	required: false
-	type: boolean
+        required: false
+        default: false
+        type: boolean
 	
 jobs:
 
