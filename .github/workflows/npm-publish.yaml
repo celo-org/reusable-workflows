@@ -32,8 +32,8 @@ on:
       check-auth-only:
         required: false
         default: false
-        type: boolean
-	
+        type: boolean	
+
 jobs:
 
   npm-publish:
