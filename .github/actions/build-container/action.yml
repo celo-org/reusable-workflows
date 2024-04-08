@@ -86,7 +86,7 @@ runs:
 
     - name: Build container image
       uses: docker/build-push-action@v5
-      id: docker-build-push
+      id: docker-build
       with:
         platforms: ${{ inputs.runner_platform }}
         file: ${{ inputs.dockerfile }}
@@ -102,7 +102,7 @@ runs:
       run: |
         echo "Scanning for oidc credentials"
         set +e
-        docker create --name="tmp_container" ${{ steps.docker-build-push.outputs.imageid }}
+        docker create --name="tmp_container" ${{ steps.docker-build.outputs.imageid }}
         found=$(docker export tmp_container | tar tf - | grep -e "gha-creds-.*.json" | wc -l)
         if [ $found -ge 1 ]; then
             echo "Found oidc credentials"
@@ -114,6 +114,7 @@ runs:
     - name: Build and push
       if: ${{ inputs.push }} == 'true'
       uses: docker/build-push-action@v5
+      id: docker-build-push
       with:
         platforms: ${{ inputs.platforms }}
         file: ${{ inputs.dockerfile }}
