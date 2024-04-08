@@ -29,6 +29,10 @@ on:
       akeyless-token-path:
         required: true
         type: string
+      check-auth-only:
+	default: false
+	type: boolean
+	
 jobs:
 
   npm-publish:
@@ -47,3 +51,4 @@ jobs:
           akeyless-api-gateway: ${{ inputs.akeyless-api-gateway }}
           akeyless-github-access-id: ${{ inputs.akeyless-github-access-id }}
           akeyless-token-path: ${{ inputs.akeyless-token-path }}
+	  check-auth-only: ${{ inputs.check-auth-only }} 
