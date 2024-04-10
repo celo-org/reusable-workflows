@@ -36,6 +36,7 @@ on:
       #gh-token is to read members so we can pull the github teams and extract members from them for oidc restrictions 
       gh-token:
         required: false
+        default: false
         type: string
 
 jobs:
