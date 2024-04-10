@@ -33,11 +33,6 @@ on:
       prod-branch:
         required: true
         type: string
-      #gh-token is to read members so we can pull the github teams and extract members from them for oidc restrictions 
-      gh-token:
-        required: false
-        default: false
-        type: string
 
 jobs:
   terraform:
@@ -70,15 +65,6 @@ jobs:
         with:
           api-url: ${{ inputs.akeyless-api-gateway }}
           access-id: ${{ inputs.akeyless-github-access-id }}
-
-      - name: Akeyless Get Secrets
-        id: get_auth_token_gh_member_read
-        if: ${{ inputs.gh-token }} == true
-        uses: docker://us-west1-docker.pkg.dev/devopsre/akeyless-public/akeyless-action:latest
-        with:
-          api-url: ${{ inputs.akeyless-api-gateway }}
-          access-id: ${{ inputs.akeyless-github-access-id }}
-          dynamic-secrets: '{"/dynamic-secrets/keys/github/all/members=read":"TF_VAR_GITHUB_TOKEN"}'
 
       - name: tfsec
         if: ${{ github.event_name == 'pull_request' }}
