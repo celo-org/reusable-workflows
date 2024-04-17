@@ -30,7 +30,6 @@ inputs:
     required: true
   check-auth-only:
     description: "Check akeyless token access only"
-    type: boolean
     default: false
     required: false
 
