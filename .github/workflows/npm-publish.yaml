@@ -33,7 +33,6 @@ on:
       check-auth-only:
         required: false
         default: false
-        type: boolean	
 
 jobs:
 
