@@ -14,8 +14,9 @@ on:
         required: true
         type: string
       install-dir:
-        required: true
+        required: false
         type: string
+	default: "."
       package-access:
         required: false
         type: string
