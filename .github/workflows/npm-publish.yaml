@@ -32,8 +32,8 @@ on:
         type: string
       check-auth-only:
         required: false
+        type: boolean
         default: false
-        type: boolean	
 
 jobs:
 
@@ -53,4 +53,5 @@ jobs:
           akeyless-api-gateway: ${{ inputs.akeyless-api-gateway }}
           akeyless-github-access-id: ${{ inputs.akeyless-github-access-id }}
           akeyless-token-path: ${{ inputs.akeyless-token-path }}
-          check-auth-only: ${{ inputs.check-auth-only }} 
+#          check-auth-only: ${{ fromJSON(inputs.check-auth-only) }}
+          check-auth-only: ${{ inputs.check-auth-only }}

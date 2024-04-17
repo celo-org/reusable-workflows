@@ -30,7 +30,6 @@ inputs:
     required: true
   check-auth-only:
     description: "Check akeyless token access only"
-    type: boolean
     default: false
     required: false
 
@@ -49,7 +48,7 @@ runs:
     # Setup Node JS with input from node version and set the registry url
     # (defaults to npm registry)
     - name: 'Setup Node JS'
-      if:  ${{ inputs.check-auth-only }} != true
+      if:  ${{ inputs.check-auth-only != 'true' }}
       uses: actions/setup-node@v4
       with:
         node-version: ${{ inputs.node-version }}
@@ -57,7 +56,7 @@ runs:
 
     # Install yarn package manager
     - name: 'Setup yarn'
-      if:  ${{ inputs.check-auth-only }} != true
+      if:  ${{ inputs.check-auth-only != 'true' }}
       shell: bash
       run: |
         npm install --global yarn
@@ -65,16 +64,16 @@ runs:
     # Clabs uses yarn so npm ci (the ci/cd version of npm install) won't work
     # without a json.package lock file, so must use yarn here too
     - uses: bahmutov/npm-install@v1
-      if:  ${{ inputs.check-auth-only }} != true
+      if:  ${{ inputs.check-auth-only != 'true' }}
       with:
         working-directory: ${{ inputs.install-dir }}
 
     - run: yarn build
-      if:  ${{ inputs.check-auth-only }} != true
+      if:  ${{ inputs.check-auth-only != 'true' }}
       shell: bash
 
     - name: Set tag
-      if:  ${{ inputs.check-auth-only }} != true
+      if:  ${{ inputs.check-auth-only != 'true' }}
       id: set-tag
       shell: bash
       run: |
@@ -95,7 +94,8 @@ runs:
           cd ${{ inputs.package-dir }} && \
           npm publish --tag ${{ steps.set-tag.outputs.tag }} --provenance --access ${{ inputs.package-access }}
         fi
-      if:  ${{ inputs.check-auth-only }} != true
+      if:  ${{ inputs.check-auth-only != 'true' }}
+
       shell: bash
       env:
         # this is the access token in NPM. Note, even though it recommends
