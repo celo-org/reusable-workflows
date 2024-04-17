@@ -65,16 +65,16 @@ runs:
     # Clabs uses yarn so npm ci (the ci/cd version of npm install) won't work
     # without a json.package lock file, so must use yarn here too
     - uses: bahmutov/npm-install@v1
-      if:  ${{ inputs.check-auth-only }} == true
+      if:  ${{ inputs.check-auth-only }} == false
       with:
         working-directory: ${{ inputs.install-dir }}
 
     - run: yarn build
-      if:  ${{ inputs.check-auth-only }} == true
+      if:  ${{ inputs.check-auth-only }} == false
       shell: bash
 
     - name: Set tag
-      if:  ${{ inputs.check-auth-only }} == true
+      if:  ${{ inputs.check-auth-only }} == false
       id: set-tag
       shell: bash
       run: |
