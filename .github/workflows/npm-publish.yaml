@@ -16,7 +16,7 @@ on:
       install-dir:
         required: false
         type: string
-	default: "."
+        default: "."
       package-access:
         required: false
         type: string
