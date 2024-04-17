@@ -18,7 +18,7 @@ inputs:
     required: true
   install-dir:
     description: "Package where execute the yarn/npm install"
-    required: true
+    required: false
   akeyless-api-gateway:
     description: "Akeyless API Gateway"
     required: true
