@@ -42,10 +42,6 @@ jobs:
         working-directory: ${{ env.GO_WORKING_DIRECTORY  }}
         run: go vet ./...
 
-      - name: Install staticcheck
-        working-directory: ${{ env.GO_WORKING_DIRECTORY  }}
-        run: go install honnef.co/go/tools/cmd/staticcheck@latest
-
       - name: Run staticcheck
         working-directory: ${{ env.GO_WORKING_DIRECTORY }}
         run: staticcheck ./...
