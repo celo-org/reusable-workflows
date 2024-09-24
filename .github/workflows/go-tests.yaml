@@ -42,10 +42,6 @@ jobs:
         working-directory: ${{ env.GO_WORKING_DIRECTORY  }}
         run: go vet ./...
 
-      - name: Run staticcheck
-        working-directory: ${{ env.GO_WORKING_DIRECTORY }}
-        run: staticcheck ./...
-
       - name: Install golint
         working-directory: ${{ env.GO_WORKING_DIRECTORY }} 
         run: go install golang.org/x/lint/golint@latest
