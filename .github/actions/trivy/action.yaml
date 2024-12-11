@@ -33,10 +33,9 @@ runs:
             repo: '${{ github.repository }}'.split("/")[1]
           });
 
-          const private = response.data.private === true;
           const securityEnabled = response.data.security_and_analysis?.advanced_security?.status === 'enabled';
  
-          if (!securityEnabled && private) {
+          if (!securityEnabled) {
             const message = 'GitHub Advanced Security is NOT enabled.';
             core.setFailed(message);
           }
