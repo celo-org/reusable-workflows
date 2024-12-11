@@ -1,0 +1,68 @@
+name: Trivy
+description: "Run a Trivy Scan and upload the results"
+inputs:
+  image-ref:
+    description: "image to scan"
+    required: true
+  registry:
+    description: "container registry"
+    required: true
+  timeout:
+    description: "how long to scan"
+    default: 15m
+  vuln-type:
+    description: "types of vulnerabilities to report"
+    default: "os,library"
+  severity:
+    description: "severity of issues to report"
+    default: "UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL"
+  format:
+    description: "format of scan report"
+    default: "sarif"
+
+runs:
+  using: "composite"
+  env:
+    OUTPUT-FILE: "trivy-results.sarif"
+  steps:
+    - name: Dump GitHub context
+      env:
+        GITHUB_CONTEXT: ${{ toJson(github) }}
+      run: echo "$GITHUB_CONTEXT"
+    - name: Dump job context
+      env:
+        JOB_CONTEXT: ${{ toJson(job) }}
+      run: echo "$JOB_CONTEXT"
+    - name: Dump steps context
+      env:
+        STEPS_CONTEXT: ${{ toJson(steps) }}
+      run: echo "$STEPS_CONTEXT"
+    - name: Dump runner context
+      env:
+        RUNNER_CONTEXT: ${{ toJson(runner) }}
+      run: echo "$RUNNER_CONTEXT"
+    - name: Dump strategy context
+      env:
+        STRATEGY_CONTEXT: ${{ toJson(strategy) }}
+      run: echo "$STRATEGY_CONTEXT"
+    - name: Dump matrix context
+      env:
+        MATRIX_CONTEXT: ${{ toJson(matrix) }}
+      run: echo "$MATRIX_CONTEXT"
+
+    - name: Run Trivy vulnerability scanner
+      uses: aquasecurity/trivy-action@master
+      env:      
+        REGISTRY: ${{ inputs.registry }} 
+      with:         
+        image-ref: ${{ inputs.image-ref }}
+        timeout: ${{ inputs.timeout }}
+        vuln-type: ${{ inputs.vuln-type }}
+        severity: ${{ inputs.severity }}
+        format: ${{ inputs.format }}
+        output: ${{ env.OUTPUT-FILE }}
+            
+    - name: Upload Trivy scan results to GitHub Security tab
+      uses: github/codeql-action/upload-sarif@v3
+      with:
+        sarif_file: ${{ env.OUTPUT-FILE }}
