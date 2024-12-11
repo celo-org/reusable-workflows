@@ -131,6 +131,6 @@ runs:
 
     - name: Run Trivy vulnerability scanner
       continue-on-error: true
-      uses: celo-org/reusable-workflows/.github/actions/trivy@pputman/new-container-build-workflow
+      uses: celo-org/trivy-composite-action@v1.0.0
       with:
         image-ref: ${{ steps.process_tags.outputs.first_tag }}
