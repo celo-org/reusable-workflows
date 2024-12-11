@@ -1,0 +1,81 @@
+---
+name: 'Run Container Workflow'
+on: 
+  workflow_call:
+    inputs:
+      workload-id-provider:
+        required: true
+        type: string
+      service-account:
+        required: true
+        type: string
+      access-token-lifetime:
+        description: "GCP token expiration timeout"
+        required: false
+        type: string
+        default: "20m" 
+      artifact-registry:
+        required: true
+        type: string
+      tags:
+        required: true
+        type: string
+      platforms:
+        type: string
+        default: "linux/amd64"
+      context:
+        required: true
+        type: string
+      file:
+        required: false
+        type: string
+      build-args:
+        required: false
+        type: string
+      provenance:
+        required: false
+        type: boolean
+        default: true
+
+jobs:
+  auth-build-push-scan-container:
+    runs-on: ubuntu-latest
+    permissions: # Required for workload identity auth and push the trivy results to GitHub
+      contents: read
+      id-token: write
+      security-events: write
+    steps:
+      - name: 'Checkout'
+        uses: actions/checkout@v4
+      
+      - name: Split location and app names
+        id: split
+        env:
+          REGISTRY: ${{ inputs.artifact-registry }}
+        shell: bash
+        run: |
+            location=${REGISTRY%%/*}
+            app_name=${REGISTRY##*/}
+            echo "::notice::location=$location"
+            echo "::notice::app_name=$app_name"
+            echo "location=$location" >> $GITHUB_OUTPUT
+            echo "app_name=$app_name" >> $GITHUB_OUTPUT
+
+      - name: Authenticate to Google Cloud
+        uses: celo-org/reusable-workflows/.github/actions/auth-gcp-artifact-registry@main
+        with:
+          workload-id-provider: ${{ inputs.workload-id-provider }}
+          service-account: ${{ inputs.service-account }}
+          access-token-lifetime: ${{ inputs.access-token-lifetime }}
+          docker-gcp-registries: ${{ steps.split.outputs.location }}
+
+      - name: Build, push and scan the container
+        uses: celo-org/reusable-workflows/.github/actions/build-container@pputman/new-container-build-workflow
+        with:
+          platforms: ${{ inputs.platforms }}
+          registry: ${{ inputs.artifact-registry }}
+          tags: ${{ inputs.tags }}
+          context: ${{ inputs.context }}
+          dockerfile: ${{ inputs.file }}
+          build-args: ${{ inputs.build-args }}
+          push: ${{ fromJSON(true) }}
