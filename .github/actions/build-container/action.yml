@@ -134,5 +134,3 @@ runs:
       uses: celo-org/reusable-workflows/.github/actions/trivy@pputman/new-container-build-workflow
       with:
         image-ref: ${{ steps.process_tags.outputs.first_tag }}
-        registry: ${{ inputs.registry }}
-
