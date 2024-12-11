@@ -36,10 +36,13 @@ on:
         required: false
         type: boolean
         default: true
+      runs_on:
+        default: "['ubuntu-latest']"
+        type: string
 
 jobs:
   auth-build-push-scan-container:
-    runs-on: ubuntu-latest
+    runs-on: ${{ fromJson(inputs.runs_on) }}
     permissions: # Required for workload identity auth and push the trivy results to GitHub
       contents: read
       id-token: write
