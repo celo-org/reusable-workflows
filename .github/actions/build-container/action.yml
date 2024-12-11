@@ -29,10 +29,6 @@ inputs:
     description: "CSV list of tags to apply to the image"
     required: true
     default: latest
-  trivy:
-    description: "Run trivy scan"
-    required: true
-    default: 'true'
 
 runs:
   using: "composite"
@@ -75,11 +71,9 @@ runs:
             echo "first_tag=${processed_tags[0]}" >> $GITHUB_OUTPUT
             echo "processed=$output_str" >> $GITHUB_OUTPUT
 
-            if [[ -n "$TRACE" ]]; then
-                echo "processed_tags=${processed_tags[@]}"
-                echo "output_str=$output_str"
-                echo "first_tag=${processed_tags[0]}"
-            fi
+            echo "::debug::processed_tags=${processed_tags[@]}"
+            echo "::debug::output_str=$output_str"
+            echo "::debug::first_tag=${processed_tags[0]}"
         }
 
         process_tags
@@ -97,17 +91,17 @@ runs:
         load: true
         build-args: ${{ inputs.build-args }}
 
-    - name: Test
+    - name: Scan for OIDC credentials
       shell: bash
       run: |
-        echo "Scanning for oidc credentials"
+        echo ":Scanning for oidc credentials"
         set +e
         docker create --name="tmp_container" ${{ steps.docker-build.outputs.imageid }}
         found=$(docker export tmp_container | tar tf - | grep -e "gha-creds-.*.json" | wc -l)
         if [ $found -ge 1 ]; then
-            echo "Found oidc credentials"
-            echo "Add the following line to your .dockerignore file"
-            echo "gha-creds-*.json"
+            echo "::error::Found oidc credentials"
+            echo "::notice::Add the following line to your .dockerignore file"
+            echo "::notice::gha-creds-*.json"
         fi
         exit "$found"
 
@@ -136,20 +130,9 @@ runs:
         cosign sign --yes ${{ inputs.registry }}@${{ steps.docker-build-push.outputs.digest }}
 
     - name: Run Trivy vulnerability scanner
-      uses: aquasecurity/trivy-action@master
-      if: ${{ inputs.trivy == 'true' }}
-      env:
-        REGISTRY: ${{ inputs.registry }}
+      continue-on-error: true
+      uses: celo-org/reusable-workflows/.github/actions/trivy@pputman/new-container-build-workflow
       with:
-        image-ref: "${{ steps.process_tags.outputs.first_tag }}"
-        timeout: 15m
-        vuln-type: "os,library"
-        severity: "UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL"
-        format: "sarif"
-        output: "trivy-results.sarif"
+        image-ref: ${{ steps.process_tags.outputs.first_tag }}
+        registry: ${{ inputs.registry }}
 
-    - name: Upload Trivy scan results to GitHub Security tab
-      if: ${{ inputs.trivy == 'true' }}
-      uses: github/codeql-action/upload-sarif@v3
-      with:
-        sarif_file: "trivy-results.sarif"
