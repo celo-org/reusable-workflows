@@ -48,6 +48,16 @@ jobs:
       id-token: write
       security-events: write
     steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@v2
+        with:
+          egress-policy: audit
+
+      - name: Dump runner context
+        env:
+          RUNNER_CONTEXT: ${{ toJson(runner) }}
+        run: echo "$RUNNER_CONTEXT"
+
       - name: 'Checkout'
         uses: actions/checkout@v4
       
