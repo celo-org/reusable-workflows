@@ -13,8 +13,6 @@ on:
         default: 5
         type: number
 
-# Declare default permissions as read only.
-permissions: read-all
 
 jobs:
   analysis:

@@ -40,7 +40,6 @@ on:
         default: "['ubuntu-latest']"
         type: string
 
-permissions: read-all
 jobs:
   auth-build-push-scan-container:
     runs-on: ${{ fromJson(inputs.runs_on) }}
