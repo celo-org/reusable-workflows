@@ -12,12 +12,15 @@ on:
       retention-days:
         default: 5
         type: number
-
+      timeout-minutes:
+        default: 30
+        type: number
 
 jobs:
   analysis:
     name: Scorecard analysis
     runs-on: ubuntu-latest
+    timeout-minutes: ${{ inputs.timeout-minutes }}
     permissions:
       # Needed to upload the results to code-scanning dashboard.
       security-events: write

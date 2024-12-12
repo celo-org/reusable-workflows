@@ -39,10 +39,14 @@ on:
       runs_on:
         default: "['ubuntu-latest']"
         type: string
+      timeout-minutes:
+        default: 30
+        type: number
 
 jobs:
   auth-build-push-scan-container:
     runs-on: ${{ fromJson(inputs.runs_on) }}
+    timeout-minutes: ${{ inputs.timeout-minutes }}
     permissions: # Required for workload identity auth and push the trivy results to GitHub
       contents: read
       id-token: write
