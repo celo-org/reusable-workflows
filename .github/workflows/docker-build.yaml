@@ -44,7 +44,7 @@ on:
         type: number
       debug_enabled:
         type: boolean
-        description: "Run the build with tmate debugging enabled (https://github.com/marketplace/actions/debugging-with-tmate)"
+        description: "Run the build with tmate debugging enabled"
         default: false
         required: false
 
