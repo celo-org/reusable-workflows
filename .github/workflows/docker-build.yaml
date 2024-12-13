@@ -69,8 +69,8 @@ jobs:
         run: |
             location=${REGISTRY%%/*}
             app_name=${REGISTRY##*/}
-            echo "::notice::location=$location"
-            echo "::notice::app_name=$app_name"
+            echo "::debug::location=$location"
+            echo "::debug::app_name=$app_name"
             echo "location=$location" >> $GITHUB_OUTPUT
             echo "app_name=$app_name" >> $GITHUB_OUTPUT
 
@@ -83,8 +83,7 @@ jobs:
           docker-gcp-registries: ${{ steps.split.outputs.location }}
 
       - name: Build, push and scan the container
-        uses: ./.github/actions/build-container
-
+        uses: celo-org/trivy-composite-action@v1.0.0-alpha
         with:
           platforms: ${{ inputs.platforms }}
           registry: ${{ inputs.artifact-registry }}
