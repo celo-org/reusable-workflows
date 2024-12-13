@@ -42,6 +42,12 @@ on:
       timeout-minutes:
         default: 30
         type: number
+      debug_enabled:
+        type: boolean
+        description: 'Run the build with tmate debugging enabled (https://github.com/marketplace/actions/debugging-with-tmate)'
+        required: false
+        default: false
+      
 
 jobs:
   auth-build-push-scan-container:
@@ -58,9 +64,15 @@ jobs:
         with:
           egress-policy: audit
 
+    - name: Setup tmate session
+      uses: mxschmitt/action-tmate@e5c7151931ca95bad1c6f4190c730ecf8c7dde48
+      if: ${{ inputs.debug_enabled }}
+      with:
+        detached: true
+    
       - name: 'Checkout'
         uses: actions/checkout@v4
-      
+
       - name: Split location and app names
         id: split
         env:
