@@ -42,7 +42,7 @@ on:
       timeout-minutes:
         default: 30
         type: number
-      debug_enabled:
+      debug-enabled:
         type: boolean
         description: "Run the build with tmate debugging enabled"
         default: false
@@ -65,7 +65,7 @@ jobs:
 
     - name: Setup tmate session
       uses: mxschmitt/action-tmate@e5c7151931ca95bad1c6f4190c730ecf8c7dde48
-      if: ${{ inputs.debug_enabled }}
+      if: inputs.debug-enabled
       with:
         detached: true
     
