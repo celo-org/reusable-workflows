@@ -57,7 +57,7 @@ jobs:
     runs-on: ${{ fromJson(inputs.runs_on) }}
     timeout-minutes: ${{ inputs.timeout-minutes }}
     environment: ${{ inputs.environment }}
-      url: ${{ inputs.artifact-registry }}:${{inputs.tags}}
+      url: "${{ inputs.artifact-registry }}:${{inputs.tags}}"
     permissions: # Required for workload identity auth and push the trivy results to GitHub
       contents: read
       id-token: write
