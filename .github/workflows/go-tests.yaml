@@ -62,8 +62,7 @@ jobs:
         if: runner.environment == 'github-hosted'
         uses: step-security/harden-runner@v2
         with:
-          disable-sudo: false
-          egress-policy: audit
+          policy: go-tests
 
       - name: Set up Go
         uses: actions/setup-go@v5
