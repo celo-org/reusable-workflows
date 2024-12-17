@@ -68,7 +68,6 @@ jobs:
         if: runner.environment == 'github-hosted'
         uses: step-security/harden-runner@v2
         with:
-          egress-policy: audit
           disable-sudo: true
           egress-policy: block
           allowed-endpoints: >
