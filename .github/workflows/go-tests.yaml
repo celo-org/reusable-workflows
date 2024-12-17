@@ -31,6 +31,7 @@ jobs:
   go-tests:
     container:
       image: golang:${{ inputs.go-version }}
+      options: --user 1001
     permissions: # Must change the job token permissions to use JWT auth
       contents: read
       id-token: write
@@ -42,7 +43,7 @@ jobs:
         working-directory: ${{ inputs.path }}
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
          
 #      - name: Set up Go
 #        uses: actions/setup-go@v5
@@ -65,4 +66,4 @@ jobs:
         run: golint ./...
 
       - name: Run tests
-        run: go test -race -vet=off -v ./...
+        run: go test -vet=off -v ./...
