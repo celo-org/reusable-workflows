@@ -74,7 +74,7 @@ jobs:
           # We can disable sudo but tmate requires it, so if debug is on enable sudo
           policy: docker
 
-     - name: Setup tmate session
+      - name: Setup tmate session
         uses: mxschmitt/action-tmate@e5c7151931ca95bad1c6f4190c730ecf8c7dde48
         if: inputs.debug_enabled == true 
         with:
