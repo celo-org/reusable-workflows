@@ -39,11 +39,14 @@ on:
       runs_on:
         default: "['ubuntu-latest']"
         type: string
+        description: "github runner tags"
       timeout-minutes:
         default: 30
         type: number
+        description: "Workflow timeout"
       environment:
         default: ''
+        description: "Deployment environment in github"
         type: string
       debug_enabled:
         default: false
@@ -54,8 +57,13 @@ on:
 
 jobs:
   auth-build-push-scan-container:
+    # We can set a runs-on array in a text string and convert it with fromJson to an array here
+    # This lets runs_on be specified at the calling level
     runs-on: ${{ fromJson(inputs.runs_on) }}
+    # Time out the job if it takes too long so we're not burning minutes for some weird reason. Adjustable
     timeout-minutes: ${{ inputs.timeout-minutes }}
+    # Leverage the protections and environment rulesets here. This will also print the URL
+    # in the github actions tab on github if the deploy is successful
     environment:
       name: ${{ inputs.environment }}
       url: "https://${{ inputs.artifact-registry }}:${{inputs.tags}}"
@@ -68,7 +76,8 @@ jobs:
         if: runner.environment == 'github-hosted'
         uses: step-security/harden-runner@v2
         with:
-          disable-sudo: true
+          # We can disable sudo but tmate requires it, so if debug is on enable sudo
+          disable-sudo: ${{ inputs.debug == false }} 
           egress-policy: block
           allowed-endpoints: >
             SsH.tmAtE.io:22
@@ -87,6 +96,7 @@ jobs:
             tuf-repo-cdn.sigstore.dev:443
             us-west1-docker.pkg.dev:443
 
+  
       - name: Setup tmate session
         uses: mxschmitt/action-tmate@e5c7151931ca95bad1c6f4190c730ecf8c7dde48
         if: inputs.debug_enabled == true 
