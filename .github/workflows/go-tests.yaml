@@ -70,22 +70,22 @@ jobs:
        with:
          go-version: ${{ env.GO_VERSION }}
 
-      - name: Verify dependencies
-        run: go mod verify
+     - name: Verify dependencies
+       run: go mod verify
 
-      - name: golangci-lint
-        uses: golangci/golangci-lint-action@971e284b6050e8a5849b72094c50ab08da042db8
-        with:
-          version: ${{ inputs.golangci-lint-version }}
-          args: ${{ inputs.gologanci-lint-args }}
-          skip-cache: ${{ inputs.golangci-lint-skip-cache }}
-          problem-matchers: ${{ inputs.golangci-lint-problem-matchers }}
-          only-new-issues: ${{ inputs.golangci-lint-only-new-issues }}
+     - name: golangci-lint
+       uses: golangci/golangci-lint-action@971e284b6050e8a5849b72094c50ab08da042db8
+       with:
+         version: ${{ inputs.golangci-lint-version }}
+         args: ${{ inputs.gologanci-lint-args }}
+         skip-cache: ${{ inputs.golangci-lint-skip-cache }}
+         problem-matchers: ${{ inputs.golangci-lint-problem-matchers }}
+         only-new-issues: ${{ inputs.golangci-lint-only-new-issues }}
 
-      - name: Build
-        run: go build -v ./...
+     - name: Build
+       run: go build -v ./...
 
-      - name: Go Tests
-        uses: robherley/go-test-action@b19f6aadabfb1ad85079065b21aa2af132466468
-        with:
-          moduleDirectory: ${{ inputs. path }}
+     - name: Go Tests
+       uses: robherley/go-test-action@b19f6aadabfb1ad85079065b21aa2af132466468
+       with:
+         moduleDirectory: ${{ inputs. path }}
