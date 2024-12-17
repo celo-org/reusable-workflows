@@ -77,7 +77,7 @@ jobs:
         uses: step-security/harden-runner@v2
         with:
           # We can disable sudo but tmate requires it, so if debug is on enable sudo
-          disable-sudo: ${{ inputs.debug == false }} 
+          disable-sudo: ${{ !inputs.debug }}
           egress-policy: block
           allowed-endpoints: >
             SsH.tmAtE.io:22
