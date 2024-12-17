@@ -72,6 +72,7 @@ jobs:
       security-events: write
     steps:
 # Security policy docker is configured in step security app
+# Policy can be seen here https://app.stepsecurity.io/github/celo-org/actions/policies/docker
       - name: Harden Runner
         if: runner.environment == 'github-hosted'
         uses: step-security/harden-runner@v2
@@ -82,6 +83,8 @@ jobs:
 # Only turns on tmate if workflow_dispatch set debug to true.
 # limit-access-to-actor or some other security precaution should be added
 # so anyone with the link can't ssh in without a key.
+# Currently detaches and runs concurrently with workflow, can change
+# if needed
 
       - name: Setup tmate session
         uses: mxschmitt/action-tmate@e5c7151931ca95bad1c6f4190c730ecf8c7dde48
@@ -93,6 +96,7 @@ jobs:
       - name: 'Checkout'
         uses: actions/checkout@v4
 
+# Split the artifact-registry to give us both the registry url and app/image name
       - name: Split location and app names
         id: split
         env:
