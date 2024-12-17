@@ -44,8 +44,9 @@ jobs:
   go-tests:
     permissions:
       contents: read
-      checks: write
       pull-requests: read
+      checks: write
+      id-token: write
     runs-on: ${{ fromJson(inputs.runs_on) }}
     timeout-minutes: ${{ inputs.timeout-minutes }}
     defaults:
