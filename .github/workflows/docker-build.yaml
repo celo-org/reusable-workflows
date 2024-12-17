@@ -76,32 +76,31 @@ jobs:
         if: runner.environment == 'github-hosted'
         uses: step-security/harden-runner@v2
         with:
-#          # We can disable sudo but tmate requires it, so if debug is on enable sudo
-#          disable-sudo: ${{ !inputs.debug }}
-#          egress-policy: block
-#          allowed-endpoints: >
-#            api.github.com:443
-#            auth.docker.io:443
-#            dl.google.com:443
-#            fulcio.sigstore.dev:443
-#            github.com:443
-#            iamcredentials.googleapis.com:443
-#            objects.githubusercontent.com:443
-#            production.cloudflare.docker.com:443
-#            raw.githubusercontent.com:443
-#            registry-1.docker.io:443
-#            rekor.sigstore.dev:443
-#            sts.googleapis.com:443
-#            tuf-repo-cdn.sigstore.dev:443
-#            us-west1-docker.pkg.dev:443
-#            SsH.tmAtE.io:22
-#            azure.archive.ubuntu.com:80
-#            esm.ubuntu.com:443
-#            mirror.gcr.io:443
-#            packages.microsoft.com:443
-#            proxy.golang.org:443
-#
-  
+          # We can disable sudo but tmate requires it, so if debug is on enable sudo
+          disable-sudo: ${{ !inputs.debug }}
+          egress-policy: block
+          allowed-endpoints: >
+            SsH.tmAtE.io:22
+            api.github.com:443
+            auth.docker.io:443
+            azure.archive.ubuntu.com:80
+            dl.google.com:443
+            esm.ubuntu.com:443
+            fulcio.sigstore.dev:443
+            github.com:443
+            iamcredentials.googleapis.com:443
+            mirror.gcr.io:443
+            objects.githubusercontent.com:443
+            packages.microsoft.com:443
+            production.cloudflare.docker.com:443
+            proxy.golang.org:443
+            raw.githubusercontent.com:443
+            registry-1.docker.io:443
+            rekor.sigstore.dev:443
+            sts.googleapis.com:443
+            tuf-repo-cdn.sigstore.dev:443
+            us-west1-docker.pkg.dev:443
+
       - name: Setup tmate session
         uses: mxschmitt/action-tmate@e5c7151931ca95bad1c6f4190c730ecf8c7dde48
         if: inputs.debug_enabled == true 
