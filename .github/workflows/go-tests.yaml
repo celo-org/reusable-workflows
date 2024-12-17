@@ -83,10 +83,10 @@ permissions:
           egress-policy: audit
 
 # Setup isn't needed as we use a container with go installed already
-#      - name: Set up Go
-#        uses: actions/setup-go@v5
-#        with:
-#          go-version: ${{ env.GO_VERSION }}
+#     - name: Set up Go
+#       uses: actions/setup-go@v5
+#       with:
+#         go-version: ${{ env.GO_VERSION }}
 #
       - name: Verify dependencies
         run: go mod verify
