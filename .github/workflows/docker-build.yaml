@@ -57,13 +57,8 @@ on:
 
 jobs:
   auth-build-push-scan-container:
-    # We can set a runs-on array in a text string and convert it with fromJson to an array here
-    # This lets runs_on be specified at the calling level
     runs-on: ${{ fromJson(inputs.runs_on) }}
-    # Time out the job if it takes too long so we're not burning minutes for some weird reason. Adjustable
     timeout-minutes: ${{ inputs.timeout-minutes }}
-    # Leverage the protections and environment rulesets here. This will also print the URL
-    # in the github actions tab on github if the deploy is successful
     environment:
       name: ${{ inputs.environment }}
       url: "https://${{ inputs.artifact-registry }}:${{inputs.tags}}"
