@@ -1,3 +1,10 @@
+
+
+
+
+
+
+
 ---
 name: 'Run Go Tests'
 on:
@@ -6,50 +13,56 @@ on:
       go-version:
         required: false
         type: string
-        default: "1.19.5"
+        default: "1.22"
       path:
         required: true
         type: string
-
-env:
-  GO_VERSION: ${{ inputs.go-version }}
-  GO_WORKING_DIRECTORY: ${{ inputs.path }}
+        description: "working directory"
+      runs_on:
+        default: "['ubuntu-latest']"
+        type: string
+        description: "github runner tags"
+      timeout-minutes:
+        default: 30
+        type: number
+        description: "Workflow timeout"
 
 jobs:
   go-tests:
-    runs-on: ubuntu-latest
+    container:
+      image: golang:${{ inputs.go-version }}
     permissions: # Must change the job token permissions to use JWT auth
       contents: read
       id-token: write
+    runs-on: ${{ fromJson(inputs.runs_on) }}
+    timeout-minutes: ${{ inputs.timeout-minutes }}
+    defaults:
+      run:
+        shell: bash 
+        working-directory: ${{ inputs.path }}
 
     steps:
       - uses: actions/checkout@v4
          
-      - name: Set up Go
-        uses: actions/setup-go@v5
-        with:
-          go-version: ${{ env.GO_VERSION }}
-
+#      - name: Set up Go
+#        uses: actions/setup-go@v5
+#        with:
+#          go-version: ${{ env.GO_VERSION }}
+#
       - name: Verify dependencies
-        working-directory: ${{ env.GO_WORKING_DIRECTORY  }}
         run: go mod verify
 
       - name: Build
-        working-directory: ${{ env.GO_WORKING_DIRECTORY  }}
         run: go build -v ./...
 
       - name: Run go vet
-        working-directory: ${{ env.GO_WORKING_DIRECTORY  }}
         run: go vet ./...
 
       - name: Install golint
-        working-directory: ${{ env.GO_WORKING_DIRECTORY }} 
         run: go install golang.org/x/lint/golint@latest
 
       - name: Run golint
-        working-directory: ${{ env.GO_WORKING_DIRECTORY }} 
         run: golint ./...
 
       - name: Run tests
-        working-directory: ${{ env.GO_WORKING_DIRECTORY }}
         run: go test -race -vet=off -v ./...
