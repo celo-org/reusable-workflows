@@ -54,7 +54,6 @@ jobs:
         shell: bash 
         working-directory: ${{ inputs.path }}
     steps:
-      - uses: actions/checkout@v4
 
         # Security policy go-tests is configured in step security app
         # Policy can be seen here https://app.stepsecurity.io/github/celo-org/actions/policies/go-tests
@@ -64,6 +63,8 @@ jobs:
         uses: step-security/harden-runner@v2
         with:
           policy: go-tests
+
+      - uses: actions/checkout@v4
 
       - name: Set up Go
         uses: actions/setup-go@v5

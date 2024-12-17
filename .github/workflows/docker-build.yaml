@@ -62,7 +62,7 @@ jobs:
     defaults:
       run:
         shell: bash 
-# Specify an environment here if using deployment environments
+    # Specify an environment here if using deployment environments
     environment:
       name: ${{ inputs.environment }}
       url: "${{ inputs.environment != '' && format('https://{0}:{1}', inputs.artifact-registry, inputs.tags) || '' }}"
@@ -71,9 +71,9 @@ jobs:
       id-token: write
       security-events: write
     steps:
-# Security policy docker is configured in step security app
-# Policy can be seen here https://app.stepsecurity.io/github/celo-org/actions/policies/docker
-# disable-sudo is set to false if debug is true, because tmate requires root to work.
+      # Security policy docker is configured in step security app
+      # Policy can be seen here https://app.stepsecurity.io/github/celo-org/actions/policies/docker
+      # disable-sudo is set to false if debug is true, because tmate requires root to work.
       - name: Harden Runner
         if: runner.environment == 'github-hosted'
         uses: step-security/harden-runner@v2
@@ -82,11 +82,11 @@ jobs:
           policy: docker
 
 
-# Only turns on tmate if workflow_dispatch set debug to true.
-# limit-access-to-actor or some other security precaution should be added
-# so anyone with the link can't ssh in without a key.
-# Currently detaches and runs concurrently with workflow, can change
-# if needed
+      # Only turns on tmate if workflow_dispatch set debug to true.
+      # limit-access-to-actor or some other security precaution should be added
+      # so anyone with the link can't ssh in without a key.
+      # Currently detaches and runs concurrently with workflow, can change
+      # if needed
 
       - name: Setup tmate session
         uses: mxschmitt/action-tmate@e5c7151931ca95bad1c6f4190c730ecf8c7dde48
