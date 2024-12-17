@@ -90,7 +90,7 @@ jobs:
           version: ${{ inputs.golangci-lint-version }}
           args: ${{ inputs.gologanci-lint-args }}
           skip-cache: ${{ inputs.golangci-lint-skip-cache }}
-          problem-matchers ${{ inputs.golangci-problem-matchers }}
+          problem-matchers: ${{ inputs.golangci-problem-matchers }}
           only-new-issues: ${{ inputs.golangci-lint-only-new-issues }}
 
       - name: Build
