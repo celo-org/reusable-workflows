@@ -78,7 +78,7 @@ jobs:
         uses: golangci/golangci-lint-action@971e284b6050e8a5849b72094c50ab08da042db8
         with:
           version: ${{ inputs.golangci-lint-version }}
-          args: ${{ inputs.gologanci-lint-args }}
+          args: "${{ inputs.gologanci-lint-args }} --timeout=${{ inputs.timeout-minutes }}m"
           skip-cache: ${{ inputs.golangci-lint-skip-cache }}
           problem-matchers: ${{ inputs.golangci-lint-problem-matchers }}
           only-new-issues: ${{ inputs.golangci-lint-only-new-issues }}
