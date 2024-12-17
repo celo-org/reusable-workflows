@@ -81,6 +81,7 @@ jobs:
           skip-cache: ${{ inputs.golangci-lint-skip-cache }}
           problem-matchers: ${{ inputs.golangci-lint-problem-matchers }}
           only-new-issues: ${{ inputs.golangci-lint-only-new-issues }}
+          working-direcotry: ${{ inputs.path }}
 
       - name: Build
         run: go build -v ./...
