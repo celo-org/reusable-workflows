@@ -59,6 +59,9 @@ jobs:
   auth-build-push-scan-container:
     runs-on: ${{ fromJson(inputs.runs_on) }}
     timeout-minutes: ${{ inputs.timeout-minutes }}
+    defaults:
+      run:
+        shell: bash 
 # Specify an environment here if using deployment environments
     environment:
       name: ${{ inputs.environment }}
