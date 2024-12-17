@@ -42,7 +42,7 @@ on:
         description: 'only run on new issues in local PR diff'
         type: boolean
         default: false
-      golangci-lint-problem-matches:
+      golangci-lint-problem-matchers:
         description: 'run with golangci problem matchers'
         type: boolean
         default: false
