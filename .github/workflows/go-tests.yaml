@@ -71,11 +71,12 @@ jobs:
         with:
           go-version: ${{ inputs.go-version }}
 
+      - name: Ensure dependencies are up to date
+        run: go mod tidy 
+
       - name: Verify dependencies
         run: go mod verify
 
-      - name: Ensure dependencies are up to date
-        run: go mod tidy 
       - name: golangci-lint
         uses: golangci/golangci-lint-action@971e284b6050e8a5849b72094c50ab08da042db8
         with:
