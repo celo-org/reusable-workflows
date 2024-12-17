@@ -13,7 +13,7 @@ on:
       go-version:
         required: false
         type: string
-        default: "1.22"
+        default: "1.23"
       path:
         required: true
         type: string
