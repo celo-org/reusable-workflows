@@ -80,8 +80,9 @@ jobs:
           disable-sudo: ${{ !inputs.debug }}
           egress-policy: block
           allowed-endpoints: >
-            SsH.tmAtE.io:22
+            ssh.tmate.io:22
             api.github.com:443
+            motd.ubuntu.com:443
             auth.docker.io:443
             azure.archive.ubuntu.com:80
             dl.google.com:443
