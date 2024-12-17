@@ -80,7 +80,6 @@ jobs:
           disable-sudo: ${{ !inputs.debug }}
           egress-policy: block
           allowed-endpoints: >
-            SsH.tmAtE.io:22
             api.github.com:443
             auth.docker.io:443
             dl.google.com:443
@@ -95,6 +94,13 @@ jobs:
             sts.googleapis.com:443
             tuf-repo-cdn.sigstore.dev:443
             us-west1-docker.pkg.dev:443
+            #Below needed for tmate
+            SsH.tmAtE.io:22
+            azure.archive.ubuntu.com:80
+            esm.ubuntu.com:443
+            mirror.gcr.io:443
+            packages.microsoft.com:443
+            proxy.golang.org:443
 
   
       - name: Setup tmate session
