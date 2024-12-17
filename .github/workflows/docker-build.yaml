@@ -94,7 +94,6 @@ jobs:
             sts.googleapis.com:443
             tuf-repo-cdn.sigstore.dev:443
             us-west1-docker.pkg.dev:443
-            #Below needed for tmate
             SsH.tmAtE.io:22
             azure.archive.ubuntu.com:80
             esm.ubuntu.com:443
