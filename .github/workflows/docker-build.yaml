@@ -77,6 +77,7 @@ jobs:
         if: runner.environment == 'github-hosted'
         uses: step-security/harden-runner@v2
         with:
+          disable-sudo: ${{ !inputs.debug_enabled }}
           policy: docker
 
 
