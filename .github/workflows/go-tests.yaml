@@ -1,10 +1,3 @@
-
-
-
-
-
-
-
 ---
 name: 'Run Go Tests'
 on:
@@ -85,7 +78,7 @@ jobs:
         run: go mod verify
 
       - name: golangci-lint
-        uses: golangci/golangci-lint-action@v6
+        uses: golangci/golangci-lint-action@971e284b6050e8a5849b72094c50ab08da042db8
         with:
           version: ${{ inputs.golangci-lint-version }}
           args: ${{ inputs.gologanci-lint-args }}
