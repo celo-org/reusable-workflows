@@ -87,9 +87,12 @@ jobs:
           only-new-issues: ${{ inputs.golangci-lint-only-new-issues }}
           working-directory: ${{ inputs.path }}
 
+      # Make sure build works.  This may not be necessary, since golangci might be able to find the same issues.
+      # have to investigate further
       - name: Build
         run: go build -v ./...
-
+      
+      # Run tests
       - name: Go Tests
         uses: robherley/go-test-action@b19f6aadabfb1ad85079065b21aa2af132466468
         with:
