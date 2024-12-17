@@ -42,10 +42,7 @@ on:
 
 jobs:
   go-tests:
-    container:
-      image: golang:${{ inputs.go-version }}
-      options: --user 1001
-    permissions: # Must change the job token permissions to use JWT auth
+    permissions:
       contents: read
       checks: write
       pull-requests: read
@@ -58,9 +55,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-# Security policy docker is configured in step security app
-# Policy can be seen here https://app.stepsecurity.io/github/celo-org/actions/policies/docker
-# disable-sudo is set to false if debug is true, because tmate requires root to work.
+        # Security policy go-tests is configured in step security app
+        # Policy can be seen here https://app.stepsecurity.io/github/celo-org/actions/policies/go-tests
+        # disable-sudo is set to false if debug is true, because tmate requires root to work.
       - name: Harden Runner
         if: runner.environment == 'github-hosted'
         uses: step-security/harden-runner@v2
@@ -68,12 +65,11 @@ jobs:
           disable-sudo: false
           egress-policy: audit
 
-# Setup isn't needed as we use a container with go installed already
-#     - name: Set up Go
-#       uses: actions/setup-go@v5
-#       with:
-#         go-version: ${{ env.GO_VERSION }}
-#
+     - name: Set up Go
+       uses: actions/setup-go@v5
+       with:
+         go-version: ${{ env.GO_VERSION }}
+
       - name: Verify dependencies
         run: go mod verify
 
@@ -89,10 +85,7 @@ jobs:
       - name: Build
         run: go build -v ./...
 
-
       - name: Go Tests
         uses: robherley/go-test-action@b19f6aadabfb1ad85079065b21aa2af132466468
-        env:
-          WORKING_DIRECTORY:  ${{ inputs.path }}
         with:
-          moduleDirectory: ${{ env.WORKING_DIRECTORY }}
+          moduleDirectory: ${{ inputs. path }}
