@@ -59,20 +59,26 @@ jobs:
   auth-build-push-scan-container:
     runs-on: ${{ fromJson(inputs.runs_on) }}
     timeout-minutes: ${{ inputs.timeout-minutes }}
+# Specify an environment here if using deployment environments
     environment:
       name: ${{ inputs.environment }}
-      url: "https://${{ inputs.artifact-registry }}:${{inputs.tags}}"
+      url: "${{ inputs.environment != '' && https://${{ inputs.artifact-registry }}:${{inputs.tags}} || ''"
     permissions: # Required for workload identity auth and push the trivy results to GitHub
       contents: read
       id-token: write
       security-events: write
     steps:
+# Security policy docker is configured in step security app
       - name: Harden Runner
         if: runner.environment == 'github-hosted'
         uses: step-security/harden-runner@v2
         with:
-          # We can disable sudo but tmate requires it, so if debug is on enable sudo
           policy: docker
+
+
+# Only turns on tmate if workflow_dispatch set debug to true.
+# limit-access-to-actor or some other security precaution should be added
+# so anyone with the link can't ssh in without a key.
 
       - name: Setup tmate session
         uses: mxschmitt/action-tmate@e5c7151931ca95bad1c6f4190c730ecf8c7dde48
