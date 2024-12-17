@@ -61,8 +61,7 @@ jobs:
     timeout-minutes: ${{ inputs.timeout-minutes }}
 # Specify an environment here if using deployment environments
     environment:
-      name: ${{ inputs.environment }}
-      url: "${{ inputs.environment != '' && https://${{ inputs.artifact-registry }}:${{inputs.tags}} || ''"
+      url: "${{ inputs.environment != '' && format('https://{0}:{1}', inputs.artifact-registry, inputs.tags) || ''" 
     permissions: # Required for workload identity auth and push the trivy results to GitHub
       contents: read
       id-token: write
