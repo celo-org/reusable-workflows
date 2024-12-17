@@ -89,7 +89,10 @@ jobs:
       - name: Build
         run: go build -v ./...
 
+
       - name: Go Tests
         uses: robherley/go-test-action@b19f6aadabfb1ad85079065b21aa2af132466468
+        env:
+          WORKING_DIRECTORY:  ${{ inputs.path }}
         with:
-          moduleDirectory: ${{ jobs.go-tests.defaults.run.working-directory }}
+          moduleDirectory: ${{ env.WORKING_DIRECTORY }}
