@@ -39,6 +39,10 @@ on:
         description: 'run with golangci problem matchers'
         type: boolean
         default: false
+      disable_caching:
+        description: 'disable caching for go dependencies"
+        type: boolean
+        default: false
       debug_enabled:
         default: false
         required: false
@@ -90,6 +94,7 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version: ${{ inputs.go-version }}
+          cache: ${{ !inputs.disable_caching }}
 
       - name: Ensure dependencies are up to date
         run: go mod tidy 
