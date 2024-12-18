@@ -43,6 +43,10 @@ on:
         description: "disable caching for go dependencies"
         type: boolean
         default: false
+      cache-dependency-path:
+        description: "path to the go dependency file (such as go.sum)"
+        type: string
+        default: "" 
       debug_enabled:
         default: false
         required: false
@@ -95,6 +99,7 @@ jobs:
         with:
           go-version: ${{ inputs.go-version }}
           cache: ${{ !inputs.disable_caching }}
+          cache-dependency-path: "${{ inputs.cache-dependency-path != '' && inputs.cache-dependency-path ||  format('{0}/**/*.sum', inputs.path) }}"
 
       - name: Ensure dependencies are up to date
         run: go mod tidy 
