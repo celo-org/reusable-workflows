@@ -6,7 +6,7 @@ on:
       go-version:
         required: false
         type: string
-        default: "1.22"
+        default: "'1.22"
       path:
         required: true
         type: string
@@ -20,27 +20,27 @@ on:
         type: number
         description: "Workflow timeout"
       golangci-lint-version:
-        description: 'Golangci-lint version'
+        description: "Golangci-lint version"
         type: string
         default: latest
       golangci-lint-args:
-        description: 'Golangci-lint arguments'
+        description: "Golangci-lint arguments"
         type: string
-        default: ''
+        default: ""
       golangci-lint-skip-cache:
-        description: 'Skip cache if enabled'
+        description: "Skip cache if enabled"
         type: boolean
         default: false
       golangci-lint-only-new-issues:
-        description: 'only run on new issues in local PR diff'
+        description: "only run on new issues in local PR diff"
         type: boolean
         default: false
       golangci-lint-problem-matchers:
-        description: 'run with golangci problem matchers'
+        description: "run with golangci problem matchers"
         type: boolean
         default: false
       disable_caching:
-        description: 'disable caching for go dependencies"
+        description: "disable caching for go dependencies"
         type: boolean
         default: false
       debug_enabled:
