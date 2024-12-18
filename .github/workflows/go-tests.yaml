@@ -39,6 +39,11 @@ on:
         description: 'run with golangci problem matchers'
         type: boolean
         default: false
+      debug_enabled:
+        default: false
+        required: false
+        type: boolean
+        description: "run tmate for troubleshooting"
 
 jobs:
   go-tests:
@@ -54,17 +59,32 @@ jobs:
         shell: bash 
         working-directory: ${{ inputs.path }}
     steps:
-
-        # Security policy go-tests is configured in step security app
-        # Policy can be seen here https://app.stepsecurity.io/github/celo-org/actions/policies/go-tests
-        # disable-sudo is set to false if debug is true, because tmate requires root to work.
+      # Security policy go-tests is configured in step security app
+      # Policy can be seen here https://app.stepsecurity.io/github/celo-org/actions/policies/go-tests
+      # disable-sudo is set to false if debug is true, because tmate requires root to work.
       - name: Harden Runner
         if: runner.environment == 'github-hosted'
         uses: step-security/harden-runner@v2
         with:
+          disable-sudo: ${{ !inputs.debug_enabled }}
           policy: go-tests
 
-      - uses: actions/checkout@v4
+
+      # Only turns on tmate if workflow_dispatch set debug to true.
+      # limit-access-to-actor or some other security precaution should be added
+      # so anyone with the link can't ssh in without a key.
+      # Currently detaches and runs concurrently with workflow, can change
+      # if needed
+
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@e5c7151931ca95bad1c6f4190c730ecf8c7dde48
+        if: inputs.debug_enabled == true 
+        with:
+          detached: true
+          limit-access-to-actor: true
+    
+      - name: 'Checkout'
+        uses: actions/checkout@v4
 
       - name: Set up Go
         uses: actions/setup-go@v5
