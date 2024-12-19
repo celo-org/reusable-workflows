@@ -114,9 +114,9 @@ jobs:
       - name: Authenticate to Google Cloud
         uses: 'google-github-actions/auth@v2'
         with:
-          workload-id-provider: ${{ inputs.workload-id-provider }}
-          service-account: ${{ inputs.service-account }}
-          access-token-lifetime: ${{ inputs.access-token-lifetime }}
+          workload_identity_provider: ${{ inputs.workload-id-provider }}
+          service_account: ${{ inputs.service-account }}
+          access_token_lifetime: ${{ inputs.access-token-lifetime }}
 
       - name: 'Set up Cloud SDK'
         uses: 'google-github-actions/setup-gcloud@v2'
