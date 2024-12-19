@@ -36,6 +36,10 @@ on:
         required: false
         type: boolean
         default: true
+      docker-gcp-registries:
+        description: "GCP Artifact registry to login into. Check https://cloud.google.com/artifact-registry/docs/docker/authentication"
+        required: true
+        default: us-west1-docker.pkg.dev,us-central1-docker.pkg.dev
       runs_on:
         default: "['ubuntu-latest']"
         type: string
