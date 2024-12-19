@@ -126,7 +126,6 @@ jobs:
         uses: 'google-github-actions/setup-gcloud@v2'
 
       - name: 'Configure docker for gcloud auth'
-        if: inputs.setup-docker
         run: 'gcloud auth configure-docker ${{ inputs.docker-gcp-registries }}'
 
       - name: Build, push and scan the container
