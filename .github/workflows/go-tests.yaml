@@ -6,7 +6,7 @@ on:
       go-version:
         required: false
         type: string
-        default: "'1.22"
+        default: "1.22"
       path:
         required: true
         type: string
@@ -98,9 +98,6 @@ jobs:
           go-version: ${{ inputs.go-version }}
           cache: ${{ !inputs.disable_caching }}
           cache-dependency-path: "${{ inputs.cache-dependency-path != '' && inputs.cache-dependency-path ||  format('{0}/**/*.sum', inputs.path) }}"
-
-      - name: Ensure dependencies are up to date
-        run: go mod tidy 
 
       - name: Verify dependencies
         run: go mod verify
