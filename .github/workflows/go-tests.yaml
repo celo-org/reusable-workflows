@@ -73,7 +73,8 @@ jobs:
         if: runner.environment == 'github-hosted'
         uses: step-security/harden-runner@v2
         with:
-          policy: ${{ inputs.debug_enabled == true && 'go-tests-debug' || 'go-tests' }}
+          egress-policy: audit       
+#          policy: ${{ inputs.debug_enabled == true && 'go-tests-debug' || 'go-tests' }}
 
       # Only turns on tmate if workflow_dispatch set debug to true.
       # limit-access-to-actor or some other security precaution should be added
