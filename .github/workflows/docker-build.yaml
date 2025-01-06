@@ -57,7 +57,12 @@ on:
         required: false
         type: boolean
         description: "run tmate for troubleshooting"
-        
+      pr-comment:
+        default: true
+        type: boolean        
+      summary:
+        default: true
+        type: boolean
 
 jobs:
   auth-build-push-scan-container:
