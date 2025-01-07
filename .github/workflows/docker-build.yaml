@@ -79,6 +79,7 @@ jobs:
       contents: read
       id-token: write
       security-events: write
+      attestations: write
       pull-requests: write
     steps:
       # Security policy docker is configured in step security app
