@@ -24,10 +24,6 @@ on:
       access-token-scopes:
         required: false
         type: string
-      runs_on:
-        default: "['ubuntu-latest']"
-        type: string
-        description: "github runner tags"
       timeout-minutes:
         default: 30
         type: number
@@ -41,6 +37,11 @@ on:
         required: false
         type: boolean
         description: "run tmate for troubleshooting"
+      runs_on:
+#        default: "['self-hosted', 'org', 'terraform']"
+        default: "['ubuntu-latest']"
+        type: string
+        description: "github runner tags"
       pr-comment:
         default: true
         type: boolean        
@@ -53,7 +54,7 @@ on:
 
 jobs:
   terraform:
-    runs-on: ['self-hosted', 'org', 'terraform']
+    runs-on: ${{ fromJson(inputs.runs_on) }}
     defaults:
       run:
         working-directory: ${{ inputs.working-dir }}
