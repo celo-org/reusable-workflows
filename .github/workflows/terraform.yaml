@@ -202,23 +202,21 @@ jobs:
         shell: bash
         run: terraform apply -no-color -auto-approve "tfplan"
 
-    - name: Post Apply output to GitHub PR after merging
-      if: github.ref == github.event.repository.default_branch && steps.plan.outputs.exitcode == '2' && inputs.pr-comment == true
-
-      shell: bash
-      run: |
-        {
-            echo "### Terraform for ${{ inputs.working-dir }}\`"
-            echo "#### Terraform Apply \`${{ steps.apply.outcome }}\`"
-            echo "<details><summary>Show Apply</summary>"
-            echo "```diff"
-            echo "${{ env.APPLY }}"
-            echo "```"
-            echo "</details>"
-            echo "*Pusher: @${{ github.actor }}*"
-            echo "*Action: ${{ github.event_name }}*"
-            echo "*Working Directory: ${{ env.WORKDIR }}*"
-            echo "*Workflow: ${{ github.workflow }}*"
-            echo "*Execution link: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}*"
-         
-        } >> $GITHUB_STEP_SUMMARY
+      - name: Post Apply output to GitHub PR after merging
+        if: github.ref == github.event.repository.default_branch && steps.plan.outputs.exitcode == '2' && inputs.pr-comment == true
+        shell: bash
+        run: |
+          {
+              echo "### Terraform for ${{ inputs.working-dir }}\`"
+              echo "#### Terraform Apply \`${{ steps.apply.outcome }}\`"
+              echo "<details><summary>Show Apply</summary>"
+              echo "```diff"
+              echo "${{ env.APPLY }}"
+              echo "```"
+              echo "</details>"
+              echo "*Pusher: @${{ github.actor }}*"
+              echo "*Action: ${{ github.event_name }}*"
+              echo "*Working Directory: ${{ env.WORKDIR }}*"
+              echo "*Workflow: ${{ github.workflow }}*"
+              echo "*Execution link: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}*"
+          } >> $GITHUB_STEP_SUMMARY
