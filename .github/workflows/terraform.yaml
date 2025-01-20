@@ -202,25 +202,23 @@ jobs:
         shell: bash
         run: terraform apply -no-color -auto-approve "tfplan"
 
-#      - name: Post Apply output to GitHub PR after merging
-#        uses: mshick/add-pr-comment@b8f338c590a895d50bcbfa6c5859251edc8952fc # v2
-#        if: github.ref == 'refs/heads/${{ inputs.prod-branch }}' && steps.plan.outputs.exitcode == '2' && inputs.pr-comment == true
-#        env:
-#          APPLY: "terraform\n${{ steps.apply.outputs.stdout }}"
-#        with:
-#          allow-repeats: true
-#          message-id: Apply ${{ inputs.working-dir }}
-#          repo-token: ${{ github.token }}
-#          message: |
-#            ### Terraform for ${{ inputs.working-dir }}\`
-#            #### Terraform Apply \`${{ steps.apply.outcome }}\`
-#            <details><summary>Show Apply</summary>
-#            ```diff
-#            ${{ env.APPLY }}
-#            ```
-#            </details>
-#            *Pusher: @${{ github.actor }}*
-#            *Action: ${{ github.event_name }}*
-#            *Working Directory: ${{ env.WORKDIR }}*
-#            *Workflow: ${{ github.workflow }}*
-#            *Execution link: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}*
+    - name: Post Apply output to GitHub PR after merging
+      if: github.ref == github.event.repository.default_branch && steps.plan.outputs.exitcode == '2' && inputs.pr-comment == true
+
+      shell: bash
+      run: |
+        {
+            echo "### Terraform for ${{ inputs.working-dir }}\`"
+            echo "#### Terraform Apply \`${{ steps.apply.outcome }}\`"
+            echo "<details><summary>Show Apply</summary>"
+            echo "```diff"
+            echo "${{ env.APPLY }}"
+            echo "```"
+            echo "</details>"
+            echo "*Pusher: @${{ github.actor }}*"
+            echo "*Action: ${{ github.event_name }}*"
+            echo "*Working Directory: ${{ env.WORKDIR }}*"
+            echo "*Workflow: ${{ github.workflow }}*"
+            echo "*Execution link: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}*"
+         
+        } >> $GITHUB_STEP_SUMMARY
