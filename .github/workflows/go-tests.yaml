@@ -108,6 +108,7 @@ jobs:
 
       - name: golangci-lint
         uses: golangci/golangci-lint-action@971e284b6050e8a5849b72094c50ab08da042db8
+        continue-on-error: ${{ inputs.warn-only }}
         with:
           version: ${{ inputs.golangci-lint-version }}
           args: "${{ inputs.gologanci-lint-args }} --timeout=${{ inputs.timeout-minutes }}m"
@@ -115,7 +116,6 @@ jobs:
           problem-matchers: ${{ inputs.golangci-lint-problem-matchers }}
           only-new-issues: ${{ inputs.golangci-lint-only-new-issues }}
           working-directory: ${{ inputs.path }}
-          continue-on-error: ${{ inputs.warn-only }}
 
       # Make sure build works.  This may not be necessary, since golangci might be able to find the same issues.
       # have to investigate further
