@@ -85,7 +85,7 @@ jobs:
 
       - name: set terraform variables
         shell: bash
-             echo "TF_VAR_google_credentials=${{ steps.auth.outputs.access_token }}" >> $GITHUB_ENV
+        run: echo "TF_VAR_google_credentials=${{ steps.auth.outputs.access_token }}" >> $GITHUB_ENV
 
       - uses: hashicorp/setup-terraform@v3
         with:
