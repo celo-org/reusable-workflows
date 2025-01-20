@@ -48,9 +48,6 @@ on:
       summary:
         default: true
         type: boolean
-      prod-branch:
-        default: main
-        type: string
 
 jobs:
   terraform:
@@ -201,7 +198,7 @@ jobs:
 
       - name: Terraform Apply
         id: apply
-        if: github.ref == 'refs/heads/${{ inputs.prod-branch }}' && github.event_name == 'push' && steps.plan.outcome == 'success'
+        if: github.ref == github.event.repository.default_branch && github.event_name == 'push' && steps.plan.outcome == 'success'
         shell: bash
         run: terraform apply -no-color -auto-approve "tfplan"
 
