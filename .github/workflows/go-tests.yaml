@@ -47,6 +47,10 @@ on:
         description: "path to the go dependency file (such as go.sum)"
         type: string
         default: "" 
+      fail-job:
+        description: fail the job if go tests don't succeed
+        type: boolean
+        default: true
       debug_enabled:
         default: false
         required: false
@@ -120,5 +124,6 @@ jobs:
       # Run tests
       - name: Go Tests
         uses: robherley/go-test-action@b19f6aadabfb1ad85079065b21aa2af132466468
+        continue-on-error: ${{ !inputs.fail-job }}
         with:
           moduleDirectory: ${{ inputs.path }}
