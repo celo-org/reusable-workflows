@@ -47,10 +47,10 @@ on:
         description: "path to the go dependency file (such as go.sum)"
         type: string
         default: "" 
-      fail-job:
-        description: fail the job if go tests don't succeed
+      warn-only:
+        description: to warn instead of failing the job
         type: boolean
-        default: true
+        default: false
       debug_enabled:
         default: false
         required: false
@@ -115,6 +115,7 @@ jobs:
           problem-matchers: ${{ inputs.golangci-lint-problem-matchers }}
           only-new-issues: ${{ inputs.golangci-lint-only-new-issues }}
           working-directory: ${{ inputs.path }}
+          continue-on-error: ${{ inputs.warn-only }}
 
       # Make sure build works.  This may not be necessary, since golangci might be able to find the same issues.
       # have to investigate further
@@ -124,6 +125,6 @@ jobs:
       # Run tests
       - name: Go Tests
         uses: robherley/go-test-action@b19f6aadabfb1ad85079065b21aa2af132466468
-        continue-on-error: ${{ !inputs.fail-job }}
+        continue-on-error: ${{ inputs.warn-only }}
         with:
           moduleDirectory: ${{ inputs.path }}
