@@ -83,6 +83,13 @@ jobs:
           access_token_scopes: ${{ inputs.access-token-scopes }}
           access_token_lifetime: '20m'
 
+      - name: Run Trivy vulnerability scanner
+        uses: celo-org/trivy-composite-action@v1.0.0-alpha
+        with:
+          scan-type: config
+          pr-comment: ${{ inputs.pr-comment }}
+          summary: ${{ inputs.summary }}
+
       - name: set terraform variables
         shell: bash
         run: echo "TF_VAR_google_credentials=${{ steps.auth.outputs.access_token }}" >> $GITHUB_ENV
