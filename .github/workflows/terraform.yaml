@@ -38,8 +38,7 @@ on:
         type: boolean
         description: "run tmate for troubleshooting"
       runs_on:
-#        default: "['self-hosted', 'org', 'terraform']"
-        default: "['ubuntu-latest']"
+        default: "['self-hosted', 'org', 'terraform']"
         type: string
         description: "github runner tags"
       pr-comment:
@@ -84,9 +83,7 @@ jobs:
       - name: Run Trivy vulnerability scanner
         uses: celo-org/trivy-composite-action@v1.0.0-alpha
         with:
-          scan-type: 'fs'
-          scan-ref: ${{ inputs.working-dir }}
-          
+          scan-type: 'config'
           pr-comment: ${{ inputs.pr-comment }}
           summary: ${{ inputs.summary }}
 
