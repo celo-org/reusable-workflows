@@ -110,6 +110,14 @@ jobs:
       - name: 'Checkout'
         uses: actions/checkout@v4
 
+      - name: Run Trivy vulnerability scanner
+        uses: celo-org/trivy-composite-action@v1.0.0-alpha
+        with:
+          scan-type: 'fs --scanners misconfig'
+          scan-ref: ${{ inputs.context }}
+          pr-comment: ${{ inputs.pr-comment }}
+          summary: ${{ inputs.summary }}
+
       # Split the artifact-registry to give us both the registry url and app/image name
       - name: Split location and app names
         id: split
