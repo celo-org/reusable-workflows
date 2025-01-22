@@ -63,6 +63,8 @@ on:
       summary:
         default: true
         type: boolean
+      trivy-skip-dirs:
+        type: string
 
 jobs:
   auth-build-push-scan-container:
@@ -117,6 +119,7 @@ jobs:
           scan-type: config
           pr-comment: ${{ inputs.pr-comment }}
           summary: ${{ inputs.summary }}
+          skip-dirs: ${{ inputs.trivy-skip-dirs }}
 
       # Split the artifact-registry to give us both the registry url and app/image name
       - name: Split location and app names
@@ -159,3 +162,4 @@ jobs:
           push: ${{ fromJSON(true) }}
           summary: ${{ inputs.summary }}
           pr-comment: ${{ inputs.pr-comment }} 
+          skip-dirs: ${{ inputs.trivy-skip-dirs }}
