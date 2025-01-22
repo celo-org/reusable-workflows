@@ -157,3 +157,5 @@ jobs:
           dockerfile: ${{ inputs.file }}
           build-args: ${{ inputs.build-args }}
           push: ${{ fromJSON(true) }}
+          summary: ${{ inputs.summary }}
+          pr-comment: ${{ inputs.pr-comment }} 
