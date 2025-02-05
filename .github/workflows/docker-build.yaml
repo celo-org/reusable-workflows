@@ -162,5 +162,5 @@ jobs:
           push: ${{ fromJSON(true) }}
           summary: ${{ inputs.summary }}
           pr-comment: ${{ inputs.pr-comment }} 
-          skip-dirs: ${{ inputs.trivy-skip-dirs }}
+          trivy-skip-dirs: ${{ inputs.trivy-skip-dirs }}
           skip-setup-trivy: true
