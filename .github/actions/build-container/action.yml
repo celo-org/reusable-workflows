@@ -85,7 +85,7 @@ runs:
         process_tags
 
     - name: Build container image
-      uses: docker/build-push-action@v5
+      uses: docker/build-push-action@v6
       id: docker-build
       with:
         platforms: ${{ inputs.runner_platform }}
@@ -113,7 +113,7 @@ runs:
 
     - name: Build and push
       if: ${{ inputs.push }} == 'true'
-      uses: docker/build-push-action@v5
+      uses: docker/build-push-action@v6
       id: docker-build-push
       with:
         platforms: ${{ inputs.platforms }}
