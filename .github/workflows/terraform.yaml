@@ -196,12 +196,12 @@ jobs:
 
       - name: Terraform Apply
         id: apply
-        if: github.ref == github.event.repository.default_branch && github.event_name == 'push' && steps.plan.outcome == 'success'
+        if: github.ref_name == github.event.repository.default_branch && github.event_name == 'push' && steps.plan.outcome == 'success'
         shell: bash
         run: terraform apply -no-color -auto-approve "tfplan"
 
       - name: Post Apply output to GitHub PR after merging
-        if: github.ref == github.event.repository.default_branch && steps.plan.outputs.exitcode == '2' && inputs.pr-comment == true
+        if: github.ref_name == github.event.repository.default_branch && steps.plan.outputs.exitcode == '2' && inputs.pr-comment == true
         shell: bash
         run: |
           {
