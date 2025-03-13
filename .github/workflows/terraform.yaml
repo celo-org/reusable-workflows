@@ -167,7 +167,7 @@ jobs:
         with:
           allow-repeats: true
           repo-token: ${{ github.token }}
-          message-id: Plan ${{ inputs.working-dir }}
+          message-id: Plan ${{ env.WORKDIR }}
           message: |
             ### Terraform for ${{ env.WORKDIR }}\`
             #### Terraform Format and Style 🖌\`${{ steps.fmt.outcome }}\`
@@ -192,7 +192,7 @@ jobs:
 
             *Pusher: @${{ github.actor }}*
             *Action: ${{ github.event_name }}*
-            *Working Directory: ${{ inputs.working-dir }}*
+            *Working Directory: ${{ env.WORKDIR }}*
             *Workflow: ${{ github.workflow }}*
             *Execution link: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}*
 
