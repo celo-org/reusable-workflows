@@ -225,6 +225,7 @@ jobs:
               echo "*Workflow: ${{ github.workflow }}*"
               echo "*Execution link: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}*"
             } >> report.txt
+            cat report.txt
             echo "report=report.txt" >> $GITHUB_OUTPUT     
 
       - name: Post Scan Results to GitHub PR
