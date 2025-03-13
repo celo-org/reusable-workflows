@@ -203,7 +203,7 @@ jobs:
         run: terraform apply -no-color -auto-approve "tfplan"
 
       - name: Build Report
-        if: github.ref_name == github.event.repository.default_branch && ( inputs.summary || inputs.pr-comment )
+        if: github.ref_name == github.event.repository.default_branch && steps.apply.outputs.stdout != '' && ( inputs.summary || inputs.pr-comment )
         id: build-report
         shell: bash
         env:
