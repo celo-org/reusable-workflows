@@ -162,12 +162,14 @@ jobs:
       - name: Post Plan to GitHub PR
         uses: mshick/add-pr-comment@b8f338c590a895d50bcbfa6c5859251edc8952fc # v2
         if: github.event_name == 'pull_request' && steps.plan.outputs.exitcode == '2' && inputs.pr-comment == true
+	env:
+	  WORKDIR: ${{ inputs.working-dir }}
         with:
           allow-repeats: true
           repo-token: ${{ github.token }}
           message-id: Plan ${{ inputs.working-dir }}
           message: |
-            ### Terraform for ${{ inputs.working-dir }}\`
+            ### Terraform for ${{ env.WORKDIR }}\`
             #### Terraform Format and Style 🖌\`${{ steps.fmt.outcome }}\`
             #### Terraform Initialization ⚙️\`${{ steps.init.outcome }}\`
             #### Terraform Validation 🤖\`${{ steps.validate.outcome }}\`
@@ -190,7 +192,7 @@ jobs:
 
             *Pusher: @${{ github.actor }}*
             *Action: ${{ github.event_name }}*
-            *Working Directory: ${{ env.WORKDIR }}*
+            *Working Directory: ${{ inputs.working-dir }}*
             *Workflow: ${{ github.workflow }}*
             *Execution link: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}*
 
@@ -200,12 +202,16 @@ jobs:
         shell: bash
         run: terraform apply -no-color -auto-approve "tfplan"
 
-      - name: Post Apply output to GitHub PR after merging
-        if: github.ref_name == github.event.repository.default_branch && steps.plan.outputs.exitcode == '2' && inputs.pr-comment == true
+      - name: Build Report
+        if: github.ref_name == github.event.repository.default_branch && steps.plan.outputs.exitcode == '2' && ( inputs.summary || inputs.pr-comment == true )
+        id: build-report
         shell: bash
+        env:
+          APPLY: "terraform\n${{ steps.apply.outputs.stdout }}"
+          WORKDIR: "${{ inputs.working-dir }}"
         run: |
           {
-              echo "### Terraform for ${{ inputs.working-dir }}\`"
+              echo "### Terraform for ${{ env.WORKDIR }}\`"
               echo "#### Terraform Apply \`${{ steps.apply.outcome }}\`"
               echo "<details><summary>Show Apply</summary>"
               echo "```diff"
@@ -217,4 +223,21 @@ jobs:
               echo "*Working Directory: ${{ env.WORKDIR }}*"
               echo "*Workflow: ${{ github.workflow }}*"
               echo "*Execution link: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}*"
-          } >> $GITHUB_STEP_SUMMARY
+            } >> report.txt
+            echo "report=report.txt" >> $GITHUB_OUTPUT     
+          fi
+
+      - name: Post Scan Results to GitHub PR
+        uses: mshick/add-pr-comment@b8f338c590a895d50bcbfa6c5859251edc8952fc # v2
+        if: ${{ github.event_name == 'pull_request' && inputs.pr-comment && steps.build-report.outputs.report != '' }}
+        with:
+          allow-repeats: true
+          repo-token: ${{ github.token }}
+          message-id: Trivy Scan ${{ github.workflow }}
+          message-path: ${{ steps.build-report.outputs.report }}
+
+      - name: Post Scan Results to Workflow Summary
+        if: ${{ inputs.summary && steps.build-report.outputs.report != '' }}
+        shell: bash
+        run: |
+          cat ${{ steps.build-report.outputs.report }} >> $GITHUB_STEP_SUMMARY
