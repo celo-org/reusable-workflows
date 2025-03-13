@@ -210,11 +210,14 @@ jobs:
           APPLY: "${{ steps.apply.outputs.stdout }}"
           WORKDIR: "${{ inputs.working-dir }}"
         run: |
-	  echo "${{ env.APPLY }}"
+          echo "${{ env.APPLY }}" > apply.txt
           {
               echo "### Terraform for ${{ env.WORKDIR }}\`"
               echo "#### Terraform Apply \`${{ steps.apply.outcome }}\`"
               echo "<details><summary>Show Apply</summary>"
+              echo "```diff"
+              cat  apply.txt 
+              echo "```"
               echo "</details>"
               echo "*Pusher: @${{ github.actor }}*"
               echo "*Action: ${{ github.event_name }}*"
@@ -223,7 +226,6 @@ jobs:
               echo "*Execution link: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}*"
             } >> report.txt
             echo "report=report.txt" >> $GITHUB_OUTPUT     
-          fi
 
       - name: Post Scan Results to GitHub PR
         uses: mshick/add-pr-comment@b8f338c590a895d50bcbfa6c5859251edc8952fc # v2
