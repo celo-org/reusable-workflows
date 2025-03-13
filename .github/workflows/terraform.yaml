@@ -216,7 +216,7 @@ jobs:
               echo "#### Terraform Apply \`${{ steps.apply.outcome }}\`"
               echo "<details><summary>Show Apply</summary>"
               echo "```diff "
-              echo "cat ${{ apply.txt }}"
+              echo "cat apply.txt"
               echo "```"
               echo "</details>"
               echo "*Pusher: @${{ github.actor }}*"
