@@ -210,8 +210,9 @@ jobs:
           APPLY: "${{ steps.apply.outputs.stdout }}"
           WORKDIR: "${{ inputs.working-dir }}"
         run: |
+
+	  echo "${{ env.APPLY }}" > apply.txt
           {
-	      echo "${{ env.APPLY }} > apply.txt"
               echo "### Terraform for ${{ env.WORKDIR }}\`"
               echo "#### Terraform Apply \`${{ steps.apply.outcome }}\`"
               echo "<details><summary>Show Apply</summary>"
