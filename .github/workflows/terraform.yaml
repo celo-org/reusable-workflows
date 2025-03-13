@@ -207,7 +207,7 @@ jobs:
         id: build-report
         shell: bash
         env:
-          APPLY: "terraform\n${{ steps.apply.outputs.stdout }}"
+          APPLY: "${{ steps.apply.outputs.stdout }}"
           WORKDIR: "${{ inputs.working-dir }}"
         run: |
           {
