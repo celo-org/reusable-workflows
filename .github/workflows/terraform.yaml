@@ -215,9 +215,9 @@ jobs:
               echo "### Terraform for ${{ env.WORKDIR }}\`"
               echo "#### Terraform Apply \`${{ steps.apply.outcome }}\`"
               echo "<details><summary>Show Apply</summary>"
-              echo "```diff"
+              echo '```diff'
               cat  apply.txt 
-              echo "```"
+              echo '```'
               echo "</details>"
               echo "*Pusher: @${{ github.actor }}*"
               echo "*Action: ${{ github.event_name }}*"
@@ -233,7 +233,7 @@ jobs:
         with:
           allow-repeats: true
           repo-token: ${{ github.token }}
-          message-id: Trivy Scan ${{ github.workflow }}
+          message-id: Terraform Apply ${{ github.workflow }}
           message-path: ${{ steps.build-report.outputs.report }}
 
       - name: Post Scan Results to Workflow Summary
