@@ -211,11 +211,12 @@ jobs:
           WORKDIR: "${{ inputs.working-dir }}"
         run: |
           {
+	      echo "${{ env.APPLY }} > apply.txt"
               echo "### Terraform for ${{ env.WORKDIR }}\`"
               echo "#### Terraform Apply \`${{ steps.apply.outcome }}\`"
               echo "<details><summary>Show Apply</summary>"
-              echo "```diff"
-              echo "${{ env.APPLY }}"
+              echo "```diff "
+              echo "cat ${{ apply.txt }}"
               echo "```"
               echo "</details>"
               echo "*Pusher: @${{ github.actor }}*"
