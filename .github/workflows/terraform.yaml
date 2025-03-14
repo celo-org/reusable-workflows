@@ -224,6 +224,7 @@ jobs:
               echo "<details><summary>Show Apply</summary>"
               echo "```"
               echo "${{ steps.apply.outputs.stdout }}"
+              echo ""
               echo "```"
               echo "</details>"
               echo "*Pusher: @${{ github.actor }}*"
