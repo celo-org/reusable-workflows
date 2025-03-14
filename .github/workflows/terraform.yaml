@@ -227,6 +227,7 @@ jobs:
               cat apply.txt
               echo '```'
               echo "</details>"
+              echo ""
               echo "`"
               echo "*Pusher: @${{ github.actor }}*  "
               echo "*Action: ${{ github.event_name }}*  "
