@@ -210,7 +210,7 @@ jobs:
         run: terraform apply -no-color -auto-approve "tfplan"
 
       - name: Build Report
-        if: github.ref_name == github.event.repository.default_branch && steps.apply.outputs.stdout != '' && ( inputs.summary || inputs.pr-comment )
+        if: github.ref_name == github.event.repository.default_branch && steps.apply.outputs.stdout != '' && ( inputs.summary || inputs.pr-comment ) && steps.plan.outputs.exitcode == '2'
         id: build-report
         shell: bash
         env:
@@ -236,8 +236,8 @@ jobs:
           echo "report=report.txt" >> $GITHUB_OUTPUT     
 
       - name: Post Scan Results to GitHub PR
-        uses: mshick/add-pr-comment@b8f338c590a895d50bcbfa6c5859251edc8952fc # v2
-        if: github.ref_name == github.event.repository.default_branch && inputs.pr-comment && steps.build-report.outputs.report != ''
+        uses: mshick/add-pr-comment@b8f338c590a895d50bcbfa6c5859251edc8952fc # v2 
+        if: github.ref_name == github.event.repository.default_branch && inputs.pr-comment && steps.build-report.outputs.report != '' && steps.plan.outputs.exitcode == '2'
         with:
           allow-repeats: true
           repo-token: ${{ github.token }}
@@ -245,9 +245,9 @@ jobs:
           message-path: "${{ inputs.working-dir }}/${{ steps.build-report.outputs.report }}"
 
       - name: Post Scan Results to Workflow Summary
-        if: github.ref_name == github.event.repository.default_branch && inputs.summary && steps.build-report.outputs.report != ''
+        if: github.ref_name == github.event.repository.default_branch && inputs.summary && steps.build-report.outputs.report != '' && steps.plan.outputs.exitcode == '2'
         shell: bash
         run: |
           while IFS= read -r line; do
-            echo tr -d "$line" >> $GITHUB_STEP_SUMMARY
+            echo $(tr -d "$line") >> $GITHUB_STEP_SUMMARY
           done < "${{ steps.build-report.outputs.report }}"
