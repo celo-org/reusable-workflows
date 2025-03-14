@@ -59,6 +59,13 @@ jobs:
       - name: 'Checkout'
         uses: actions/checkout@v4
 
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@e5c7151931ca95bad1c6f4190c730ecf8c7dde48
+        if: inputs.debug_enabled == true 
+        with:
+          detached: true
+          limit-access-to-actor: true
+
       # Akeyless Get Secrets will take the specified dynamic or static secrets and set them to their corresponding environment variables.  It will also
       # export github's JWT Token as AKEYLESS_AUTH_JWT (which their terraform provider uses for JWT authentication, and AUTH_TOKEN - The akeyless auth token
       # it gets back after authenticating, which can be used for certain things (such as ansible)
