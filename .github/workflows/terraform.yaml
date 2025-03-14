@@ -211,7 +211,9 @@ jobs:
           WORKDIR: "${{ inputs.working-dir }}"
         run: |
           echo "${{ env.APPLY }}" > apply.txt
+          echo "test1"
           cat apply.txt
+          echo "test2"
           {
               echo "### Terraform for ${{ env.WORKDIR }}\`"
               echo "#### Terraform Apply \`${{ steps.apply.outcome }}\`"
