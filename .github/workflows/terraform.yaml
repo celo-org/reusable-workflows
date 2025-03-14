@@ -222,10 +222,10 @@ jobs:
               echo "### Terraform for ${{ env.WORKDIR }}\`"
               echo "#### Terraform Apply \`${{ steps.apply.outcome }}\`"
               echo "<details><summary>Show Apply</summary>"
-              echo "```"
-              cat apply.txt
               echo ""
-              echo "```"
+              echo '```'
+              cat apply.txt
+              echo '```'
               echo "</details>"
               echo "*Pusher: @${{ github.actor }}*"
               echo "*Action: ${{ github.event_name }}*"
