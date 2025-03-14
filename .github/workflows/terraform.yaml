@@ -132,7 +132,7 @@ jobs:
 
       # Print the plan to file in this way to avoid problems with "'" in the plan
       - name: Print plan to file
-        if: steps.plan.outputs.exitcode == '2'
+        if: steps.plan.outputs.exitcode != '0'
         run: |
             cat > plan_temporal.txt <<'EOF'
             ${{ steps.showplan.outputs.stdout }}
@@ -142,7 +142,7 @@ jobs:
       # Removes the refreshing from the plan output and then moves the + and - all the way
       # to the left of the pull request to trigger github's colors
       - name: Reformat Plan
-        if: steps.plan.outputs.exitcode == '2'
+        if: steps.plan.outputs.exitcode != '0'
         run: |
             sed -E 's/^([[:space:]]+)([-+])/\2\1/g' plan_temporal.txt > plan.txt
         shell: bash
@@ -150,7 +150,7 @@ jobs:
       # Saves the plan in an environment variable so we can pull it back out
       - name: Put Plan in Env Var
         shell: bash
-        if: steps.plan.outputs.exitcode == '2'
+        if: steps.plan.outputs.exitcode != '0'
         run: |
           PLAN=$(cat plan.txt)
           check=${#PLAN}
@@ -168,7 +168,7 @@ jobs:
 
       - name: Post Plan to GitHub PR
         uses: mshick/add-pr-comment@b8f338c590a895d50bcbfa6c5859251edc8952fc # v2
-        if: github.event_name == 'pull_request' && steps.plan.outputs.exitcode == '2' && inputs.pr-comment == true
+        if: github.event_name == 'pull_request' && steps.plan.outputs.exitcode != '0' && inputs.pr-comment == true
         env:
           WORKDIR: ${{ inputs.working-dir }}
         with:
@@ -210,7 +210,7 @@ jobs:
         run: terraform apply -no-color -auto-approve "tfplan"
 
       - name: Build Report
-        if: github.ref_name == github.event.repository.default_branch && steps.apply.outputs.stdout != '' && ( inputs.summary || inputs.pr-comment ) && steps.plan.outputs.exitcode == '2'
+        if: always() && github.ref_name == github.event.repository.default_branch && steps.apply.outputs.stdout != '' && ( inputs.summary || inputs.pr-comment ) && steps.plan.outputs.exitcode != '0'
         id: build-report
         shell: bash
         env:
@@ -237,7 +237,7 @@ jobs:
 
       - name: Post Scan Results to GitHub PR
         uses: mshick/add-pr-comment@b8f338c590a895d50bcbfa6c5859251edc8952fc # v2 
-        if: github.ref_name == github.event.repository.default_branch && inputs.pr-comment && steps.build-report.outputs.report != '' && steps.plan.outputs.exitcode == '2'
+        if: always() && github.ref_name == github.event.repository.default_branch && inputs.pr-comment && steps.build-report.outputs.report != '' && steps.plan.outputs.exitcode != '0'
         with:
           allow-repeats: true
           repo-token: ${{ github.token }}
@@ -245,7 +245,7 @@ jobs:
           message-path: "${{ inputs.working-dir }}/${{ steps.build-report.outputs.report }}"
 
       - name: Post Scan Results to Workflow Summary
-        if: github.ref_name == github.event.repository.default_branch && inputs.summary && steps.build-report.outputs.report != '' && steps.plan.outputs.exitcode == '2'
+        if: always() && github.ref_name == github.event.repository.default_branch && inputs.summary && steps.build-report.outputs.report != '' && steps.plan.outputs.exitcode != '0'
         shell: bash
         run: |
           while IFS= read -r line; do
