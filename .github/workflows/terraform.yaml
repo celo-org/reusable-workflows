@@ -220,18 +220,20 @@ jobs:
           echo '${{ env.APPLY }}' > apply.txt
           {
               echo "### Terraform for ${{ env.WORKDIR }}\`"
-              echo "#### Terraform Apply \`${{ steps.apply.outcome }}\`"
+              echo "#### Terraform Apply \`${{ steps.apply.outcome }}"
               echo "<details><summary>Show Apply</summary>"
               echo ""
               echo '```'
               cat apply.txt
               echo '```'
               echo "</details>"
-              echo "*Pusher: @${{ github.actor }}*\`"
-              echo "*Action: ${{ github.event_name }}*\`"
-              echo "*Working Directory: ${{ env.WORKDIR }}*\`"
-              echo "*Workflow: ${{ github.workflow }}*\`"
-              echo "*Execution link: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}*\`"
+              echo "\'"
+              echo "*Pusher: @${{ github.actor }}*"
+              echo "*Action: ${{ github.event_name }}*"
+              echo "*Working Directory: ${{ env.WORKDIR }}*"
+              echo "*Workflow: ${{ github.workflow }}*"
+              echo "*Execution link: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}*"
+              echo "\'"
           } > 'report.txt'
           echo "report=report.txt" >> $GITHUB_OUTPUT     
 
