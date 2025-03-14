@@ -223,7 +223,7 @@ jobs:
               echo "#### Terraform Apply \`${{ steps.apply.outcome }}\`"
               echo "<details><summary>Show Apply</summary>"
               echo "```"
-              echo "${{ steps.apply.outputs.stdout }}"
+              cat apply.txt
               echo ""
               echo "```"
               echo "</details>"
