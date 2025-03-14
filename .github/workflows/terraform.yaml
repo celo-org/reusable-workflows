@@ -211,9 +211,6 @@ jobs:
           WORKDIR: "${{ inputs.working-dir }}"
         run: |
           echo '${{ env.APPLY }}' > apply.txt
-          echo "test1"
-          cat apply.txt
-          echo "test2"
           {
               echo "### Terraform for ${{ env.WORKDIR }}\`"
               echo "#### Terraform Apply \`${{ steps.apply.outcome }}\`"
@@ -227,9 +224,11 @@ jobs:
               echo "*Working Directory: ${{ env.WORKDIR }}*"
               echo "*Workflow: ${{ github.workflow }}*"
               echo "*Execution link: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}*"
-            } >> report.txt
-            cat report.txt
-            echo "report=report.txt" >> $GITHUB_OUTPUT     
+          } > report.txt
+          echo "report=report.txt" >> $GITHUB_OUTPUT     
+          echo "test1"
+          cat report.txt
+          echo "test2"
 
       - name: Post Scan Results to GitHub PR
         uses: mshick/add-pr-comment@b8f338c590a895d50bcbfa6c5859251edc8952fc # v2
