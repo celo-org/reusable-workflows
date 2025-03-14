@@ -210,7 +210,7 @@ jobs:
           APPLY: "${{ steps.apply.outputs.stdout }}"
           WORKDIR: "${{ inputs.working-dir }}"
         run: |
-          echo "${{ env.APPLY }}" > apply.txt
+          echo '${{ env.APPLY }}' > apply.txt
           echo "test1"
           cat apply.txt
           echo "test2"
