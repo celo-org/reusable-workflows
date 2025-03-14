@@ -224,8 +224,8 @@ jobs:
               echo "*Working Directory: ${{ env.WORKDIR }}*"
               echo "*Workflow: ${{ github.workflow }}*"
               echo "*Execution link: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}*"
-          } > report.txt
-          echo "report=report.txt" >> $GITHUB_OUTPUT     
+          } > '${{ env.WORKDIR }}/report.txt'
+          echo "report=${{ env.WORKDIR }}/report.txt" >> $GITHUB_OUTPUT     
           echo "test1"
           cat report.txt
           echo "test2"
