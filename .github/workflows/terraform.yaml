@@ -249,5 +249,5 @@ jobs:
         shell: bash
         run: |
           while IFS= read -r line; do
-            echo $(tr -d "$line") >> $GITHUB_STEP_SUMMARY
+            echo $(tr -d '\n' "$line") >> $GITHUB_STEP_SUMMARY
           done < "${{ steps.build-report.outputs.report }}"
