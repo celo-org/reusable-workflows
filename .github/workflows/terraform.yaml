@@ -232,7 +232,7 @@ jobs:
               echo "*Workflow: ${{ github.workflow }}*"
               echo "*Execution link: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}*"
           } > 'report.txt'
-          echo 'report=report.txt' >> $GITHUB_OUTPUT     
+          echo 'report=${env.WORKDIR}/report.txt' >> $GITHUB_OUTPUT     
 
       - name: Post Scan Results to GitHub PR
         uses: mshick/add-pr-comment@b8f338c590a895d50bcbfa6c5859251edc8952fc # v2
