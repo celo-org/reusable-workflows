@@ -223,7 +223,7 @@ jobs:
               echo "#### Terraform Apply \`${{ steps.apply.outcome }}\`"
               echo "<details><summary>Show Apply</summary>"
               echo "```"
-              echo "${{ env.APPLY }}"
+              echo "${{ steps.apply.outputs.stdout }}"
               echo "```"
               echo "</details>"
               echo "*Pusher: @${{ github.actor }}*"
