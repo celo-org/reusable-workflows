@@ -51,6 +51,7 @@ on:
 jobs:
   terraform:
     runs-on: ${{ fromJson(inputs.runs_on) }}
+    timeout-minutes: ${{ inputs.timeout-minutes }}
     defaults:
       run:
         working-directory: ${{ inputs.working-dir }}
