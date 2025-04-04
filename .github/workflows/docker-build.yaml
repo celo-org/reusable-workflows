@@ -116,7 +116,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Run Trivy vulnerability scanner
-        uses: celo-org/trivy-composite-action@v1.0.0-alpha
+        uses: celo-org/trivy-composite-action@6264c91066fcc95910c6445207e656ca6865ba7b
         if: inputs.trivy-enabled == true
         with:
           scan-ref: ${{ inputs.context }}
@@ -155,7 +155,7 @@ jobs:
           password: ${{ steps.auth.outputs.access_token }}
 
       - name: Build, push and scan the container
-        uses: celo-org/docker-build-composite-action@v1.0.0-alpha
+        uses: celo-org/docker-build-composite-action@68294b5f0dba558d230d2a35ac36e70978942c8c
         with:
           platforms: ${{ inputs.platforms }}
           registry: ${{ inputs.artifact-registry }}
