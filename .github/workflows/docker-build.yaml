@@ -120,7 +120,7 @@ jobs:
         if: inputs.trivy-enabled == true
         with:
           scan-ref: ${{ inputs.context }}
-          scan-type: config
+          scan-type: fs
           pr-comment: ${{ inputs.pr-comment }}
           summary: ${{ inputs.summary }}
           skip-dirs: ${{ inputs.trivy-skip-dirs }}

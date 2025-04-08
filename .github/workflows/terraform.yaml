@@ -100,7 +100,7 @@ jobs:
       - name: Run Trivy vulnerability scanner
         uses: celo-org/trivy-composite-action@v1.0.0-alpha
         with:
-          scan-type: 'config'
+          scan-type: 'fs'
           scan-ref: ${{ inputs.working-dir }}
           pr-comment: ${{ inputs.pr-comment }}
           summary: ${{ inputs.summary }}
