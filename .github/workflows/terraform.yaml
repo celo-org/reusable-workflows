@@ -98,7 +98,7 @@ jobs:
           access_token_lifetime: '20m'
 
       - name: Run Trivy vulnerability scanner
-        uses: celo-org/trivy-composite-action@v1.0.1-alvaro
+        uses: celo-org/trivy-composite-action@v1.0.0-alpha
         with:
           scan-type: 'fs'
           scan-ref: ${{ inputs.working-dir }}
