@@ -95,8 +95,8 @@ jobs:
         if: runner.environment == 'github-hosted'
         uses: step-security/harden-runner@v2
         with:
-          egress-policy: audit
-          #policy: ${{ inputs.debug_enabled == true && 'docker-debug' || 'docker' }}
+          egress-policy: block
+          policy: ${{ inputs.debug_enabled == true && 'docker-debug' || 'docker' }}
 
 
       # Only turns on tmate if workflow_dispatch set debug to true.
