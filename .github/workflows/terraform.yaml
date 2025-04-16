@@ -32,6 +32,10 @@ on:
         default: ''
         description: "Deployment environment in github"
         type: string
+      environment-url:
+        default: ''
+        description: "Deployment environment url in okta"
+        type: string
       debug_enabled:
         default: false
         required: false
@@ -56,6 +60,10 @@ jobs:
       run:
         working-directory: ${{ inputs.working-dir }}
         shell: bash
+    # Specify an environment here if using deployment environments
+    environment:
+      name: ${{ inputs.environment }}
+      url: ${{ inputs.environment-url }}
     steps:
       - name: Setup tmate session
         uses: mxschmitt/action-tmate@e5c7151931ca95bad1c6f4190c730ecf8c7dde48
