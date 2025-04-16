@@ -18,6 +18,7 @@ on:
 
 jobs:
   analysis:
+    if: github.event.repository.private == false
     name: Scorecard analysis
     runs-on: ubuntu-latest
     timeout-minutes: ${{ inputs.timeout-minutes }}
