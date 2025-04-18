@@ -60,7 +60,6 @@ jobs:
       run:
         working-directory: ${{ inputs.working-dir }}
         shell: bash
-    # Specify an environment here if using deployment environments
     environment:
       name: ${{ inputs.environment }}
       url: ${{ inputs.environment-url }}
@@ -72,9 +71,6 @@ jobs:
           detached: true
           limit-access-to-actor: true
 
-      # Security policies go-tests and go-tests-debug are configured in step security app
-      # Policy can be seen here https://app.stepsecurity.io/github/celo-org/actions/policies
-      # disable-sudo is set to false if debug is true, because tmate requires root to work.
       - name: Harden Runner
         if: runner.environment == 'github-hosted'
         uses: step-security/harden-runner@v2
@@ -84,9 +80,6 @@ jobs:
       - name: 'Checkout'
         uses: actions/checkout@v4
 
-      # Akeyless Get Secrets will take the specified dynamic or static secrets and set them to their corresponding environment variables.  It will also
-      # export github's JWT Token as AKEYLESS_AUTH_JWT (which their terraform provider uses for JWT authentication, and AUTH_TOKEN - The akeyless auth token
-      # it gets back after authenticating, which can be used for certain things (such as ansible)
       - name: Akeyless Get Secrets
         id: get_auth_token
         uses: docker://us-west1-docker.pkg.dev/devopsre/akeyless-public/akeyless-action:latest
@@ -94,7 +87,6 @@ jobs:
           api-url: ${{ inputs.akeyless-api-gateway }}
           access-id: ${{ inputs.akeyless-github-access-id }}
 
-      # Uses Google workload identity federation to authenticate without keys, in security circle project.  Variables defined in security circle
       - id: 'auth'
         name: 'Authenticate to Google Cloud'
         uses: 'google-github-actions/auth@v2'
@@ -141,14 +133,12 @@ jobs:
         run: terraform plan -no-color -input=false -out=tfplan "-detailed-exitcode"
         shell: bash
 
-      # Show Plan is used so we can get rid of all the "refreshing" comments that are noisy
       - name: Terraform Show Plan
         id: showplan
         run: terraform show tfplan "-no-color"
         continue-on-error: true
         shell: bash
 
-      # Print the plan to file in this way to avoid problems with "'" in the plan
       - name: Print plan to file
         if: steps.plan.outputs.exitcode != '0'
         run: |
@@ -157,22 +147,18 @@ jobs:
             EOF
         shell: bash
 
-      # Removes the refreshing from the plan output and then moves the + and - all the way
-      # to the left of the pull request to trigger github's colors
       - name: Reformat Plan
         if: steps.plan.outputs.exitcode != '0'
         run: |
             sed -E 's/^([[:space:]]+)([-+])/\2\1/g' plan_temporal.txt > plan.txt
         shell: bash
 
-      # Saves the plan in an environment variable so we can pull it back out
       - name: Put Plan in Env Var
         shell: bash
         if: steps.plan.outputs.exitcode != '0'
         run: |
           PLAN=$(cat plan.txt)
           check=${#PLAN}
-          # Delimiting plan size to avoid error "Argument list too long" when posting the plan
           if [ "$check" -ge 65000 ];
           then
             PLAN='Terraform plan is too long to be posted in the PR comment. Please check the Action run to verify it'
