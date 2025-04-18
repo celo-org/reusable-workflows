@@ -3,27 +3,47 @@ name: 'Terraform plan'
 on:
   workflow_call:
     inputs:
-      workload-id-provider:
+     workload-id-provider:
         required: true
         type: string
       service-account:
         required: true
         type: string
-      akeyless-api-gateway:
+      access-token-lifetime:
+        description: "GCP token expiration timeout"
         required: false
         type: string
-      akeyless-github-access-id:
-        required: false
-        type: string
-      working-dir:
+        default: "20m" 
+      artifact-registry:
         required: true
         type: string
-      token-format:
+      tags:
+        required: true
+        type: string
+      platforms:
+        type: string
+        default: "linux/amd64"
+      context:
+        required: true
+        type: string
+      file:
         required: false
         type: string
-      access-token-scopes:
+      build-args:
         required: false
         type: string
+      provenance:
+        type: boolean
+        required: false
+        default: true
+      docker-gcp-registries:
+        type: string
+        description: "GCP Artifact registry to login into. Check https://cloud.google.com/artifact-registry/docs/docker/authentication"
+        default: "us-west1-docker.pkg.dev,us-central1-docker.pkg.dev"
+      runs_on:
+        default: "['ubuntu-latest']"
+        type: string
+        description: "github runner tags"
       timeout-minutes:
         default: 30
         type: number
@@ -32,25 +52,22 @@ on:
         default: ''
         description: "Deployment environment in github"
         type: string
-      environment-url:
-        default: ''
-        description: "Deployment environment url in okta"
-        type: string
       debug_enabled:
         default: false
         required: false
         type: boolean
         description: "run tmate for troubleshooting"
-      runs_on:
-        default: "['self-hosted', 'org', 'terraform']"
-        type: string
-        description: "github runner tags"
       pr-comment:
         default: true
         type: boolean        
       summary:
         default: true
         type: boolean
+      trivy-enabled:
+        default: true
+        type: boolean
+      trivy-skip-dirs:
+        type: string
 
 jobs:
   terraform:
