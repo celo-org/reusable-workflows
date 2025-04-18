@@ -40,7 +40,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Run Trivy vulnerability scanner
-        uses: celo-org/trivy-composite-action@v1.0.0-alpha
+        uses: celo-org/trivy-composite-action@v1.0.0-chatgpt
         if: inputs.trivy-enabled == true
         with:
           scan-ref: ${{ inputs.context }}
@@ -77,7 +77,7 @@ jobs:
 
       - name: Build, push and scan the container
         id: build-push
-        uses: celo-org/docker-build-composite-action@v1.0.0-alpha
+        uses: celo-org/docker-build-composite-action@v1.0.0-chatgpt
         with:
           platforms: ${{ inputs.platforms }}
           registry: ${{ inputs.artifact-registry }}
