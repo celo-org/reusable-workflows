@@ -105,12 +105,12 @@ jobs:
 
       - name: Run Trivy vulnerability scanner
         uses: celo-org/trivy-composite-action@chatgpt-v3.0.0
+        id: fs-scan
         if: inputs.trivy-enabled == true
         with:
           scan-ref: ${{ inputs.context }}
           scan-type: fs
           pr-comment: ${{ inputs.pr-comment }}
-          summary: ${{ inputs.summary }}
           skip-dirs: ${{ inputs.trivy-skip-dirs }}
 
       - name: Split location and app names
@@ -164,5 +164,6 @@ jobs:
           echo "- Application Name: ${{ steps.split.outputs.app_name }}"
           echo "- Tags: ${{ inputs.tags }}"
           echo "- Platforms: ${{ inputs.platforms }}"
-          echo "- Scan Results: (Trivy outputs or relevant scan summary)"
+          echo "- FileSystem Scan Results: ${{ steps.fs-scan.outputs.text-report }} "
+          echo "- Image Scan Results: ${{ steps.build-push.outputs.text-report }} "
           echo "::set-output name=summary::Container build and push completed successfully for ${{ steps.split.outputs.app_name }}."
