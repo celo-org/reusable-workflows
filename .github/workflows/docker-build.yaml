@@ -32,13 +32,42 @@ on:
         required: false
         type: string
       provenance:
+        type: boolean
+        required: false
+        default: true
+      docker-gcp-registries:
+        type: string
+        description: "GCP Artifact registry to login into. Check https://cloud.google.com/artifact-registry/docs/docker/authentication"
+        default: "us-west1-docker.pkg.dev,us-central1-docker.pkg.dev"
+      runs_on:
+        default: "['ubuntu-latest']"
+        type: string
+        description: "github runner tags"
+      timeout-minutes:
+        default: 30
+        type: number
+        description: "Workflow timeout"
+      environment:
+        default: ''
+        description: "Deployment environment in github"
+        type: string
+      debug_enabled:
+        default: false
         required: false
         type: boolean
+        description: "run tmate for troubleshooting"
+      pr-comment:
         default: true
-      trivy:
-        required: false
+        type: boolean        
+      summary:
+        default: true
         type: boolean
+      trivy-enabled:
         default: true
+        type: boolean
+      trivy-skip-dirs:
+        type: string
+
 jobs:
   auth-build-push-scan-container:
     runs-on: ${{ fromJson(inputs.runs_on) }}
