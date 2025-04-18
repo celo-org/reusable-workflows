@@ -55,7 +55,7 @@ on:
 jobs:
   terraform:
     runs-on: ${{ fromJson(inputs.runs_on) }}
-    timeout-minutes: ${{ inputs.timeout-minutes }}
+    timeout-minutes: ${{ inputs.debug_enabled && 60 || inputs.timeout-minutes }}
     defaults:
       run:
         working-directory: ${{ inputs.working-dir }}
@@ -64,6 +64,13 @@ jobs:
       name: ${{ inputs.environment }}
       url: ${{ inputs.environment-url }}
     steps:
+      - name: Validate Inputs
+        run: |
+          if [[ -z "${{ inputs.workload-id-provider }}" || -z "${{ inputs.service-account }}" ]]; then
+            echo "::error::Required inputs are missing: workload-id-provider and service-account."
+            exit 1
+          fi
+
       - name: Setup tmate session
         uses: mxschmitt/action-tmate@e5c7151931ca95bad1c6f4190c730ecf8c7dde48
         if: inputs.debug_enabled == true 
@@ -98,7 +105,7 @@ jobs:
           access_token_lifetime: '20m'
 
       - name: Run Trivy vulnerability scanner
-        uses: celo-org/trivy-composite-action@chatgpt-v3.0.0
+        uses: celo-org/trivy-composite-action@v1.0.0-alpha
         with:
           scan-type: 'fs'
           scan-ref: ${{ inputs.working-dir }}
@@ -159,16 +166,13 @@ jobs:
         run: |
           PLAN=$(cat plan.txt)
           check=${#PLAN}
-          if [ "$check" -ge 65000 ];
-          then
-            PLAN='Terraform plan is too long to be posted in the PR comment. Please check the Action run to verify it'
+          if [ "$check" -ge 65000 ]; then
+            echo "::warning::Terraform plan is too long to be posted in the PR comment. Please check the Action run to verify it"
+            PLAN='Plan is too large. Refer to the Action logs.'
           fi
-          echo "$PLAN"
-          {
-              echo "PLAN<<EOF"
-              echo "$PLAN"
-              echo "EOF"
-          } >> "$GITHUB_ENV"
+          echo "PLAN<<EOF" >> "$GITHUB_ENV"
+          echo "$PLAN" >> "$GITHUB_ENV"
+          echo "EOF" >> "$GITHUB_ENV"
 
       - name: Post Plan to GitHub PR
         uses: mshick/add-pr-comment@b8f338c590a895d50bcbfa6c5859251edc8952fc # v2
@@ -253,6 +257,7 @@ jobs:
         if: always() && github.ref_name == github.event.repository.default_branch && inputs.summary && steps.build-report.outputs.report != '' && steps.plan.outputs.exitcode != '0'
         shell: bash
         run: |
+          echo "### Workflow Summary" >> $GITHUB_STEP_SUMMARY
           while IFS= read -r line; do
             echo $line >> $GITHUB_STEP_SUMMARY
           done < "${{ steps.build-report.outputs.report }}"
