@@ -155,7 +155,7 @@ jobs:
           password: ${{ steps.auth.outputs.access_token }}
 
       - name: Build, push and scan the container
-        uses: celo-org/docker-build-composite-action@v1.0.0-alpha
+        uses: celo-org/docker-build-composite-action@v1.0.0-refactor
         with:
           platforms: ${{ inputs.platforms }}
           registry: ${{ inputs.artifact-registry }}
