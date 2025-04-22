@@ -66,6 +66,10 @@ on:
       trivy-enabled:
         default: true
         type: boolean
+      trivy-timeout:
+        default: 15m
+        type: string
+        description: "trivy timeout 15 minutes"
       trivy-skip-dirs:
         type: string
 
@@ -115,14 +119,32 @@ jobs:
       - name: 'Checkout'
         uses: actions/checkout@v4
 
-      - name: Run Trivy vulnerability scanner
-        uses: celo-org/trivy-composite-action@v1.0.0-alpha
-        if: inputs.trivy-enabled == true
+      - name: Check if GHAS is Enabled
+        uses: actions/github-script@v7
+        id: ghas-check
         with:
-          scan-ref: ${{ inputs.context }}
+          script: |
+            const [owner, repo] = '${{ github.repository }}'.split("/");
+            const res = await github.rest.repos.get({ owner, repo });
+            const isPrivate = res.data.private;
+            const hasGhas = res.data.security_and_analysis?.advanced_security?.status === 'enabled';
+            if (isPrivate && !hasGhas) {
+              core.warning('GHAS is NOT enabled and repo is private. Cannot upload SARIF.');
+              return false;
+            }
+            return true;
+
+      - name: Run Trivy Scan
+        id: trivy
+        uses: aquasecurity/trivy-action@master
+        with:
           scan-type: fs
-          pr-comment: ${{ inputs.pr-comment }}
-          summary: ${{ inputs.summary }}
+          scan-ref:  ${{ inputs.context }}
+          timeout: ${{ inputs.trivy-timeout }}
+          vuln-type: "os,library"
+          severity: "UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL"
+          format: json
+          output: trivy-${{ inputs.context }}-${{ github.run_id }}-fs.json
           skip-dirs: ${{ inputs.trivy-skip-dirs }}
 
       # Split the artifact-registry to give us both the registry url and app/image name
@@ -170,21 +192,6 @@ jobs:
           trivy-skip-dirs: ${{ inputs.trivy-skip-dirs }}
           skip-setup-trivy: true
           trivy-enabled: ${{ inputs.trivy-enabled }}
-
-      - name: Check if GHAS is Enabled
-        uses: actions/github-script@v7
-        id: ghas-check
-        with:
-          script: |
-            const [owner, repo] = '${{ github.repository }}'.split("/");
-            const res = await github.rest.repos.get({ owner, repo });
-            const isPrivate = res.data.private;
-            const hasGhas = res.data.security_and_analysis?.advanced_security?.status === 'enabled';
-            if (isPrivate && !hasGhas) {
-              core.warning('GHAS is NOT enabled and repo is private. Cannot upload SARIF.');
-              return false;
-            }
-            return true;
 
       - name: Upload SARIF to Security Tab
         if: fromJSON(steps.ghas-check.outputs.result)
