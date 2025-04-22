@@ -149,7 +149,7 @@ jobs:
 
       - name: Run Trivy Scan
         id: trivy-fs
-        uses: aquasecurity/trivy-action@master
+        uses: celo-org/trivy-composite-action@v1.0.0-refactor
         with:
           scan-type: fs
           scan-ref:  ${{ inputs.context }}
@@ -157,56 +157,14 @@ jobs:
           vuln-type: "os,library"
           severity: "UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL"
           format: json
-          output: trivy-${{ steps.split.outputs.app_name }}-${{ github.run_id }}-fs.json
           skip-dirs: ${{ inputs.trivy-skip-dirs }}
-
-      - name: Convert Report to Text and sarif
-        if: ${{ inputs.summary || inputs.pr-comment }}
-        id: convert-trivy
-        env:
-          text-file: trivy-${{ steps.split.outputs.app_name }}-${{ github.run_id }}-fs.txt
-          json-file: trivy-${{ steps.split.outputs.app_name }}-${{ github.run_id }}-fs.json
-          sarif-file: trivy-${{ steps.split.outputs.app_name }}-${{ github.run_id }}-fs.sarif
-        shell: bash
-        run: |
-          trivy convert --format table --output ${{ env.text-file }} ${{ env.json-file }}
-          trivy convert --format table --output ${{ env.sarif-file }} ${{ env.json-file }}
-          if [ "$(stat -c%s ${{ env.text-file }})" -gt 0 ]; then
-            echo "text=${{ env.text-file }}" >> $GITHUB_OUTPUT
-            echo "sarif=${{ env.sarif-file }}" >> $GITHUB_OUTPUT
-          else
-            echo "text=" >> $GITHUB_OUTPUT  # Explicitly unset the output
-            echo "sarif=" >> $GITHUB_OUTPUT  # Explicitly unset the output
-          fi
-
-      - name: Post PR Comment with Trivy Report
-        if: ${{ inputs.pr-comment && steps.convert-trivy.outputs.text != '' }}
-        uses: peter-evans/create-or-update-comment@v3
-        with:
-          issue-number: ${{ github.event.pull_request.number }}
-          body: |
-            ### Trivy Image Scan Report
-            trivy-${{ steps.split.outputs.app_name }}-${{ github.run_id }}-fs
-            ```txt
-            $(cat ${{ steps.convert-trivy.outputs.text }})
-            ```
-
-      - name: Upload JSON Report
-        uses: actions/upload-artifact@v4
-        env:
-           TRIVY_FILE: trivy-${{ steps.split.outputs.app_name }}-${{ github.run_id }}-fs.json
-        with:
-          name: ${{ env.TRIVY_FILE }}
-          path: ${{ env.TRIVY_FILE }}
 
       - name: Upload SARIF to Security Tab
         if: fromJSON(steps.ghas-check.outputs.result)
-        env:
-           TRIVY_FILE: trivy-${{ steps.split.outputs.app_name }}-${{ github.run_id }}-fs.json
         uses: github/codeql-action/upload-sarif@v3
         with:
-          sarif_file: trivy-${{ env.TRIVY_FILE }}-${{ github.run_id }}-fs.json
-          category: fs-${{ env.TRIVY_FILE }}
+          sarif_file: steps.trivy-fs.outputs.sarif-file
+          category: fs-${{ steps.split.outputs.app_name }}
 
       - name: Authenticate to Google Cloud
         id: auth
@@ -241,11 +199,33 @@ jobs:
           skip-setup-trivy: true
           trivy-enabled: ${{ inputs.trivy-enabled }}
 
-      - name: Upload SARIF to Security Tab
-        if: fromJSON(steps.ghas-check.outputs.result)
-        uses: github/codeql-action/upload-sarif@v3
+      - name: Run Trivy Scan
+        id: trivy-image
+        uses: celo-org/trivy-composite-action@v1.0.0-refactor
         with:
-          sarif_file: ${{ steps.docker-build-scan.outputs.sarif-file }}
-          category: image-${{ steps.split.outputs.app_name }}
+          scan-type: image
+          scan-ref:  ${{ inputs.context }}
+          timeout: ${{ inputs.trivy-timeout }}
+          vuln-type: "os,library"
+          severity: "UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL"
+          format: json
+          skip-dirs: ${{ inputs.trivy-skip-dirs }}
 
+    - name: Upload SARIF to Security Tab
+      if: fromJSON(steps.ghas-check.outputs.result)
+      uses: github/codeql-action/upload-sarif@v3
+      with:
+        sarif_file: ${{ steps.trivy-image.outputs.sarif-file }}
+        category: image-${{ steps.split.outputs.app_name }}
 
+    - name: Add Trivy FileSystem Report to Workflow Summary
+      if: ${{ inputs.summary && steps.trivy-fs.outputs.text-report != '' }}
+      shell: bash
+      run: |
+        cat ${{ steps.trivy-fs.outputs.text-report }} >> $GITHUB_STEP_SUMMARY
+
+    - name: Add Trivy Image Report to Workflow Summary
+      if: ${{ inputs.summary && steps.trivy-image.outputs.text-report != '' }}
+      shell: bash
+      run: |
+        cat ${{ steps.trivy-image.outputs.text-report }} >> $GITHUB_STEP_SUMMARY
