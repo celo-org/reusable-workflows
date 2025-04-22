@@ -204,7 +204,7 @@ jobs:
         uses: celo-org/trivy-composite-action@v1.0.0-refactor
         with:
           scan-type: image
-          scan-ref:  ${{ inputs.context }}
+          scan-ref:  ${{ steps.docker-buid-scan.outputs.full_image_name }}
           timeout: ${{ inputs.trivy-timeout }}
           vuln-type: "os,library"
           severity: "UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL"
