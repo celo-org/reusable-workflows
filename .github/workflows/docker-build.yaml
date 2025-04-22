@@ -211,21 +211,21 @@ jobs:
           format: json
           skip-dirs: ${{ inputs.trivy-skip-dirs }}
 
-    - name: Upload SARIF to Security Tab
-      if: fromJSON(steps.ghas-check.outputs.result)
-      uses: github/codeql-action/upload-sarif@v3
-      with:
-        sarif_file: ${{ steps.trivy-image.outputs.sarif-file }}
-        category: image-${{ steps.split.outputs.app_name }}
+      - name: Upload SARIF to Security Tab
+        if: fromJSON(steps.ghas-check.outputs.result)
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: ${{ steps.trivy-image.outputs.sarif-file }}
+          category: image-${{ steps.split.outputs.app_name }}
 
-    - name: Add Trivy FileSystem Report to Workflow Summary
-      if: ${{ inputs.summary && steps.trivy-fs.outputs.text-report != '' }}
-      shell: bash
-      run: |
-        cat ${{ steps.trivy-fs.outputs.text-report }} >> $GITHUB_STEP_SUMMARY
-
-    - name: Add Trivy Image Report to Workflow Summary
-      if: ${{ inputs.summary && steps.trivy-image.outputs.text-report != '' }}
-      shell: bash
-      run: |
-        cat ${{ steps.trivy-image.outputs.text-report }} >> $GITHUB_STEP_SUMMARY
+      - name: Add Trivy FileSystem Report to Workflow Summary
+        if: ${{ inputs.summary && steps.trivy-fs.outputs.text-report != '' }}
+        shell: bash
+        run: |
+          cat ${{ steps.trivy-fs.outputs.text-report }} >> $GITHUB_STEP_SUMMARY
+  
+      - name: Add Trivy Image Report to Workflow Summary
+        if: ${{ inputs.summary && steps.trivy-image.outputs.text-report != '' }}
+        shell: bash
+        run: |
+          cat ${{ steps.trivy-image.outputs.text-report }} >> $GITHUB_STEP_SUMMARY
