@@ -166,7 +166,7 @@ jobs:
            TRIVY_FILE: trivy-${{ steps.split.outputs.app_name }}-${{ github.run_id }}-fs.json
         with:
           name: ${{ env.TRIVY_FILE }}
-          path: ${{ env.TRIVY_FILE }}
+          path: ./${{ env.TRIVY_FILE }}
 
       - name: Upload SARIF to Security Tab
         if: fromJSON(steps.ghas-check.outputs.result)
@@ -216,4 +216,5 @@ jobs:
         with:
           sarif_file: ${{ steps.docker-build-scan.outputs.sarif-file }}
           category: image-${{ steps.split.outputs.app_name }}
+
 
