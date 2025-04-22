@@ -134,26 +134,6 @@ jobs:
             }
             return true;
 
-      - name: Run Trivy Scan
-        id: trivy-fs
-        uses: aquasecurity/trivy-action@master
-        with:
-          scan-type: fs
-          scan-ref:  ${{ inputs.context }}
-          timeout: ${{ inputs.trivy-timeout }}
-          vuln-type: "os,library"
-          severity: "UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL"
-          format: json
-          output: trivy-${{ inputs.context }}-${{ github.run_id }}-fs.json
-          skip-dirs: ${{ inputs.trivy-skip-dirs }}
-
-      - name: Upload SARIF to Security Tab
-        if: fromJSON(steps.ghas-check.outputs.result)
-        uses: github/codeql-action/upload-sarif@v3
-        with:
-          sarif_file: trivy-${{ inputs.context }}-${{ github.run_id }}-fs.json
-          category: fs-${{ inputs.context }}
-
       # Split the artifact-registry to give us both the registry url and app/image name
       - name: Split location and app names
         id: split
@@ -166,6 +146,36 @@ jobs:
             echo "::debug::app_name=$app_name"
             echo "location=$location" >> $GITHUB_OUTPUT
             echo "app_name=$app_name" >> $GITHUB_OUTPUT
+
+      - name: Run Trivy Scan
+        id: trivy-fs
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: fs
+          scan-ref:  ${{ inputs.context }}
+          timeout: ${{ inputs.trivy-timeout }}
+          vuln-type: "os,library"
+          severity: "UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL"
+          format: json
+          output: trivy-${{ steps.split.outputs.app_name }}-${{ github.run_id }}-fs.json
+          skip-dirs: ${{ inputs.trivy-skip-dirs }}
+
+      - name: Upload JSON Report
+        uses: actions/upload-artifact@v4
+        env:
+           TRIVY_FILE: trivy-${{ steps.split.outputs.app_name }}-${{ github.run_id }}-fs.json
+        with:
+          name: ${{ env.TRIVY_FILE }}
+          path: ${{ env.TRIVY_FILE }}
+
+      - name: Upload SARIF to Security Tab
+        if: fromJSON(steps.ghas-check.outputs.result)
+        env:
+           TRIVY_FILE: trivy-${{ steps.split.outputs.app_name }}-${{ github.run_id }}-fs.json
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: trivy-${{ env.TRIVY_FILE }}-${{ github.run_id }}-fs.json
+          category: fs-${{ env.TRIVY_FILE }}
 
       - name: Authenticate to Google Cloud
         id: auth
@@ -205,4 +215,5 @@ jobs:
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: ${{ steps.docker-build-scan.outputs.sarif-file }}
-          category: image-${{ inputs.context }}
+          category: image-${{ steps.split.outputs.app_name }}
+
