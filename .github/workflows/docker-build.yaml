@@ -160,13 +160,44 @@ jobs:
           output: trivy-${{ steps.split.outputs.app_name }}-${{ github.run_id }}-fs.json
           skip-dirs: ${{ inputs.trivy-skip-dirs }}
 
+      - name: Convert Report to Text and sarif
+        if: ${{ inputs.summary || inputs.pr-comment }}
+        id: convert-trivy
+        env:
+          text-file: trivy-${{ steps.split.outputs.app_name }}-${{ github.run_id }}-fs.txt
+          json-file: trivy-${{ steps.split.outputs.app_name }}-${{ github.run_id }}-fs.json
+          sarif-file: trivy-${{ steps.split.outputs.app_name }}-${{ github.run_id }}-fs.sarif
+        shell: bash
+        run: |
+          trivy convert --format table --output ${{ env.text-file }} ${{ env.json-file }}
+          trivy convert --format table --output ${{ env.sarif-file }} ${{ env.json-file }}
+          if [ "$(stat -c%s ${{ env.text-file }})" -gt 0 ]; then
+            echo "text=${{ env.text-file }}" >> $GITHUB_OUTPUT
+            echo "sarif=${{ env.sarif-file }}" >> $GITHUB_OUTPUT
+          else
+            echo "text=" >> $GITHUB_OUTPUT  # Explicitly unset the output
+            echo "sarif=" >> $GITHUB_OUTPUT  # Explicitly unset the output
+          fi
+
+      - name: Post PR Comment with Trivy Report
+        if: ${{ inputs.pr-comment && steps.convert-trivy.outputs.text != '' }}
+        uses: peter-evans/create-or-update-comment@v3
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          body: |
+            ### Trivy Image Scan Report
+            trivy-${{ steps.split.outputs.app_name }}-${{ github.run_id }}-fs
+            ```txt
+            $(cat ${{ steps.convert-trivy.outputs.text }})
+            ```
+
       - name: Upload JSON Report
         uses: actions/upload-artifact@v4
         env:
            TRIVY_FILE: trivy-${{ steps.split.outputs.app_name }}-${{ github.run_id }}-fs.json
         with:
           name: ${{ env.TRIVY_FILE }}
-          path: ./${{ env.TRIVY_FILE }}
+          path: ${{ env.TRIVY_FILE }}
 
       - name: Upload SARIF to Security Tab
         if: fromJSON(steps.ghas-check.outputs.result)
