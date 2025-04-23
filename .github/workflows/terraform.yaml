@@ -45,9 +45,27 @@ on:
         default: "['self-hosted', 'org', 'terraform']"
         type: string
         description: "github runner tags"
+      trivy-enabled:
+        default: true
+        type: boolean
+      trivy-timeout:
+        default: 15m
+        type: string
+        description: "trivy timeout 15 minutes"
+      trivy-skip-dirs:
+        type: string
+        description: "Directories to skip scanning"
+      trivy-severity:
+        default: "UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL"
+        type: string
+        description: "trivy severity types to scan for"
+      trivy-vuln-type:
+        default: "os,library"
+        type: string
+        description: "trivy vulnerability types"
       pr-comment:
         default: true
-        type: boolean        
+        type: boolean
       summary:
         default: true
         type: boolean
@@ -105,13 +123,17 @@ jobs:
           access_token_scopes: ${{ inputs.access-token-scopes }}
           access_token_lifetime: '20m'
 
-      - name: Run Trivy vulnerability scanner
+      - name: Run Trivy Scan
+        id: trivy-fs
+        if: inputs.trivy_enabled
         uses: celo-org/trivy-composite-action@v1.0.0-refactor
         with:
-          scan-type: 'fs'
-          scan-ref: ${{ inputs.working-dir }}
-          pr-comment: ${{ inputs.pr-comment }}
-          summary: ${{ inputs.summary }}
+          scan-type: fs
+          scan-ref:  ${{ inputs.context }}
+          timeout: ${{ inputs.trivy-timeout }}
+          vuln-type: ${{ inputs.trivy-vuln-type }}
+          severity: ${{ inputs.trivy-severity }}
+          skip-dirs: ${{ inputs.trivy-skip-dirs }}
 
       - name: set terraform variables
         shell: bash
