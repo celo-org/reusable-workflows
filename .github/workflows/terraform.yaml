@@ -206,6 +206,13 @@ jobs:
               echo "EOF"
           } >> "$GITHUB_ENV"
 
+      - name: Upload JSON Report
+        if: always() && github.event_type == 'pull_request' && steps.plan.outputs.exitcode != '0'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.build-report.outputs.report  }}-plan.txt
+          path: ${{ steps.build-report.outputs.report  }}.json
+
       - name: Post Plan to GitHub PR
         uses: mshick/add-pr-comment@b8f338c590a895d50bcbfa6c5859251edc8952fc # v2
         if: github.event_name == 'pull_request' && steps.plan.outputs.exitcode != '0' && inputs.pr-comment == true
@@ -276,6 +283,13 @@ jobs:
               echo "*Execution link: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}* \\"
           } > 'report.txt'
           echo "report=report.txt" >> $GITHUB_OUTPUT     
+
+      - name: Upload JSON Report
+        if: always() && github.ref_name == github.event.repository.default_branch && steps.build-report.outputs.report != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.build-report.outputs.report  }}-apply.txt
+          path: ${{ steps.build-report.outputs.report  }}.json
 
       - name: Post Scan Results to GitHub PR
         uses: mshick/add-pr-comment@b8f338c590a895d50bcbfa6c5859251edc8952fc # v2 
