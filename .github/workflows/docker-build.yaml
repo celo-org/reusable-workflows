@@ -162,7 +162,7 @@ jobs:
         if: fromJSON(steps.ghas-check.outputs.result)
         uses: github/codeql-action/upload-sarif@v3
         with:
-          sarif_file: steps.trivy-fs.outputs.sarif-file
+          sarif_file: ${{ steps.trivy-fs.outputs.sarif-file }}
           category: fs-${{ steps.split.outputs.app_name }}
 
       - name: Authenticate to Google Cloud
