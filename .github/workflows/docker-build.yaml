@@ -156,7 +156,6 @@ jobs:
           timeout: ${{ inputs.trivy-timeout }}
           vuln-type: "os,library"
           severity: "UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL"
-          format: json
           skip-dirs: ${{ inputs.trivy-skip-dirs }}
 
       - name: Upload SARIF to Security Tab
@@ -204,11 +203,10 @@ jobs:
         uses: celo-org/trivy-composite-action@v1.0.0-refactor
         with:
           scan-type: image
-          scan-ref:  ${{ steps.docker-buid-scan.outputs.full_image_name }}
+          scan-ref:  ${{ steps.docker-build-scan.outputs.full_image_name }}
           timeout: ${{ inputs.trivy-timeout }}
           vuln-type: "os,library"
           severity: "UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL"
-          format: json
           skip-dirs: ${{ inputs.trivy-skip-dirs }}
 
       - name: Upload SARIF to Security Tab
