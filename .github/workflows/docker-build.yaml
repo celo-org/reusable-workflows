@@ -57,9 +57,6 @@ on:
         required: false
         type: boolean
         description: "run tmate for troubleshooting"
-      pr-comment:
-        default: true
-        type: boolean        
       summary:
         default: true
         type: boolean
@@ -72,6 +69,15 @@ on:
         description: "trivy timeout 15 minutes"
       trivy-skip-dirs:
         type: string
+        description: "Directories to skip scanning"
+      trivy-severity:
+        default: "UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL"
+        type: string
+        description: "trivy severity types to scan for"
+      trivy-vuln-type:
+        default: "os,library"
+        type: string
+        description: "trivy vulnerability types"
 
 jobs:
   auth-build-push-scan-container:
@@ -149,17 +155,18 @@ jobs:
 
       - name: Run Trivy Scan
         id: trivy-fs
+        if: inputs.trivy_enabled
         uses: celo-org/trivy-composite-action@v1.0.0-refactor
         with:
           scan-type: fs
           scan-ref:  ${{ inputs.context }}
           timeout: ${{ inputs.trivy-timeout }}
-          vuln-type: "os,library"
-          severity: "UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL"
+          vuln-type: ${{ inputs.trivy-vuln-type }}
+          severity: ${{ inputs.trivy-severity }}
           skip-dirs: ${{ inputs.trivy-skip-dirs }}
 
       - name: Upload SARIF to Security Tab
-        if: fromJSON(steps.ghas-check.outputs.result)
+        if: inputs.trivy_enabled &&fromJSON(steps.ghas-check.outputs.result)
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: ${{ steps.trivy-fs.outputs.sarif-file }}
@@ -192,25 +199,21 @@ jobs:
           dockerfile: ${{ inputs.file }}
           build-args: ${{ inputs.build-args }}
           push: ${{ fromJSON(true) }}
-          summary: ${{ inputs.summary }}
-          pr-comment: ${{ inputs.pr-comment }} 
-          trivy-skip-dirs: ${{ inputs.trivy-skip-dirs }}
-          skip-setup-trivy: true
-          trivy-enabled: ${{ inputs.trivy-enabled }}
 
       - name: Run Trivy Scan
         id: trivy-image
+        if: inputs.trivy_enabled
         uses: celo-org/trivy-composite-action@v1.0.0-refactor
         with:
           scan-type: image
           image-ref:  ${{ steps.docker-build-scan.outputs.full-image-name }}
           timeout: ${{ inputs.trivy-timeout }}
-          vuln-type: "os,library"
-          severity: "UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL"
+          vuln-type: ${{ inputs.trivy-vuln-type }}
+          severity: ${{ inputs.trivy-severity }}
           skip-dirs: ${{ inputs.trivy-skip-dirs }}
 
       - name: Upload SARIF to Security Tab
-        if: fromJSON(steps.ghas-check.outputs.result)
+        if: inputs.trivy_enabled &&fromJSON(steps.ghas-check.outputs.result)
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: ${{ steps.trivy-image.outputs.sarif-file }}
