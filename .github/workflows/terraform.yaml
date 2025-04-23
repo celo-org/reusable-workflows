@@ -245,12 +245,13 @@ jobs:
 
       - name: Terraform Apply
         id: apply
-        if: github.ref_name == github.event.repository.default_branch && github.event_name == 'push' && steps.plan.outcome == 'success'
+        if: github.ref_name == github.event.repository.default_branch && github.event_name == 'push' && steps.plan.outcome == 'success' && steps.plan.outputs.exitcode == '2'
+
         shell: bash
         run: terraform apply -no-color -auto-approve "tfplan"
 
       - name: Build Report
-        if: always() && github.ref_name == github.event.repository.default_branch && steps.apply.outputs.stdout != '' && ( inputs.summary || inputs.pr-comment ) && steps.plan.outputs.exitcode != '0'
+        if: always() && github.ref_name == github.event.repository.default_branch && steps.apply.outputs.stdout != '' && ( inputs.summary || inputs.pr-comment )
         id: build-report
         shell: bash
         env:
@@ -278,7 +279,7 @@ jobs:
 
       - name: Post Scan Results to GitHub PR
         uses: mshick/add-pr-comment@b8f338c590a895d50bcbfa6c5859251edc8952fc # v2 
-        if: always() && github.ref_name == github.event.repository.default_branch && inputs.pr-comment && steps.build-report.outputs.report != '' && steps.plan.outputs.exitcode != '0'
+        if: always() && github.ref_name == github.event.repository.default_branch && inputs.pr-comment && steps.build-report.outputs.report != ''
         with:
           allow-repeats: true
           repo-token: ${{ github.token }}
@@ -286,7 +287,7 @@ jobs:
           message-path: "${{ inputs.working-dir }}/${{ steps.build-report.outputs.report }}"
 
       - name: Post Scan Results to Workflow Summary
-        if: always() && github.ref_name == github.event.repository.default_branch && inputs.summary && steps.build-report.outputs.report != '' && steps.plan.outputs.exitcode != '0'
+        if: always() && github.ref_name == github.event.repository.default_branch && inputs.summary && steps.build-report.outputs.report != ''
         shell: bash
         run: |
           while IFS= read -r line; do
