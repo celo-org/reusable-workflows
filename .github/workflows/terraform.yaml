@@ -36,7 +36,7 @@ on:
         default: ''
         description: "Deployment environment url in okta"
         type: string
-      debug_enabled:
+      debug-enabled:
         default: false
         required: false
         type: boolean
@@ -85,7 +85,7 @@ jobs:
     steps:
       - name: Setup tmate session
         uses: mxschmitt/action-tmate@e5c7151931ca95bad1c6f4190c730ecf8c7dde48
-        if: inputs.debug_enabled == true 
+        if: inputs.debug-enabled == true 
         with:
           detached: true
           limit-access-to-actor: true

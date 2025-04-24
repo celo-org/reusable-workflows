@@ -11,7 +11,7 @@ on:
         required: true
         type: string
         description: "working directory"
-      runs_on:
+      runs-on:
         default: "['ubuntu-latest']"
         type: string
         description: "github runner tags"
@@ -39,7 +39,7 @@ on:
         description: "run with golangci problem matchers"
         type: boolean
         default: false
-      disable_caching:
+      disable-caching:
         description: "disable caching for go dependencies"
         type: boolean
         default: false
@@ -51,7 +51,7 @@ on:
         description: to warn instead of failing the job
         type: boolean
         default: false
-      debug_enabled:
+      debug-enabled:
         default: false
         required: false
         type: boolean
@@ -63,7 +63,7 @@ jobs:
       contents: read
       pull-requests: read
       id-token: write
-    runs-on: ${{ fromJson(inputs.runs_on) }}
+    runs-on: ${{ fromJson(inputs.runs-on) }}
     timeout-minutes: ${{ inputs.timeout-minutes }}
     defaults:
       run:
@@ -78,7 +78,7 @@ jobs:
         uses: step-security/harden-runner@v2
         with:
           egress-policy: audit       
-#          policy: ${{ inputs.debug_enabled == true && 'go-tests-debug' || 'go-tests' }}
+#          policy: ${{ inputs.debug-enabled == true && 'go-tests-debug' || 'go-tests' }}
 
       # Only turns on tmate if workflow_dispatch set debug to true.
       # limit-access-to-actor or some other security precaution should be added
@@ -88,7 +88,7 @@ jobs:
 
       - name: Setup tmate session
         uses: mxschmitt/action-tmate@e5c7151931ca95bad1c6f4190c730ecf8c7dde48
-        if: inputs.debug_enabled == true 
+        if: inputs.debug-enabled == true 
         with:
           detached: true
           limit-access-to-actor: true
@@ -100,7 +100,7 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version: ${{ inputs.go-version }}
-          cache: ${{ !inputs.disable_caching }}
+          cache: ${{ !inputs.disable-caching }}
           cache-dependency-path: "${{ inputs.cache-dependency-path != '' && inputs.cache-dependency-path ||  format('{0}/**/*.sum', inputs.path) }}"
 
       - name: Verify dependencies
