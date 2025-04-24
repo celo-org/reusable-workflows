@@ -223,10 +223,6 @@ jobs:
         if: ${{ inputs.summary && steps.trivy-fs.outputs.text-report != '' }}
         shell: bash
         run: |
+          echo "### Trivy Scan Output" >> $SUMMARY_FILE
           cat ${{ steps.trivy-fs.outputs.text-report }} >> $GITHUB_STEP_SUMMARY
-  
-      - name: Add Trivy Image Report to Workflow Summary
-        if: ${{ inputs.summary && steps.trivy-image.outputs.text-report != '' }}
-        shell: bash
-        run: |
           cat ${{ steps.trivy-image.outputs.text-report }} >> $GITHUB_STEP_SUMMARY
