@@ -223,6 +223,6 @@ jobs:
         if: ${{ inputs.summary && steps.trivy-fs.outputs.text-report != '' }}
         shell: bash
         run: |
-          echo "### Trivy Scan Output" >> $SUMMARY_FILE
+          echo "### Trivy Scan Output" >> $GITHUB_STEP_SUMMARY
           cat ${{ steps.trivy-fs.outputs.text-report }} >> $GITHUB_STEP_SUMMARY
           cat ${{ steps.trivy-image.outputs.text-report }} >> $GITHUB_STEP_SUMMARY
