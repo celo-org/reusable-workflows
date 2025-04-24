@@ -155,7 +155,7 @@ jobs:
 
       - name: Run Trivy Scan
         id: trivy-fs
-        if: inputs.trivy_enabled
+        if: inputs.trivy-enabled
         uses: celo-org/trivy-composite-action@v1.0.0-refactor
         with:
           scan-type: fs
@@ -166,7 +166,7 @@ jobs:
           skip-dirs: ${{ inputs.trivy-skip-dirs }}
 
       - name: Upload SARIF to Security Tab
-        if: inputs.trivy_enabled &&fromJSON(steps.ghas-check.outputs.result)
+        if: inputs.trivy-enabled &&fromJSON(steps.ghas-check.outputs.result)
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: ${{ steps.trivy-fs.outputs.sarif-file }}
@@ -202,7 +202,7 @@ jobs:
 
       - name: Run Trivy Scan
         id: trivy-image
-        if: inputs.trivy_enabled
+        if: inputs.trivy-enabled
         uses: celo-org/trivy-composite-action@v1.0.0-refactor
         with:
           scan-type: image
@@ -213,7 +213,7 @@ jobs:
           skip-dirs: ${{ inputs.trivy-skip-dirs }}
 
       - name: Upload SARIF to Security Tab
-        if: inputs.trivy_enabled &&fromJSON(steps.ghas-check.outputs.result)
+        if: inputs.trivy-enabled &&fromJSON(steps.ghas-check.outputs.result)
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: ${{ steps.trivy-image.outputs.sarif-file }}
