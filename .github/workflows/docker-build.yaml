@@ -40,7 +40,7 @@ on:
         type: string
         description: "GCP Artifact registry to login into. Check https://cloud.google.com/artifact-registry/docs/docker/authentication"
         default: "us-west1-docker.pkg.dev,us-central1-docker.pkg.dev"
-      runs_on:
+      runs-on:
         default: "['ubuntu-latest']"
         type: string
         description: "github runner tags"
@@ -52,7 +52,7 @@ on:
         default: ''
         description: "Deployment environment in github"
         type: string
-      debug_enabled:
+      debug-enabled:
         default: false
         required: false
         type: boolean
@@ -81,7 +81,7 @@ on:
 
 jobs:
   auth-build-push-scan-container:
-    runs-on: ${{ fromJson(inputs.runs_on) }}
+    runs-on: ${{ fromJson(inputs.runs-on) }}
     timeout-minutes: ${{ inputs.timeout-minutes }}
     defaults:
       run:
@@ -106,7 +106,7 @@ jobs:
         uses: step-security/harden-runner@v2
         with:
           egress-policy: audit
-#          policy: ${{ inputs.debug_enabled == true && 'docker-debug' || 'docker' }}
+#          policy: ${{ inputs.debug-enabled == true && 'docker-debug' || 'docker' }}
 
 
       # Only turns on tmate if workflow_dispatch set debug to true.
@@ -117,7 +117,7 @@ jobs:
 
       - name: Setup tmate session
         uses: mxschmitt/action-tmate@e5c7151931ca95bad1c6f4190c730ecf8c7dde48
-        if: inputs.debug_enabled == true 
+        if: inputs.debug-enabled == true 
         with:
           detached: true
           limit-access-to-actor: true
