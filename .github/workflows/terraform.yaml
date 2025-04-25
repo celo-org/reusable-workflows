@@ -236,18 +236,14 @@ jobs:
             PLAN='Terraform plan is too long to be posted in the PR comment. Please check the Action run to verify it'
           fi
           echo "$PLAN"
-          {
-              echo "plan<<EOF"
-              echo "$PLAN"
-              echo "EOF"
-          } >> "$GITHUB_OUTPUT"
+          echo "plan=plan"$'\n'"$PLAN"$'\n'"EOF" >> "$GITHUB_OUTPUT"
 
       - name: Upload Terraform Plan
-        if: github.event_name == 'pull_request' && steps.plan.outputs.exitcode != '0'
+        if: github.event_name == 'pull_request' && ${{ steps.plan-output.outputs.plan }}
         uses: actions/upload-artifact@v4
         with:
           name: ${{ inputs.working-dir }}-plan.txt
-          path: ${{ steps.play-output.outputs.plan }} 
+          path: ${{ steps.plan-output.outputs.plan }} 
 
       - name: Post Plan to GitHub PR
         uses: mshick/add-pr-comment@b8f338c590a895d50bcbfa6c5859251edc8952fc # v2
@@ -270,7 +266,7 @@ jobs:
             ```
             </details>
 
-            #### Terraform Plan 📖\`${{ steps.plan.outcome }}\`
+            #### Terraform Plan 📖\`${{ steps.plan.output.outcome }}\`
 
             <details><summary>Show Plan</summary>
 
