@@ -221,7 +221,7 @@ jobs:
             cat > ${{ env.FILENAME }} <<'EOF'
             ${{ steps.showplan.outputs.stdout }}
             EOF
-            echo "name=${{ env.FILENAME }} >> GITHUB_OUTPUT
+            echo "name=${{ env.FILENAME }}" >> GITHUB_OUTPUT
             
         shell: bash
 
