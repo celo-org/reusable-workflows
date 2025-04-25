@@ -187,15 +187,16 @@ jobs:
       - name: Reformat Plan
         if: steps.plan.outputs.exitcode != '0'
         run: |
-            sed -E 's/^([[:space:]]+)([-+])/\2\1/g' plan_temporal.txt > plan.txt
+            sed -E 's/^([[:space:]]+)([-+])/\2\1/g' plan_temporal.txt > ${{ inputs.working-dir }}-plan.txt
         shell: bash
 
       # Saves the plan in an environment variable so we can pull it back out
-      - name: Put Plan in Env Var
+      - name: Put Plan in Output
+        id: plan-output
         shell: bash
         if: steps.plan.outputs.exitcode != '0'
         run: |
-          PLAN=$(cat plan.txt)
+          PLAN=$(cat ${{ inputs.workings-dir }}-plan.txt)
           check=${#PLAN}
           # Delimiting plan size to avoid error "Argument list too long" when posting the plan
           if [ "$check" -ge 65000 ];
@@ -207,14 +208,14 @@ jobs:
               echo "PLAN<<EOF"
               echo "$PLAN"
               echo "EOF"
-          } >> "$GITHUB_ENV"
+          } >> "$GITHUB_OUTPUT"
 
-      - name: Upload JSON Report
+      - name: Upload Terraform Plan
         if: always() && github.event_type == 'pull_request' && steps.plan.outputs.exitcode != '0'
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ steps.build-report.outputs.report  }}-plan.txt
-          path: ${{ steps.build-report.outputs.report  }}.json
+          name: ${{ inputs.working-dir }}-plan.txt
+          path: 
 
       - name: Post Plan to GitHub PR
         uses: mshick/add-pr-comment@b8f338c590a895d50bcbfa6c5859251edc8952fc # v2
@@ -242,7 +243,7 @@ jobs:
             <details><summary>Show Plan</summary>
 
             ```diff
-            ${{ env.PLAN }}
+            ${{ steps.plan-output.outputs.PLAN }}
             ```
 
             </details>
