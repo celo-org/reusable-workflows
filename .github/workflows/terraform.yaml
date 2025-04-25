@@ -126,6 +126,12 @@ jobs:
           access_token_scopes: ${{ inputs.access-token-scopes }}
           access_token_lifetime: '20m'
 
+      - name: Get App name
+        id: app-name
+        run: |
+          basename=$(basename ${{ inputs.working-dir }})
+          echo name=$basename >> $GITHUB_OUTPUT
+
       - name: Run Trivy Scan
         id: trivy-fs
         if: inputs.trivy-enabled
@@ -159,7 +165,7 @@ jobs:
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: ${{ steps.trivy-image.outputs.sarif-file }}
-          category: image-${{ steps.split.outputs.app_name }}
+          category: terraform-${{ steps.app-name.outputs.name }}
 
       - name: Add Trivy FileSystem Report to Workflow Summary
         if: ${{ inputs.summary && steps.trivy-fs.outputs.text-report != '' }}
