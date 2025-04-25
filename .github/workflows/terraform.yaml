@@ -225,16 +225,17 @@ jobs:
             # to the left of the pull request to trigger github's colors
             sed -E 's/^([[:space:]]+)([-+])/\2\1/g' ${{ env.ORIGINAL_FILENAME }} > ${{ env.FORMATTED_FILENAME }}
 
-            check=${#FORMATTED_FILENAME}
+            PLAN=${{ env.FORMATTED_FILENAME }}
+            check=${#PLAN}
             # Delimiting plan size to avoid error "Argument list too long" when posting the plan
             if [ "$check" -ge 65000 ];
             then
-              FORMATTED_FILENAME='Terraform plan is too long to be posted in the PR comment. Please check the Action run to verify it'
+              PLAN='Terraform plan is too long to be posted in the PR comment. Please check the Action run to verify it'
             fi
-            echo "${{ env.FORMATTED_FILENAME }}"
+            echo "${{ env.PLAN }}"
             {
               echo "formatted-plan<<EOF"
-              echo "${{ env.FORMATTED_FILENAME }}"
+              echo "${{ env.PLAN }}"
               echo "EOF"
             } >> "$GITHUB_OUTPUT"
 
