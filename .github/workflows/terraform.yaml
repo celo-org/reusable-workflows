@@ -216,7 +216,7 @@ jobs:
         id: plan-file
         if: steps.plan.outputs.exitcode != '0'
         env:
-          FILENAME=${{ steps.app-name.outputs.name }}-plan.txt
+          FILENAME: ${{ steps.app-name.outputs.name }}-plan.txt
         run: |
             cat > ${{ env.FILENAME }} <<'EOF'
             ${{ steps.showplan.outputs.stdout }}
