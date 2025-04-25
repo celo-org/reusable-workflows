@@ -215,10 +215,14 @@ jobs:
       - name: Print plan to file
         id: plan-file
         if: steps.plan.outputs.exitcode != '0'
+        env:
+          FILENAME=${{ steps.app-name.outputs.name }}-plan.txt
         run: |
-            cat > plan_temporal.txt <<'EOF'
+            cat > ${{ env.FILENAME }} <<'EOF'
             ${{ steps.showplan.outputs.stdout }}
             EOF
+            echo "name=${{ env.FILENAME }} >> GITHUB_OUTPUT
+            
         shell: bash
 
       - name: Upload Terraform Plan
@@ -226,7 +230,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: terraform-${{ steps.app-name.outputs.name }}-plan.txt
-          path: ${{ inputs.working-dir }}/plan_temporal.txt
+          path: ${{ inputs.working-dir }}/${{ steps.plan-file.outputs.name }}
 
       # Removes the refreshing from the plan output and then moves the + and - all the way
       # to the left of the pull request to trigger github's colors
@@ -234,7 +238,7 @@ jobs:
         id: reformat-plan
         if: steps.plan.outputs.exitcode != '0'
         run: |
-            sed -E 's/^([[:space:]]+)([-+])/\2\1/g' plan_temporal.txt > plan.txt
+            sed -E 's/^([[:space:]]+)([-+])/\2\1/g' ${{ steps.plan-file.outputs.name }} > plan.txt
         shell: bash
 
       # Saves the plan in an environment variable so we can pull it back out
