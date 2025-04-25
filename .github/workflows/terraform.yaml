@@ -236,7 +236,7 @@ jobs:
             PLAN='Terraform plan is too long to be posted in the PR comment. Please check the Action run to verify it'
           fi
           echo "$PLAN"
-          echo "plan=plan"$'\n'"$PLAN"$'\n'"EOF" >> "$GITHUB_OUTPUT"
+          echo "plan=plan\n$PLAN\nEOF" >> "$GITHUB_OUTPUT"
 
       - name: Upload Terraform Plan
         if: github.event_name == 'pull_request' && ${{ steps.plan-output.outputs.plan }}
