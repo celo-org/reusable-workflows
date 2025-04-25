@@ -225,7 +225,7 @@ jobs:
             # to the left of the pull request to trigger github's colors
             sed -E 's/^([[:space:]]+)([-+])/\2\1/g' ${{ env.ORIGINAL_FILENAME }} > ${{ env.FORMATTED_FILENAME }}
 
-            PLAN=${{ env.FORMATTED_FILENAME }}
+            PLAN=$(cat ${{ env.FORMATTED_FILENAME }})
             check=${#PLAN}
             # Delimiting plan size to avoid error "Argument list too long" when posting the plan
             if [ "$check" -ge 65000 ];
