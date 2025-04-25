@@ -128,7 +128,7 @@ jobs:
 
       - name: Run Trivy Scan
         id: trivy-fs
-        if: inputs.trivy_enabled
+        if: inputs.trivy-enabled
         uses: celo-org/trivy-composite-action@v1.0.0-refactor
         with:
           scan-type: fs
@@ -138,6 +138,38 @@ jobs:
           severity: ${{ inputs.trivy-severity }}
           skip-dirs: ${{ inputs.trivy-skip-dirs }}
           tf-vars: ${{ inputs.trivy-tf-vars }}
+
+      - name: Check if GHAS is Enabled
+        uses: actions/github-script@v7
+        id: ghas-check
+        with:
+          script: |
+            const [owner, repo] = '${{ github.repository }}'.split("/");
+            const res = await github.rest.repos.get({ owner, repo });
+            const isPrivate = res.data.private;
+            const hasGhas = res.data.security_and_analysis?.advanced_security?.status === 'enabled';
+            if (isPrivate && !hasGhas) {
+              core.warning('GHAS is NOT enabled and repo is private. Cannot upload SARIF.');
+              return false;
+            }
+            return true;
+
+      - name: Upload SARIF to Security Tab
+        if: inputs.trivy-enabled &&fromJSON(steps.ghas-check.outputs.result)
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: ${{ steps.trivy-image.outputs.sarif-file }}
+          category: image-${{ steps.split.outputs.app_name }}
+
+      - name: Add Trivy FileSystem Report to Workflow Summary
+        if: ${{ inputs.summary && steps.trivy-fs.outputs.text-report != '' }}
+        shell: bash
+        run: |
+          echo "### Trivy Scan Output" >> $GITHUB_STEP_SUMMARY
+          cat ${{ steps.trivy-fs.outputs.text-report }} >> $GITHUB_STEP_SUMMARY
+          echo -e "\n" >> $GITHUB_STEP_SUMMARY # Add a blank line
+          cat ${{ steps.trivy-image.outputs.text-report }} >> $GITHUB_STEP_SUMMARY
+
       - name: set terraform variables
         shell: bash
         run: echo "TF_VAR_google_credentials=${{ steps.auth.outputs.access_token }}" >> $GITHUB_ENV
@@ -215,7 +247,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ${{ inputs.working-dir }}-plan.txt
-          path: ${{ steps.outputs.plan-output.plan }} 
+          path: ${{ steps.play-output.outputs.plan }} 
 
       - name: Post Plan to GitHub PR
         uses: mshick/add-pr-comment@b8f338c590a895d50bcbfa6c5859251edc8952fc # v2
