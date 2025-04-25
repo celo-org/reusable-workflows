@@ -232,10 +232,10 @@ jobs:
             then
               PLAN='Terraform plan is too long to be posted in the PR comment. Please check the Action run to verify it'
             fi
-            echo "${{ env.PLAN }}"
+            echo "$PLAN"
             {
               echo "formatted-plan<<EOF"
-              echo "${{ env.PLAN }}"
+              echo "$PLAN"
               echo "EOF"
             } >> "$GITHUB_OUTPUT"
 
