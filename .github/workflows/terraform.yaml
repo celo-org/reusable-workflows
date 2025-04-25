@@ -243,11 +243,11 @@ jobs:
           } >> "$GITHUB_OUTPUT"
 
       - name: Upload Terraform Plan
-        if: github.event_name == 'pull_request' && ${{ steps.plan-output.outputs.plan }}
+        if: github.event_name == 'pull_request' && steps.plan-output.outputs.plan != ''
         uses: actions/upload-artifact@v4
         with:
           name: ${{ inputs.working-dir }}-plan.txt
-          path: ${{ steps.plan-output.outputs.plan }} 
+          path: plan.txt
 
       - name: Post Plan to GitHub PR
         uses: mshick/add-pr-comment@b8f338c590a895d50bcbfa6c5859251edc8952fc # v2
