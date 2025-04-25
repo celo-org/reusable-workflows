@@ -323,7 +323,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ${{ steps.build-report.outputs.report  }}-apply.txt
-          path: ${{ steps.build-report.outputs.report  }}
+          path: ${{ inputs.working-dir}}/${{ steps.build-report.outputs.report  }}
 
       - name: Post Apply Results to GitHub PR
         uses: mshick/add-pr-comment@b8f338c590a895d50bcbfa6c5859251edc8952fc # v2 
