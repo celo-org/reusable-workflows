@@ -225,7 +225,7 @@ jobs:
         if: github.event_name == 'pull_request' && steps.plan.outputs.exitcode != '0'
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ inputs.working-dir }}-plan.txt
+          name: terraform-${{ steps.app-name.outputs.name }}-plan.txt
           path: ${{ inputs.working-dir }}/plan_temporal.txt
 
       # Removes the refreshing from the plan output and then moves the + and - all the way
