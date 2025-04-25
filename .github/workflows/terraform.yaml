@@ -256,7 +256,7 @@ jobs:
           fi
           echo "$PLAN"
           {
-            echo "plan<<EOF"
+            echo "plan=<<EOF"
             echo "$PLAN"
             echo "EOF"
           } >> "$GITHUB_OUTPUT"
