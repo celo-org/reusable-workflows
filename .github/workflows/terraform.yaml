@@ -75,7 +75,7 @@ on:
 
 jobs:
   terraform:
-    runs-on: ${{ fromJson(inputs.runs_on) }}
+    runs-on: ${{ fromJson(inputs.runs-on) }}
     timeout-minutes: ${{ inputs.timeout-minutes }}
     defaults:
       run:
