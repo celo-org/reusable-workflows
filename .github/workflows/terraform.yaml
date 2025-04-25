@@ -207,6 +207,7 @@ jobs:
 
       # Print the plan to file in this way to avoid problems with "'" in the plan
       - name: Print plan to file
+        id: plan-file
         if: steps.plan.outputs.exitcode != '0'
         run: |
             cat > plan_temporal.txt <<'EOF'
@@ -214,9 +215,17 @@ jobs:
             EOF
         shell: bash
 
+      - name: Upload Terraform Plan
+        if: github.event_name == 'pull_request' && steps.plan-file.outputs.plan != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ inputs.working-dir }}-plan.txt
+          path: plan_temporal.txt
+
       # Removes the refreshing from the plan output and then moves the + and - all the way
       # to the left of the pull request to trigger github's colors
       - name: Reformat Plan
+        id: reformat-plan
         if: steps.plan.outputs.exitcode != '0'
         run: |
             sed -E 's/^([[:space:]]+)([-+])/\2\1/g' plan_temporal.txt > plan.txt
