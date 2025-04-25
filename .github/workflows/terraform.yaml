@@ -41,7 +41,7 @@ on:
         required: false
         type: boolean
         description: "run tmate for troubleshooting"
-      runs_on:
+      runs-on:
         default: "['self-hosted', 'org', 'terraform']"
         type: string
         description: "github runner tags"
@@ -63,6 +63,9 @@ on:
         default: "os,library"
         type: string
         description: "trivy vulnerability types"
+      trivy-tf-vars:
+        default: true
+        type: boolean
       pr-comment:
         default: true
         type: boolean
@@ -134,7 +137,7 @@ jobs:
           vuln-type: ${{ inputs.trivy-vuln-type }}
           severity: ${{ inputs.trivy-severity }}
           skip-dirs: ${{ inputs.trivy-skip-dirs }}
-
+          tf-vars: ${{ inputs.trivy-tf-vars }}
       - name: set terraform variables
         shell: bash
         run: echo "TF_VAR_google_credentials=${{ steps.auth.outputs.access_token }}" >> $GITHUB_ENV
