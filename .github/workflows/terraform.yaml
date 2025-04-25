@@ -187,7 +187,7 @@ jobs:
       - name: Reformat Plan
         if: steps.plan.outputs.exitcode != '0'
         run: |
-            sed -E 's/^([[:space:]]+)([-+])/\2\1/g' plan_temporal.txt > ${{ inputs.working-dir }}-plan.txt
+            sed -E 's/^([[:space:]]+)([-+])/\2\1/g' plan_temporal.txt > plan.txt
         shell: bash
 
       # Saves the plan in an environment variable so we can pull it back out
@@ -196,7 +196,7 @@ jobs:
         shell: bash
         if: steps.plan.outputs.exitcode != '0'
         run: |
-          PLAN=$(cat ${{ inputs.workings-dir }}-plan.txt)
+          PLAN=$(cat plan.txt)
           check=${#PLAN}
           # Delimiting plan size to avoid error "Argument list too long" when posting the plan
           if [ "$check" -ge 65000 ];
@@ -205,7 +205,7 @@ jobs:
           fi
           echo "$PLAN"
           {
-              echo "PLAN<<EOF"
+              echo "plan<<EOF"
               echo "$PLAN"
               echo "EOF"
           } >> "$GITHUB_OUTPUT"
@@ -215,7 +215,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ${{ inputs.working-dir }}-plan.txt
-          path: 
+          path: ${{ steps.outputs.plan-output.plan }} 
 
       - name: Post Plan to GitHub PR
         uses: mshick/add-pr-comment@b8f338c590a895d50bcbfa6c5859251edc8952fc # v2
@@ -243,7 +243,7 @@ jobs:
             <details><summary>Show Plan</summary>
 
             ```diff
-            ${{ steps.plan-output.outputs.PLAN }}
+            ${{ steps.plan-output.outputs.plan }}
             ```
 
             </details>
