@@ -244,7 +244,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: terraform-${{ steps.config-vars.outputs.app-name }}-plan.txt
-          path: ${{ inputs.working-dir }}/${{ steps.format-plan.outputs.origin-plan }}
+          path: ${{ inputs.working-dir }}/${{ steps.format-plan.outputs.original-plan }}
 
       - name: Post Plan to GitHub PR
         uses: mshick/add-pr-comment@b8f338c590a895d50bcbfa6c5859251edc8952fc # v2
