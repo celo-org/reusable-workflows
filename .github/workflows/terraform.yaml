@@ -220,7 +220,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ${{ inputs.working-dir }}-plan.txt
-          path: plan_temporal.txt
+          path: ${{ inputs.working-dir }}/plan_temporal.txt
 
       # Removes the refreshing from the plan output and then moves the + and - all the way
       # to the left of the pull request to trigger github's colors
