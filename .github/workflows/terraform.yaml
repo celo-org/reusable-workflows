@@ -211,7 +211,7 @@ jobs:
           } >> "$GITHUB_OUTPUT"
 
       - name: Upload Terraform Plan
-        if: always() && github.event_type == 'pull_request' && steps.plan.outputs.exitcode != '0'
+        if: github.event_name == 'pull_request' && steps.plan.outputs.exitcode != '0'
         uses: actions/upload-artifact@v4
         with:
           name: ${{ inputs.working-dir }}-plan.txt
