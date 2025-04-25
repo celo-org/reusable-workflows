@@ -132,7 +132,7 @@ jobs:
         uses: celo-org/trivy-composite-action@v1.0.0-refactor
         with:
           scan-type: fs
-          scan-ref:  ${{ inputs.context }}
+          scan-ref:  ${{ inputs.working-dir }}
           timeout: ${{ inputs.trivy-timeout }}
           vuln-type: ${{ inputs.trivy-vuln-type }}
           severity: ${{ inputs.trivy-severity }}
