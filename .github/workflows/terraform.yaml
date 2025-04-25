@@ -105,6 +105,13 @@ jobs:
       - name: 'Checkout'
         uses: actions/checkout@v4
 
+      - name: set terraform variables
+        id: config-vars
+        shell: bash
+        run: |
+          echo "TF_VAR_google_credentials=${{ steps.auth.outputs.access_token }}" >> $GITHUB_ENV
+          echo "app-name=$(basename ${{ inputs.working-dir }})" >> $GITHUB_OUTPUT
+
       # Akeyless Get Secrets will take the specified dynamic or static secrets and set them to their corresponding environment variables.  It will also
       # export github's JWT Token as AKEYLESS_AUTH_JWT (which their terraform provider uses for JWT authentication, and AUTH_TOKEN - The akeyless auth token
       # it gets back after authenticating, which can be used for certain things (such as ansible)
@@ -125,12 +132,6 @@ jobs:
           token_format: ${{ inputs.token-format }}
           access_token_scopes: ${{ inputs.access-token-scopes }}
           access_token_lifetime: '20m'
-
-      - name: Get App name
-        id: app-name
-        run: |
-          basename=$(basename ${{ inputs.working-dir }})
-          echo name=$basename >> $GITHUB_OUTPUT
 
       - name: Run Trivy Scan
         id: trivy-fs
@@ -165,7 +166,7 @@ jobs:
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: ${{ steps.trivy-image.outputs.sarif-file }}
-          category: terraform-${{ steps.app-name.outputs.name }}
+          category: terraform-${{ steps.config-vars.outputs.app-name }}
 
       - name: Add Trivy FileSystem Report to Workflow Summary
         if: ${{ inputs.summary && steps.trivy-fs.outputs.text-report != '' }}
@@ -174,11 +175,6 @@ jobs:
           echo "### Trivy Scan Output" >> $GITHUB_STEP_SUMMARY
           cat ${{ steps.trivy-fs.outputs.text-report }} >> $GITHUB_STEP_SUMMARY
           echo -e "\n" >> $GITHUB_STEP_SUMMARY # Add a blank line
-          cat ${{ steps.trivy-image.outputs.text-report }} >> $GITHUB_STEP_SUMMARY
-
-      - name: set terraform variables
-        shell: bash
-        run: echo "TF_VAR_google_credentials=${{ steps.auth.outputs.access_token }}" >> $GITHUB_ENV
 
       - uses: hashicorp/setup-terraform@v3
         with:
@@ -213,53 +209,41 @@ jobs:
 
       # Print the plan to file in this way to avoid problems with "'" in the plan
       - name: Print plan to file
-        id: plan-file
+        id: format-plan
         if: steps.plan.outputs.exitcode != '0'
+        shell: bash
         env:
-          FILENAME: ${{ steps.app-name.outputs.name }}-plan.txt
+          ORIGINAL_FILENAME: ${{ steps.config-vars.outputs.app-name }}-plan.txt
+          FORMATTED_FILENAME: ${{ steps.config-vars.outputs.app-name }}-formatted-plan.txt
         run: |
-            cat > ${{ env.FILENAME }} <<'EOF'
+            cat > ${{ env.ORIGINANL_FILENAME }} <<'EOF'
             ${{ steps.showplan.outputs.stdout }}
             EOF
-            echo "name=${{ env.FILENAME }}" >> GITHUB_OUTPUT
-            
-        shell: bash
+            echo original-plan=${{ env.ORIGINAL_FILENAME }} >> $GITHUB_OUTPUT
+
+            # Removes the refreshing from the plan output and then moves the + and - all the way
+            # to the left of the pull request to trigger github's colors
+            sed -E 's/^([[:space:]]+)([-+])/\2\1/g' ${{ env.FILENAME }} > ${{ env.FORMATTED_FILENAME }}
+
+            check=${#FORMATTED_FILENAME}
+            # Delimiting plan size to avoid error "Argument list too long" when posting the plan
+            if [ "$check" -ge 65000 ];
+            then
+              FORMATTED_FILENAME='Terraform plan is too long to be posted in the PR comment. Please check the Action run to verify it'
+            fi
+            echo "$FORMATTED_FILENAME"
+            {
+              echo "formatted-plan<<EOF"
+              echo "$FORMATTED_FILENAME"
+              echo "EOF"
+            } >> "$GITHUB_OUTPUT"
 
       - name: Upload Terraform Plan
         if: github.event_name == 'pull_request' && steps.plan.outputs.exitcode != '0'
         uses: actions/upload-artifact@v4
         with:
-          name: terraform-${{ steps.app-name.outputs.name }}-plan.txt
-          path: ${{ inputs.working-dir }}/${{ steps.plan-file.outputs.name }}
-
-      # Removes the refreshing from the plan output and then moves the + and - all the way
-      # to the left of the pull request to trigger github's colors
-      - name: Reformat Plan
-        id: reformat-plan
-        if: steps.plan.outputs.exitcode != '0'
-        run: |
-            sed -E 's/^([[:space:]]+)([-+])/\2\1/g' ${{ steps.plan-file.outputs.name }} > plan.txt
-        shell: bash
-
-      # Saves the plan in an environment variable so we can pull it back out
-      - name: Put Plan in Output
-        id: plan-output
-        shell: bash
-        if: steps.plan.outputs.exitcode != '0'
-        run: |
-          PLAN=$(cat plan.txt)
-          check=${#PLAN}
-          # Delimiting plan size to avoid error "Argument list too long" when posting the plan
-          if [ "$check" -ge 65000 ];
-          then
-            PLAN='Terraform plan is too long to be posted in the PR comment. Please check the Action run to verify it'
-          fi
-          echo "$PLAN"
-          {
-            echo "plan<<EOF"
-            echo "$PLAN"
-            echo "EOF"
-          } >> "$GITHUB_OUTPUT"
+          name: terraform-${{ steps.config-vars.outputs.app-name }}-plan.txt
+          path: ${{ inputs.working-dir }}/${{ steps.format-plan.outputs.origin-plan }}
 
       - name: Post Plan to GitHub PR
         uses: mshick/add-pr-comment@b8f338c590a895d50bcbfa6c5859251edc8952fc # v2
@@ -287,7 +271,7 @@ jobs:
             <details><summary>Show Plan</summary>
 
             ```diff
-            ${{ steps.plan-output.outputs.plan }}
+            ${{ steps.format-plan.outputs.formatted-plan }}
             ```
 
             </details>
@@ -297,6 +281,7 @@ jobs:
             *Working Directory: ${{ env.WORKDIR }}*
             *Workflow: ${{ github.workflow }}*
             *Execution link: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}*
+
 
       - name: Terraform Apply
         id: apply
@@ -339,7 +324,7 @@ jobs:
           name: ${{ steps.build-report.outputs.report  }}-apply.txt
           path: ${{ steps.build-report.outputs.report  }}
 
-      - name: Post Scan Results to GitHub PR
+      - name: Post Apply Results to GitHub PR
         uses: mshick/add-pr-comment@b8f338c590a895d50bcbfa6c5859251edc8952fc # v2 
         if: always() && github.ref_name == github.event.repository.default_branch && inputs.pr-comment && steps.build-report.outputs.report != ''
         with:

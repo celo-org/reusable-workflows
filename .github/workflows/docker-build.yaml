@@ -220,7 +220,7 @@ jobs:
           category: image-${{ steps.split.outputs.app_name }}
 
       - name: Add Trivy FileSystem Report to Workflow Summary
-        if: ${{ inputs.summary && steps.trivy-fs.outputs.text-report != '' }}
+        if: inputs.summary && (steps.trivy-fs.outputs.text-report != '' || steps.trivy-image.outputs.text-report )
         shell: bash
         run: |
           echo "### Trivy Scan Output" >> $GITHUB_STEP_SUMMARY
