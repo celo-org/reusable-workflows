@@ -216,14 +216,14 @@ jobs:
           ORIGINAL_FILENAME: ${{ steps.config-vars.outputs.app-name }}-plan.txt
           FORMATTED_FILENAME: ${{ steps.config-vars.outputs.app-name }}-formatted-plan.txt
         run: |
-            cat > ${{ env.ORIGINANL_FILENAME }} <<'EOF'
+            cat > ${{ env.ORIGINAL_FILENAME }} <<'EOF'
             ${{ steps.showplan.outputs.stdout }}
             EOF
             echo original-plan=${{ env.ORIGINAL_FILENAME }} >> $GITHUB_OUTPUT
 
             # Removes the refreshing from the plan output and then moves the + and - all the way
             # to the left of the pull request to trigger github's colors
-            sed -E 's/^([[:space:]]+)([-+])/\2\1/g' ${{ env.FILENAME }} > ${{ env.FORMATTED_FILENAME }}
+            sed -E 's/^([[:space:]]+)([-+])/\2\1/g' ${{ env.ORIGINAL_FILENAME }} > ${{ env.FORMATTED_FILENAME }}
 
             check=${#FORMATTED_FILENAME}
             # Delimiting plan size to avoid error "Argument list too long" when posting the plan
@@ -231,10 +231,10 @@ jobs:
             then
               FORMATTED_FILENAME='Terraform plan is too long to be posted in the PR comment. Please check the Action run to verify it'
             fi
-            echo "$FORMATTED_FILENAME"
+            echo "${{ env.FORMATTED_FILENAME }}"
             {
               echo "formatted-plan<<EOF"
-              echo "$FORMATTED_FILENAME"
+              echo "${{ env.FORMATTED_FILENAME }}"
               echo "EOF"
             } >> "$GITHUB_OUTPUT"
 
