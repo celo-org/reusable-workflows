@@ -92,7 +92,7 @@ jobs:
       url: "${{ inputs.environment != '' && format('https://{0}:{1}', inputs.artifact-registry, inputs.tags) || '' }}"
     permissions: # Required for workload identity auth and push the trivy results to GitHub
       actions: read
-      contents: read
+      contents: write
       id-token: write
       security-events: write
       attestations: write
@@ -101,11 +101,11 @@ jobs:
       # Security policy docker is configured in step security app
       # Policy can be seen here https://app.stepsecurity.io/github/celo-org/actions/policies/docker
       # disable-sudo is set to false if debug is true, because tmate requires root to work.
-#      - name: Harden Runner
-#        if: runner.environment == 'github-hosted'
-#        uses: step-security/harden-runner@v2
-#        with:
-#          policy: ${{ inputs.debug-enabled == true && 'docker-debug' || 'docker' }}
+      - name: Harden Runner
+        if: runner.environment == 'github-hosted'
+        uses: step-security/harden-runner@v2
+        with:
+          policy: ${{ inputs.debug-enabled == true && 'docker-debug' || 'docker' }}
 
 
       # Only turns on tmate if workflow_dispatch set debug to true.
