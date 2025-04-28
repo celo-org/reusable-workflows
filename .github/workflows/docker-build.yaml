@@ -227,3 +227,4 @@ jobs:
           cat ${{ steps.trivy-fs.outputs.text-report }} >> $GITHUB_STEP_SUMMARY
           echo -e "\n" >> $GITHUB_STEP_SUMMARY # Add a blank line
           cat ${{ steps.trivy-image.outputs.text-report }} >> $GITHUB_STEP_SUMMARY
+
