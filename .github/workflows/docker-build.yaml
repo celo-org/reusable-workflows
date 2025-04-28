@@ -211,6 +211,7 @@ jobs:
           vuln-type: ${{ inputs.trivy-vuln-type }}
           severity: ${{ inputs.trivy-severity }}
           skip-dirs: ${{ inputs.trivy-skip-dirs }}
+          skip-setup-trivy: true
 
       - name: Upload SARIF to Security Tab
         if: inputs.trivy-enabled &&fromJSON(steps.ghas-check.outputs.result)
