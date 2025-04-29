@@ -247,10 +247,8 @@ jobs:
           path: ${{ inputs.working-dir }}/${{ steps.format-plan.outputs.original-plan }}
 
 
-
-
       - name: Post Plan to Github PR
-        if: github.event_name == 'pull_request' && inputs.pr-comment && (steps.build-report.outputs.report != '')
+        if: github.event_name == 'pull_request' && inputs.pr-comment && steps.format-plan.outputs.formatted-plan != ''
         uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043
         env:
           WORKDIR: ${{ inputs.working-dir }}
