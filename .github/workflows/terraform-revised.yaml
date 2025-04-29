@@ -1,0 +1,199 @@
+---
+name: 'Terraform plan and apply'
+
+on:
+  workflow_call:
+    inputs:
+      workload-id-provider:
+        required: true
+        type: string
+        description: "Google workload identity provider for authentication"
+      service-account:
+        required: true
+        type: string
+        description: "Google service account for authentication"
+      akeyless-api-gateway:
+        required: false
+        type: string
+        description: "Akeyless API Gateway URL for secret management"
+      akeyless-github-access-id:
+        required: false
+        type: string
+        description: "Akeyless GitHub Access ID for secret management"
+      working-dir:
+        required: true
+        type: string
+        description: "Directory where Terraform commands will run"
+      token-format:
+        required: false
+        type: string
+        description: "Format of the token for authentication"
+      access-token-scopes:
+        required: false
+        type: string
+        description: "Scopes for the access token"
+      timeout-minutes:
+        default: 30
+        type: number
+        description: "Workflow timeout in minutes"
+      environment:
+        default: ''
+        description: "Deployment environment in GitHub"
+        type: string
+      environment-url:
+        default: ''
+        description: "Deployment environment URL in Okta"
+        type: string
+      debug-enabled:
+        default: false
+        required: false
+        type: boolean
+        description: "Enable tmate for debugging"
+      runs-on:
+        default: "['self-hosted', 'org', 'terraform']"
+        type: string
+        description: "GitHub runner tags"
+      trivy-enabled:
+        default: true
+        type: boolean
+        description: "Enable Trivy security scans"
+      trivy-timeout:
+        default: 15m
+        type: string
+        description: "Timeout for Trivy scan"
+      trivy-skip-dirs:
+        type: string
+        description: "Directories to skip during Trivy scan"
+      trivy-severity:
+        default: "UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL"
+        type: string
+        description: "Severity levels to include in Trivy scan"
+      trivy-vuln-type:
+        default: "os,library"
+        type: string
+        description: "Types of vulnerabilities to scan for"
+      trivy-tf-vars:
+        default: true
+        type: boolean
+        description: "Enable scanning of Terraform variables"
+      pr-comment:
+        default: true
+        type: boolean
+        description: "Post results as comments on pull requests"
+      summary:
+        default: true
+        type: boolean
+        description: "Add results to workflow summary"
+
+jobs:
+  terraform:
+    runs-on: ${{ fromJson(inputs.runs-on) }}
+    timeout-minutes: ${{ inputs.timeout-minutes }}
+    defaults:
+      run:
+        working-directory: ${{ inputs.working-dir }}
+        shell: bash
+    environment:
+      name: ${{ inputs.environment }}
+      url: ${{ inputs.environment-url }}
+
+    steps:
+      # Debugging with tmate
+      - name: Setup tmate session
+        if: inputs.debug-enabled == true
+        uses: mxschmitt/action-tmate@v3
+        with:
+          detached: true
+          limit-access-to-actor: true
+
+      # Harden runner for security
+      - name: Harden Runner
+        if: runner.environment == 'github-hosted'
+        uses: step-security/harden-runner@v2
+        with:
+          egress-policy: audit
+
+      # Checkout code
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # Authenticate with Google Cloud
+      - name: Authenticate to Google Cloud
+        id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ inputs.workload-id-provider }}
+          service_account: ${{ inputs.service-account }}
+          token_format: ${{ inputs.token-format }}
+          access_token_scopes: ${{ inputs.access-token-scopes }}
+          access_token_lifetime: '20m'
+
+      # Run Trivy Scan
+      - name: Run Trivy Scan
+        id: trivy-fs
+        if: inputs.trivy-enabled
+        uses: celo-org/trivy-composite-action@v1.0.0-refactor
+        with:
+          scan-type: fs
+          scan-ref: ${{ inputs.working-dir }}
+          timeout: ${{ inputs.trivy-timeout }}
+          vuln-type: ${{ inputs.trivy-vuln-type }}
+          severity: ${{ inputs.trivy-severity }}
+          skip-dirs: ${{ inputs.trivy-skip-dirs }}
+          tf-vars: ${{ inputs.trivy-tf-vars }}
+
+      # Setup Terraform
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_wrapper: true
+
+      # Terraform Init
+      - name: Terraform Init
+        run: terraform init
+
+      # Terraform Format Check
+      - name: Terraform Format
+        run: terraform fmt -check
+
+      # Terraform Validate
+      - name: Terraform Validate
+        run: terraform validate -no-color
+
+      # Terraform Plan
+      - name: Terraform Plan
+        id: plan
+        run: terraform plan -no-color -input=false -out=tfplan
+        continue-on-error: true
+
+      # Terraform Apply
+      - name: Terraform Apply
+        id: apply
+        if: github.ref_name == github.event.repository.default_branch && github.event_name == 'push' && steps.plan.outcome == 'success' && steps.plan.outputs.exitcode == '2'
+        run: |
+          terraform apply -no-color -auto-approve "tfplan"
+          echo "::set-output name=apply_output::$(terraform show -json tfplan | jq '.')"
+
+      # Build Summary Report
+      - name: Build Summary Report
+        id: build-summary
+        if: always()
+        run: |
+          echo "### Terraform Summary Report" >> $GITHUB_STEP_SUMMARY
+          echo "**Plan Outcome:** ${{ steps.plan.outcome }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Apply Results:**" >> $GITHUB_STEP_SUMMARY
+          terraform show -no-color tfplan >> $GITHUB_STEP_SUMMARY
+
+      # Post Pull Request Comment
+      - name: Post Plan to Pull Request
+        uses: peter-evans/create-or-update-comment@v3
+        if: github.event_name == 'pull_request' && inputs.pr-comment == true
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          body: |
+            ### Terraform Plan Results
+            - **Plan Outcome**: ${{ steps.plan.outcome }}
+            - **Apply Outcome**: Changes applied successfully.
+            - **Summary**: See workflow summary for details.
