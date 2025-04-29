@@ -98,10 +98,10 @@ jobs:
       # disable-sudo is set to false if debug is true, because tmate requires root to work.
       - name: Harden Runner
 #        if: runner.environment == 'github-hosted'
-        uses: step-security/harden-runner@v2
-        with:
-          egress-policy: audit       
-
+#        uses: step-security/harden-runner@v2
+#        with:
+#          egress-policy: audit       
+#
       - name: 'Checkout'
         uses: actions/checkout@v4
 
