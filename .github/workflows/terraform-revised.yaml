@@ -279,7 +279,7 @@ jobs:
             ```
             </details>
 
-            #### Terraform Plan 📖\`${{ steps.plan.output.outcome }}\`
+            #### Terraform Plan 📖\`${{ steps.plan.outcome }}\`
 
             <details><summary>Show Plan</summary>
 
