@@ -201,8 +201,8 @@ jobs:
         run: terraform fmt -check
 
       # Terraform Validate
-        id: validate
       - name: Terraform Validate
+        id: validate
         run: terraform validate -no-color
 
       - name: Terraform Plan
