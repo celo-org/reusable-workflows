@@ -191,13 +191,17 @@ jobs:
 
       # Terraform Init
       - name: Terraform Init
+        id: init
         run: terraform init
 
       # Terraform Format Check
+ 
       - name: Terraform Format
+        id: fmt
         run: terraform fmt -check
 
       # Terraform Validate
+      - id: validate
       - name: Terraform Validate
         run: terraform validate -no-color
 
@@ -270,8 +274,8 @@ jobs:
           body: |
             ### Terraform for ${{ env.WORKDIR }}
             #### Terraform Format and Style 🖌 \`${{ steps.fmt.outcome }}\`
-            #### Terraform Initialization ⚙️\`${{ steps.init.outcome }}\`
-            #### Terraform Validation 🤖\`${{ steps.validate.outcome }}\`
+            #### Terraform Initialization ⚙️ \`${{ steps.init.outcome }}\`
+            #### Terraform Validation 🤖 \`${{ steps.validate.outcome }}\`
             <details><summary>Validation Output</summary>
 
             ```diff
