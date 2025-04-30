@@ -261,7 +261,7 @@ jobs:
           terraform apply -no-color -auto-approve "tfplan"
           echo "::set-output name=apply_output::$(terraform show -json tfplan | jq '.')"
 
-     - name: Post Plan to Github PR
+      - name: Post Plan to Github PR
         if: github.event_name == 'pull_request' && inputs.pr-comment && steps.format-plan.outputs.formatted-plan != ''
         uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043
         env:
@@ -296,7 +296,7 @@ jobs:
             *Workflow: ${{ github.workflow }}*
             *Execution link: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}*
 
-     - name: Post Plan to Github PR
+      - name: Post Plan to Github PR
         if: github.event_name == 'pull_request' && inputs.pr-comment && steps.format-plan.outputs.formatted-plan != ''
         uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043
         env:
