@@ -297,3 +297,51 @@ jobs:
             *Execution link: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}*
 
 
+      - name: Build Report
+        if: always() && github.ref_name == github.event.repository.default_branch && steps.apply.outputs.stdout != '' && ( inputs.summary || inputs.pr-comment )
+        id: build-report
+        shell: bash
+        env:
+          APPLY: "${{ steps.apply.outputs.stdout }}"
+          WORKDIR: "${{ inputs.working-dir }}"
+        run: |
+          echo '${{ env.APPLY }}' > apply.txt
+          {
+              echo "### Terraform for ${{ env.WORKDIR }}"
+              echo "#### Terraform Apply ${{ steps.apply.outcome }}"
+              echo "<details><summary>Show Apply</summary>"
+              echo ""
+              echo '```'
+              cat apply.txt
+              echo '```'
+              echo "</details>"
+              echo ""
+              echo "*Pusher: @${{ github.actor }}* \\"
+              echo "*Action: ${{ github.event_name }}* \\"
+              echo "*Working Directory: ${{ env.WORKDIR }}* \\"
+              echo "*Workflow: ${{ github.workflow }}* \\"
+              echo "*Execution link: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}* \\"
+          } > 'report.txt'
+          echo "report=report.txt" >> $GITHUB_OUTPUT     
+
+      - name: Upload Apply Report
+        if: always() && github.ref_name == github.event.repository.default_branch && steps.build-report.outputs.report != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.build-report.outputs.report  }}-apply.txt
+          path: ${{ inputs.working-dir}}/${{ steps.build-report.outputs.report  }}
+
+      - name: Post Apply Results to GitHub PR
+        if: github.event_name == 'pull_request' && inputs.pr-comment && (steps.build-report.outputs.report != '')
+        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          body-path: "${{ inputs.working-dir }}/${{ steps.build-report.outputs.report }}"
+
+      - name: Post Scan Results to Workflow Summary
+        if: always() && github.ref_name == github.event.repository.default_branch && inputs.summary && steps.build-report.outputs.report != ''
+        shell: bash
+        run: |
+          while IFS= read -r line; do
+            echo $line >> $GITHUB_STEP_SUMMARY
+          done < "${{ steps.build-report.outputs.report }}"
