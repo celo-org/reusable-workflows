@@ -201,16 +201,15 @@ jobs:
       - name: Terraform Validate
         run: terraform validate -no-color
 
-      # Terraform Plan
       - name: Terraform Plan
         id: plan
-        run: terraform plan -no-color -input=false -out=tfplan
-        continue-on-error: true
+        run: terraform plan -no-color -input=false -out=tfplan "-detailed-exitcode"
+        shell: bash
 
       # Show Plan is used so we can get rid of all the "refreshing" comments that are noisy
       - name: Terraform Show Plan
         id: showplan
-        run: terraform plan -no-color -input=false -out=tfplan "-detailed-exitcode"
+        run: terraform show tfplan "-no-color"
         continue-on-error: true
         shell: bash
 
