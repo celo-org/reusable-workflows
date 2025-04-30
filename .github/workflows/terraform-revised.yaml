@@ -119,6 +119,16 @@ jobs:
         with:
           fetch-depth: 0
 
+      # Akeyless Get Secrets will take the specified dynamic or static secrets and set them to their corresponding environment variables.  It will also
+      # export github's JWT Token as AKEYLESS_AUTH_JWT (which their terraform provider uses for JWT authentication, and AUTH_TOKEN - The akeyless auth token
+      # it gets back after authenticating, which can be used for certain things (such as ansible)
+      - name: Akeyless Get Secrets
+        id: get_auth_token
+        uses: docker://us-west1-docker.pkg.dev/devopsre/akeyless-public/akeyless-action:latest
+        with:
+          api-url: ${{ inputs.akeyless-api-gateway }}
+          access-id: ${{ inputs.akeyless-github-access-id }}
+
       # Authenticate with Google Cloud
       - name: Authenticate to Google Cloud
         id: auth
@@ -129,6 +139,28 @@ jobs:
           token_format: ${{ inputs.token-format }}
           access_token_scopes: ${{ inputs.access-token-scopes }}
           access_token_lifetime: '20m'
+
+      - name: set terraform variables
+        id: config-vars
+        shell: bash
+        run: |
+          echo "TF_VAR_google_credentials=${{ steps.auth.outputs.access_token }}" >> $GITHUB_ENV
+          echo "app-name=$(basename ${{ inputs.working-dir }})" >> $GITHUB_OUTPUT
+
+      - name: Check if GHAS is Enabled
+        uses: actions/github-script@v7
+        id: ghas-check
+        with:
+          script: |
+            const [owner, repo] = '${{ github.repository }}'.split("/");
+            const res = await github.rest.repos.get({ owner, repo });
+            const isPrivate = res.data.private;
+            const hasGhas = res.data.security_and_analysis?.advanced_security?.status === 'enabled';
+            if (isPrivate && !hasGhas) {
+              core.warning('GHAS is NOT enabled and repo is private. Cannot upload SARIF.');
+              return false;
+            }
+            return true;
 
       # Run Trivy Scan
       - name: Run Trivy Scan
@@ -143,6 +175,20 @@ jobs:
           severity: ${{ inputs.trivy-severity }}
           skip-dirs: ${{ inputs.trivy-skip-dirs }}
           tf-vars: ${{ inputs.trivy-tf-vars }}
+
+      - name: Upload SARIF to Security Tab
+        if: inputs.trivy-enabled &&fromJSON(steps.ghas-check.outputs.result)
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: ${{ steps.trivy-image.outputs.sarif-file }}
+          category: terraform-${{ steps.config-vars.outputs.app-name }}
+
+      - name: Upload SARIF to Security Tab
+        if: inputs.trivy-enabled &&fromJSON(steps.ghas-check.outputs.result)
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: ${{ steps.trivy-image.outputs.sarif-file }}
+          category: terraform-${{ steps.config-vars.outputs.app-name }}
 
       # Setup Terraform
       - name: Setup Terraform
@@ -167,6 +213,52 @@ jobs:
         id: plan
         run: terraform plan -no-color -input=false -out=tfplan
         continue-on-error: true
+
+      # Show Plan is used so we can get rid of all the "refreshing" comments that are noisy
+      - name: Terraform Show Plan
+        id: showplan
+        run: terraform show tfplan "-no-color"
+        continue-on-error: true
+        shell: bash
+
+      # Print the plan to file in this way to avoid problems with "'" in the plan
+      - name: Print plan to file
+        id: format-plan
+        if: steps.plan.outputs.exitcode != '0'
+        shell: bash
+        env:
+          ORIGINAL_FILENAME: ${{ steps.config-vars.outputs.app-name }}-plan.txt
+          FORMATTED_FILENAME: ${{ steps.config-vars.outputs.app-name }}-formatted-plan.txt
+        run: |
+            cat > ${{ env.ORIGINAL_FILENAME }} <<'EOF'
+            ${{ steps.showplan.outputs.stdout }}
+            EOF
+            echo original-plan=${{ env.ORIGINAL_FILENAME }} >> $GITHUB_OUTPUT
+
+            # Removes the refreshing from the plan output and then moves the + and - all the way
+            # to the left of the pull request to trigger github's colors
+            sed -E 's/^([[:space:]]+)([-+])/\2\1/g' ${{ env.ORIGINAL_FILENAME }} > ${{ env.FORMATTED_FILENAME }}
+
+            PLAN=$(cat ${{ env.FORMATTED_FILENAME }})
+            check=${#PLAN}
+            # Delimiting plan size to avoid error "Argument list too long" when posting the plan
+            if [ "$check" -ge 65000 ];
+            then
+              PLAN='Terraform plan is too long to be posted in the PR comment. Please check the Action run to verify it'
+            fi
+            echo "$PLAN"
+            {
+              echo "formatted-plan<<EOF"
+              echo "$PLAN"
+              echo "EOF"
+            } >> "$GITHUB_OUTPUT"
+
+      - name: Upload Terraform Plan
+        if: github.event_name == 'pull_request' && steps.plan.outputs.exitcode != '0'
+        uses: actions/upload-artifact@v4
+        with:
+          name: terraform-${{ steps.config-vars.outputs.app-name }}-plan.txt
+          path: ${{ inputs.working-dir }}/${{ steps.format-plan.outputs.original-plan }}
 
       # Terraform Apply
       - name: Terraform Apply
