@@ -183,13 +183,6 @@ jobs:
           sarif_file: ${{ steps.trivy-image.outputs.sarif-file }}
           category: terraform-${{ steps.config-vars.outputs.app-name }}
 
-      - name: Upload SARIF to Security Tab
-        if: inputs.trivy-enabled &&fromJSON(steps.ghas-check.outputs.result)
-        uses: github/codeql-action/upload-sarif@v3
-        with:
-          sarif_file: ${{ steps.trivy-image.outputs.sarif-file }}
-          category: terraform-${{ steps.config-vars.outputs.app-name }}
-
       # Setup Terraform
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
@@ -268,24 +261,73 @@ jobs:
           terraform apply -no-color -auto-approve "tfplan"
           echo "::set-output name=apply_output::$(terraform show -json tfplan | jq '.')"
 
-      # Build Summary Report
-      - name: Build Summary Report
-        id: build-summary
-        if: always()
-        run: |
-          echo "### Terraform Summary Report" >> $GITHUB_STEP_SUMMARY
-          echo "**Plan Outcome:** ${{ steps.plan.outcome }}" >> $GITHUB_STEP_SUMMARY
-          echo "**Apply Results:**" >> $GITHUB_STEP_SUMMARY
-          terraform show -no-color tfplan >> $GITHUB_STEP_SUMMARY
-
-      # Post Pull Request Comment
-      - name: Post Plan to Pull Request
-        uses: peter-evans/create-or-update-comment@v3
-        if: github.event_name == 'pull_request' && inputs.pr-comment == true
+     - name: Post Plan to Github PR
+        if: github.event_name == 'pull_request' && inputs.pr-comment && steps.format-plan.outputs.formatted-plan != ''
+        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043
+        env:
+          WORKDIR: ${{ inputs.working-dir }}
         with:
           issue-number: ${{ github.event.pull_request.number }}
           body: |
-            ### Terraform Plan Results
-            - **Plan Outcome**: ${{ steps.plan.outcome }}
-            - **Apply Outcome**: Changes applied successfully.
-            - **Summary**: See workflow summary for details.
+            ### Terraform for ${{ env.WORKDIR }}
+            #### Terraform Format and Style 🖌 \`${{ steps.fmt.outcome }}\`
+            #### Terraform Initialization ⚙️\`${{ steps.init.outcome }}\`
+            #### Terraform Validation 🤖\`${{ steps.validate.outcome }}\`
+            <details><summary>Validation Output</summary>
+
+            ```diff
+            ${{ steps.validate.outputs.stdout }}
+            ```
+            </details>
+
+            #### Terraform Plan 📖\`${{ steps.plan.output.outcome }}\`
+
+            <details><summary>Show Plan</summary>
+
+            ```diff
+            ${{ steps.format-plan.outputs.formatted-plan }}
+            ```
+
+            </details>
+
+            *Pusher: @${{ github.actor }}*
+            *Action: ${{ github.event_name }}*
+            *Working Directory: ${{ env.WORKDIR }}*
+            *Workflow: ${{ github.workflow }}*
+            *Execution link: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}*
+
+     - name: Post Plan to Github PR
+        if: github.event_name == 'pull_request' && inputs.pr-comment && steps.format-plan.outputs.formatted-plan != ''
+        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043
+        env:
+          WORKDIR: ${{ inputs.working-dir }}
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          body: |
+            ### Terraform for ${{ env.WORKDIR }}
+            #### Terraform Format and Style 🖌 \`${{ steps.fmt.outcome }}\`
+            #### Terraform Initialization ⚙️\`${{ steps.init.outcome }}\`
+            #### Terraform Validation 🤖\`${{ steps.validate.outcome }}\`
+            <details><summary>Validation Output</summary>
+
+            ```diff
+            ${{ steps.validate.outputs.stdout }}
+            ```
+            </details>
+
+            #### Terraform Plan 📖\`${{ steps.plan.output.outcome }}\`
+
+            <details><summary>Show Plan</summary>
+
+            ```diff
+            ${{ steps.format-plan.outputs.formatted-plan }}
+            ```
+
+            </details>
+
+            *Pusher: @${{ github.actor }}*
+            *Action: ${{ github.event_name }}*
+            *Working Directory: ${{ env.WORKDIR }}*
+            *Workflow: ${{ github.workflow }}*
+            *Execution link: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}*
+
