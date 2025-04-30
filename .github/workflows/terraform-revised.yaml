@@ -210,7 +210,7 @@ jobs:
       # Show Plan is used so we can get rid of all the "refreshing" comments that are noisy
       - name: Terraform Show Plan
         id: showplan
-        run: terraform show tfplan "-no-color"
+        run: terraform plan -no-color -input=false -out=tfplan "-detailed-exitcode"
         continue-on-error: true
         shell: bash
 
@@ -296,38 +296,4 @@ jobs:
             *Workflow: ${{ github.workflow }}*
             *Execution link: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}*
 
-      - name: Post Plan to Github PR
-        if: github.event_name == 'pull_request' && inputs.pr-comment && steps.format-plan.outputs.formatted-plan != ''
-        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043
-        env:
-          WORKDIR: ${{ inputs.working-dir }}
-        with:
-          issue-number: ${{ github.event.pull_request.number }}
-          body: |
-            ### Terraform for ${{ env.WORKDIR }}
-            #### Terraform Format and Style 🖌 \`${{ steps.fmt.outcome }}\`
-            #### Terraform Initialization ⚙️\`${{ steps.init.outcome }}\`
-            #### Terraform Validation 🤖\`${{ steps.validate.outcome }}\`
-            <details><summary>Validation Output</summary>
-
-            ```diff
-            ${{ steps.validate.outputs.stdout }}
-            ```
-            </details>
-
-            #### Terraform Plan 📖\`${{ steps.plan.output.outcome }}\`
-
-            <details><summary>Show Plan</summary>
-
-            ```diff
-            ${{ steps.format-plan.outputs.formatted-plan }}
-            ```
-
-            </details>
-
-            *Pusher: @${{ github.actor }}*
-            *Action: ${{ github.event_name }}*
-            *Working Directory: ${{ env.WORKDIR }}*
-            *Workflow: ${{ github.workflow }}*
-            *Execution link: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}*
 
