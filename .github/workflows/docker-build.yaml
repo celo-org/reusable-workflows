@@ -103,6 +103,7 @@ jobs:
       # disable-sudo is set to false if debug is true, because tmate requires root to work.
       - name: Harden Runner
         if: runner.environment == 'github-hosted'
+        with:
           policy: ${{ inputs.debug-enabled == true && 'docker-debug' || 'docker' }}
 
 
