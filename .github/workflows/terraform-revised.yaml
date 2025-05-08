@@ -299,7 +299,6 @@ jobs:
             *Workflow: ${{ github.workflow }}*
             *Execution link: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}*
 
-
       - name: Build Report
         if: always() && github.ref_name == github.event.repository.default_branch && steps.apply.outputs.stdout != '' && ( inputs.summary || inputs.pr-comment )
         id: build-report
@@ -319,13 +318,13 @@ jobs:
               echo '```'
               echo "</details>"
               echo ""
-              echo "*Pusher: @${{ github.actor }}* \\"
-              echo "*Action: ${{ github.event_name }}* \\"
-              echo "*Working Directory: ${{ env.WORKDIR }}* \\"
-              echo "*Workflow: ${{ github.workflow }}* \\"
-              echo "*Execution link: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}* \\"
+              echo "\*Pusher: @${{ github.actor }}\* \\"
+              echo "\*Action: ${{ github.event_name }}\* \\"
+              echo "\*Working Directory: ${{ env.WORKDIR }}\* \\"
+              echo "\*Workflow: ${{ github.workflow }}\* \\"
+              echo "\*Execution link: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}\* \\"
           } > 'report.txt'
-          echo "report=report.txt" >> $GITHUB_OUTPUT     
+          echo "report=report.txt" >> $GITHUB_OUTPUT
 
       - name: Upload Apply Report
         if: always() && github.ref_name == github.event.repository.default_branch && steps.build-report.outputs.report != ''
