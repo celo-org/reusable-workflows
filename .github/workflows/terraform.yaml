@@ -92,7 +92,7 @@ jobs:
 
       - name: Configure AWS Credentials - Security
         if: ${{ steps.aws-account-check.outputs.security == 'true' }}
-        uses: aws-actions/configure-aws-credentials@v4.0.2
+        uses: aws-actions/configure-aws-credentials@v4.1.0
         with:
           aws-region: us-east-2
           role-to-assume: arn:aws:iam::${{ inputs.aws-security-account }}:role/github_actions_OIDC
@@ -100,7 +100,7 @@ jobs:
 
       - name: Configure AWS Credentials - PROD
         if: ${{ steps.aws-account-check.outputs.prod == 'true' }}
-        uses: aws-actions/configure-aws-credentials@v4.0.2
+        uses: aws-actions/configure-aws-credentials@v4.1.0
         with:
           aws-region: us-east-2
           role-to-assume: arn:aws:iam::${{ inputs.aws-prod-account  }}:role/github_actions_OIDC
