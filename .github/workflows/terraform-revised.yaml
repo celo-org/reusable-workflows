@@ -260,9 +260,8 @@ jobs:
       - name: Terraform Apply
         id: apply
         if: github.ref_name == github.event.repository.default_branch && github.event_name == 'push' && steps.plan.outcome == 'success' && steps.plan.outputs.exitcode == '2'
-        run: |
-          terraform apply -no-color -auto-approve "tfplan"
-          echo "::set-output name=apply_output::$(terraform show -json tfplan | jq '.')"
+        shell: bash
+        run: terraform apply -no-color -auto-approve "tfplan"
 
       - name: Post Plan to Github PR
         if: github.event_name == 'pull_request' && inputs.pr-comment && steps.format-plan.outputs.formatted-plan != ''
