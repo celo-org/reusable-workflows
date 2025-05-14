@@ -1,77 +1,89 @@
 ---
-name: 'Terraform plan'
+name: 'Terraform plan and apply'
+
 on:
   workflow_call:
     inputs:
       workload-id-provider:
         required: true
         type: string
+        description: "Google workload identity provider for authentication"
       service-account:
         required: true
         type: string
+        description: "Google service account for authentication"
       akeyless-api-gateway:
         required: false
         type: string
+        description: "Akeyless API Gateway URL for secret management"
       akeyless-github-access-id:
         required: false
         type: string
+        description: "Akeyless GitHub Access ID for secret management"
       working-dir:
         required: true
         type: string
+        description: "Directory where Terraform commands will run"
       token-format:
         required: false
         type: string
+        description: "Format of the token for authentication"
       access-token-scopes:
         required: false
         type: string
+        description: "Scopes for the access token"
       timeout-minutes:
         default: 30
         type: number
-        description: "Workflow timeout"
+        description: "Workflow timeout in minutes"
       environment:
         default: ''
-        description: "Deployment environment in github"
+        description: "Deployment environment in GitHub"
         type: string
       environment-url:
         default: ''
-        description: "Deployment environment url in okta"
+        description: "Deployment environment URL in Okta"
         type: string
       debug-enabled:
         default: false
         required: false
         type: boolean
-        description: "run tmate for troubleshooting"
+        description: "Enable tmate for debugging"
       runs-on:
         default: "['self-hosted', 'org', 'terraform']"
         type: string
-        description: "github runner tags"
+        description: "GitHub runner tags"
       trivy-enabled:
         default: true
         type: boolean
+        description: "Enable Trivy security scans"
       trivy-timeout:
         default: 15m
         type: string
-        description: "trivy timeout 15 minutes"
+        description: "Timeout for Trivy scan"
       trivy-skip-dirs:
         type: string
-        description: "Directories to skip scanning"
+        description: "Directories to skip during Trivy scan"
       trivy-severity:
         default: "UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL"
         type: string
-        description: "trivy severity types to scan for"
+        description: "Severity levels to include in Trivy scan"
       trivy-vuln-type:
         default: "os,library"
         type: string
-        description: "trivy vulnerability types"
+        description: "Types of vulnerabilities to scan for"
       trivy-tf-vars:
         default: true
         type: boolean
+        description: "Enable scanning of Terraform variables"
       pr-comment:
         default: true
         type: boolean
+        description: "Post results as comments on pull requests"
       summary:
         default: true
         type: boolean
+        description: "Add results to workflow summary"
 
 jobs:
   terraform:
@@ -81,38 +93,31 @@ jobs:
       run:
         working-directory: ${{ inputs.working-dir }}
         shell: bash
-    # Specify an environment here if using deployment environments
     environment:
       name: ${{ inputs.environment }}
       url: ${{ inputs.environment-url }}
+
     steps:
+      # Debugging with tmate
       - name: Setup tmate session
-        uses: mxschmitt/action-tmate@e5c7151931ca95bad1c6f4190c730ecf8c7dde48
-        if: inputs.debug-enabled == true 
+        if: inputs.debug-enabled == true
+        uses: mxschmitt/action-tmate@v3
         with:
           detached: true
           limit-access-to-actor: true
 
-      # Security policies go-tests and go-tests-debug are configured in step security app
-      # Policy can be seen here https://app.stepsecurity.io/github/celo-org/actions/policies
-      # disable-sudo is set to false if debug is true, because tmate requires root to work.
+      # Harden runner for security
       - name: Harden Runner
         if: runner.environment == 'github-hosted'
         uses: step-security/harden-runner@v2
         with:
-          egress-policy: audit       
+          egress-policy: audit
 
-      - name: 'Checkout'
+      # Checkout code
+      - name: Checkout
         uses: actions/checkout@v4
         with:
-         fetch-depth: 0
-
-      - name: set terraform variables
-        id: config-vars
-        shell: bash
-        run: |
-          echo "TF_VAR_google_credentials=${{ steps.auth.outputs.access_token }}" >> $GITHUB_ENV
-          echo "app-name=$(basename ${{ inputs.working-dir }})" >> $GITHUB_OUTPUT
+          fetch-depth: 0
 
       # Akeyless Get Secrets will take the specified dynamic or static secrets and set them to their corresponding environment variables.  It will also
       # export github's JWT Token as AKEYLESS_AUTH_JWT (which their terraform provider uses for JWT authentication, and AUTH_TOKEN - The akeyless auth token
@@ -124,10 +129,10 @@ jobs:
           api-url: ${{ inputs.akeyless-api-gateway }}
           access-id: ${{ inputs.akeyless-github-access-id }}
 
-      # Uses Google workload identity federation to authenticate without keys, in security circle project.  Variables defined in security circle
-      - id: 'auth'
-        name: 'Authenticate to Google Cloud'
-        uses: 'google-github-actions/auth@v2'
+      # Authenticate with Google Cloud
+      - name: Authenticate to Google Cloud
+        id: auth
+        uses: google-github-actions/auth@v2
         with:
           workload_identity_provider: ${{ inputs.workload-id-provider }}
           service_account: ${{ inputs.service-account }}
@@ -135,18 +140,12 @@ jobs:
           access_token_scopes: ${{ inputs.access-token-scopes }}
           access_token_lifetime: '20m'
 
-      - name: Run Trivy Scan
-        id: trivy-fs
-        if: inputs.trivy-enabled
-        uses: celo-org/trivy-composite-action@v1.0.0-refactor
-        with:
-          scan-type: fs
-          scan-ref:  ${{ inputs.working-dir }}
-          timeout: ${{ inputs.trivy-timeout }}
-          vuln-type: ${{ inputs.trivy-vuln-type }}
-          severity: ${{ inputs.trivy-severity }}
-          skip-dirs: ${{ inputs.trivy-skip-dirs }}
-          tf-vars: ${{ inputs.trivy-tf-vars }}
+      - name: set terraform variables
+        id: config-vars
+        shell: bash
+        run: |
+          echo "TF_VAR_google_credentials=${{ steps.auth.outputs.access_token }}" >> $GITHUB_ENV
+          echo "app-name=$(basename ${{ inputs.working-dir }})" >> $GITHUB_OUTPUT
 
       - name: Check if GHAS is Enabled
         uses: actions/github-script@v7
@@ -163,6 +162,20 @@ jobs:
             }
             return true;
 
+      # Run Trivy Scan
+      - name: Run Trivy Scan
+        id: trivy-fs
+        if: inputs.trivy-enabled
+        uses: celo-org/trivy-composite-action@v1.0.0-refactor
+        with:
+          scan-type: fs
+          scan-ref: ${{ inputs.working-dir }}
+          timeout: ${{ inputs.trivy-timeout }}
+          vuln-type: ${{ inputs.trivy-vuln-type }}
+          severity: ${{ inputs.trivy-severity }}
+          skip-dirs: ${{ inputs.trivy-skip-dirs }}
+          tf-vars: ${{ inputs.trivy-tf-vars }}
+
       - name: Upload SARIF to Security Tab
         if: inputs.trivy-enabled &&fromJSON(steps.ghas-check.outputs.result)
         uses: github/codeql-action/upload-sarif@v3
@@ -170,32 +183,27 @@ jobs:
           sarif_file: ${{ steps.trivy-image.outputs.sarif-file }}
           category: terraform-${{ steps.config-vars.outputs.app-name }}
 
-      - name: Add Trivy FileSystem Report to Workflow Summary
-        if: ${{ inputs.summary && steps.trivy-fs.outputs.text-report != '' }}
-        shell: bash
-        run: |
-          echo "### Trivy Scan Output" >> $GITHUB_STEP_SUMMARY
-          cat ${{ steps.trivy-fs.outputs.text-report }} >> $GITHUB_STEP_SUMMARY
-          echo -e "\n" >> $GITHUB_STEP_SUMMARY # Add a blank line
-
-      - uses: hashicorp/setup-terraform@v3
+      # Setup Terraform
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
         with:
           terraform_wrapper: true
 
+      # Terraform Init
       - name: Terraform Init
         id: init
         run: terraform init
-        shell: bash
 
+      # Terraform Format Check
+ 
       - name: Terraform Format
         id: fmt
         run: terraform fmt -check
-        shell: bash
 
+      # Terraform Validate
       - name: Terraform Validate
         id: validate
         run: terraform validate -no-color
-        shell: bash
 
       - name: Terraform Plan
         id: plan
@@ -248,6 +256,12 @@ jobs:
           name: terraform-${{ steps.config-vars.outputs.app-name }}-plan.txt
           path: ${{ inputs.working-dir }}/${{ steps.format-plan.outputs.original-plan }}
 
+      # Terraform Apply
+      - name: Terraform Apply
+        id: apply
+        if: github.ref_name == github.event.repository.default_branch && github.event_name == 'push' && steps.plan.outcome == 'success' && steps.plan.outputs.exitcode == '2'
+        shell: bash
+        run: terraform apply -no-color -auto-approve "tfplan"
 
       - name: Post Plan to Github PR
         if: github.event_name == 'pull_request' && inputs.pr-comment && steps.format-plan.outputs.formatted-plan != ''
@@ -258,9 +272,9 @@ jobs:
           issue-number: ${{ github.event.pull_request.number }}
           body: |
             ### Terraform for ${{ env.WORKDIR }}
-            #### Terraform Format and Style 🖌\`${{ steps.fmt.outcome }}\`
-            #### Terraform Initialization ⚙️\`${{ steps.init.outcome }}\`
-            #### Terraform Validation 🤖\`${{ steps.validate.outcome }}\`
+            #### Terraform Format and Style 🖌 \`${{ steps.fmt.outcome }}\`
+            #### Terraform Initialization ⚙️ \`${{ steps.init.outcome }}\`
+            #### Terraform Validation 🤖 \`${{ steps.validate.outcome }}\`
             <details><summary>Validation Output</summary>
 
             ```diff
@@ -268,7 +282,7 @@ jobs:
             ```
             </details>
 
-            #### Terraform Plan 📖\`${{ steps.plan.output.outcome }}\`
+            #### Terraform Plan 📖\`${{ steps.plan.outcome }}\`
 
             <details><summary>Show Plan</summary>
 
@@ -283,13 +297,6 @@ jobs:
             *Working Directory: ${{ env.WORKDIR }}*
             *Workflow: ${{ github.workflow }}*
             *Execution link: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}*
-
-      - name: Terraform Apply
-        id: apply
-        if: github.ref_name == github.event.repository.default_branch && github.event_name == 'push' && steps.plan.outcome == 'success' && steps.plan.outputs.exitcode == '2'
-
-        shell: bash
-        run: terraform apply -no-color -auto-approve "tfplan"
 
       - name: Build Report
         if: always() && github.ref_name == github.event.repository.default_branch && steps.apply.outputs.stdout != '' && ( inputs.summary || inputs.pr-comment )
@@ -310,13 +317,13 @@ jobs:
               echo '```'
               echo "</details>"
               echo ""
-              echo "*Pusher: @${{ github.actor }}* \\"
-              echo "*Action: ${{ github.event_name }}* \\"
-              echo "*Working Directory: ${{ env.WORKDIR }}* \\"
-              echo "*Workflow: ${{ github.workflow }}* \\"
-              echo "*Execution link: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}* \\"
+              echo "\*Pusher: @${{ github.actor }}\* \\"
+              echo "\*Action: ${{ github.event_name }}\* \\"
+              echo "\*Working Directory: ${{ env.WORKDIR }}\* \\"
+              echo "\*Workflow: ${{ github.workflow }}\* \\"
+              echo "\*Execution link: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}\* \\"
           } > 'report.txt'
-          echo "report=report.txt" >> $GITHUB_OUTPUT     
+          echo "report=report.txt" >> $GITHUB_OUTPUT
 
       - name: Upload Apply Report
         if: always() && github.ref_name == github.event.repository.default_branch && steps.build-report.outputs.report != ''
