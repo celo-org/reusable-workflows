@@ -1,0 +1,194 @@
+---
+name: 'NPM Publish Workflow'
+on:
+  workflow_call:
+    inputs:
+      runs-on:
+        default: "['ubuntu-latest']"
+        type: string
+        description: "github runner tags"
+      timeout-minutes:
+        default: 30
+        type: number
+        description: "Workflow timeout"
+      provenance:
+        type: boolean
+        required: false
+        default: true
+      timeout-minutes:
+        default: 30
+        type: number
+        description: "Workflow timeout"
+      environment:
+        default: ''
+        description: "Deployment environment in github"
+        type: string
+      node-version:
+        required: true
+        type: string
+      registry-url:
+        required: false
+        type: string
+        default: "https://npm.pkg.github.com"
+      package-dir:
+        required: true
+        type: string
+      install-dir:
+        required: false
+        type: string
+        default: "."
+      package-access:
+        required: false
+        type: string
+        default: restricted
+      debug-enabled:
+        default: false
+        required: false
+        type: boolean
+        description: "run tmate for troubleshooting"
+      summary:
+        default: true
+        type: boolean
+      trivy-enabled:
+        default: true
+        type: boolean
+      trivy-timeout:
+        default: 15m
+        type: string
+        description: "trivy timeout 15 minutes"
+      trivy-skip-dirs:
+        type: string
+        description: "Directories to skip scanning"
+      trivy-severity:
+        default: "UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL"
+        type: string
+        description: "trivy severity types to scan for"
+      trivy-vuln-type:
+        default: "os,library"
+        type: string
+        description: "trivy vulnerability types"
+
+
+jobs:
+
+  npm-publish:
+    runs-on: ${{ fromJson(inputs.runs-on) }}
+    timeout-minutes: ${{ inputs.timeout-minutes }}
+    defaults:
+      run:
+        shell: bash 
+    # Specify an environment here if using deployment environments
+    environment:
+      name: ${{ inputs.environment }}
+      url: "fix this with the github packages directory"
+    permissions: # Required for workload identity auth and push the trivy results to GitHub
+      actions: read
+      contents: write
+      id-token: write
+      security-events: write
+      attestations: write
+      pull-requests: write
+      packages: write
+    steps:
+      # Security policy docker is configured in step security app
+      # Policy can be seen here https://app.stepsecurity.io/github/celo-org/actions/policies/docker
+      # disable-sudo is set to false if debug is true, because tmate requires root to work.
+      - name: Harden Runner
+        uses: step-security/harden-runner@v2
+        if: runner.environment == 'github-hosted'
+        with:
+          policy: ${{ inputs.debug-enabled == true && 'docker-debug' || 'docker' }}
+
+      # Only turns on tmate if workflow_dispatch set debug to true.
+      # limit-access-to-actor or some other security precaution should be added
+      # so anyone with the link can't ssh in without a key.
+      # Currently detaches and runs concurrently with workflow, can change
+      # if needed
+
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@e5c7151931ca95bad1c6f4190c730ecf8c7dde48
+        if: inputs.debug-enabled == true 
+        with:
+          detached: true
+          limit-access-to-actor: true
+    
+      - name: 'Checkout'
+        uses: actions/checkout@v4
+
+      - name: Check if GHAS is Enabled
+        uses: actions/github-script@v7
+        id: ghas-check
+        with:
+          script: |
+            const [owner, repo] = '${{ github.repository }}'.split("/");
+            const res = await github.rest.repos.get({ owner, repo });
+            const isPrivate = res.data.private;
+            const hasGhas = res.data.security_and_analysis?.advanced_security?.status === 'enabled';
+            if (isPrivate && !hasGhas) {
+              core.warning('GHAS is NOT enabled and repo is private. Cannot upload SARIF.');
+              return false;
+            }
+            return true;
+
+      - name: Run Trivy Scan
+        id: trivy-fs
+        if: inputs.trivy-enabled
+        uses: celo-org/trivy-composite-action@v1.0.0-refactor
+        with:
+          scan-type: fs
+          scan-ref:  ${{ inputs.package-dir }}
+          timeout: ${{ inputs.trivy-timeout }}
+          vuln-type: ${{ inputs.trivy-vuln-type }}
+          severity: ${{ inputs.trivy-severity }}
+          skip-dirs: ${{ inputs.trivy-skip-dirs }}
+
+      - name: Upload SARIF to Security Tab
+        if: inputs.trivy-enabled &&fromJSON(steps.ghas-check.outputs.result)
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: ${{ steps.trivy-fs.outputs.sarif-file }}
+          category: fs-${{ steps.split.outputs.app_name }}
+
+
+      # Setup Node JS with input from node version and set the registry url for github packages
+      - name: 'Setup Node JS'
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ inputs.node-version }}
+          cache: "yarn"
+          registry-url: ${{ inputs.registry-url }}
+      - run: yarn install
+      - run: yarn build
+
+#      # Clabs uses yarn so npm ci (the ci/cd version of npm install) won't work
+#      # without a json.package lock file, so must use yarn here too
+#      - uses: bahmutov/npm-install@v1
+#        if:  ${{ inputs.check-auth-only != 'true' }}
+#        with:
+#          working-directory: ${{ inputs.install-dir }}
+
+      - name: Set tag
+        id: set-tag
+        shell: bash
+        run: |
+          if  grep version ${{inputs.package-dir }}/package.json | grep alpha;
+          then
+            echo "tag=alpha" >> $GITHUB_OUTPUT
+          elif grep version ${{inputs.package-dir }}/package.json | grep beta;
+          then
+            echo "tag=beta" >> $GITHUB_OUTPUT
+          fi
+
+      # You must cd into the package directory to run publish,
+      # you can't do it from the root directory
+      - run: yarn publish
+          if [ "${{ steps.set-tag.outputs.tag }}" == "" ]; then
+            cd ${{ inputs.package-dir }} && yarn publish --provenance
+          else
+            cd ${{ inputs.package-dir }} && \
+            yarn publish --tag ${{ steps.set-tag.outputs.tag }} --provenance --access ${{ inputs.package-access }}
+          fi
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
+
+
