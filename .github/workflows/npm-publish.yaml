@@ -15,10 +15,6 @@ on:
         type: boolean
         required: false
         default: true
-      timeout-minutes:
-        default: 30
-        type: number
-        description: "Workflow timeout"
       environment:
         default: ''
         description: "Deployment environment in github"
@@ -46,9 +42,6 @@ on:
         required: false
         type: boolean
         description: "run tmate for troubleshooting"
-      summary:
-        default: true
-        type: boolean
       trivy-enabled:
         default: true
         type: boolean
@@ -67,10 +60,11 @@ on:
         default: "os,library"
         type: string
         description: "trivy vulnerability types"
-
+      summary:
+        default: true
+        type: boolean
 
 jobs:
-
   npm-publish:
     runs-on: ${{ fromJson(inputs.runs-on) }}
     timeout-minutes: ${{ inputs.timeout-minutes }}
