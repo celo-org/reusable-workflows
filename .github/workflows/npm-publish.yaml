@@ -78,7 +78,6 @@ jobs:
     permissions: # Required for workload identity auth and push the trivy results to GitHub
       actions: read
       contents: write
-      id-token: write
       security-events: write
       attestations: write
       pull-requests: write
