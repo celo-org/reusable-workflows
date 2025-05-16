@@ -82,6 +82,7 @@ jobs:
       attestations: write
       pull-requests: write
       packages: write
+      id-token: write
     steps:
       # Security policy docker is configured in step security app
       # Policy can be seen here https://app.stepsecurity.io/github/celo-org/actions/policies/docker
