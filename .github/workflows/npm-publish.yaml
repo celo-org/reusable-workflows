@@ -184,4 +184,27 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
 
+      - name: Get npm package name and version
+        id: package-name-version
+        shell: bash
+        run: |
+          name = grep "name" ${{ inputs.package-dir }} | awk -F: '{ print $2 }' 
+          version = grep "version" ${{ inputs.package-dir }} | awk -F: '{ print $2 }' 
+          echo "package_name=${name%,}" >> $GITHUB_OUTPUT
+          echo "package_version=${version%,}" >> $GITHUB_OUTPUT
 
+      - name: Attest
+        uses: actions/attest@v2
+
+      - name: Upload provenance for all npm packages
+        uses: actions/upload-artifact@v4
+        with:
+          name: "${{ steps.package-name.outputs.package-name }}.intoto.jsonl"
+          path: "*.intoto.jsonl"
+
+      - name: Upload provenance to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: "${{ steps.package-name.outputs.package-name }}.intoto.jsonl"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
