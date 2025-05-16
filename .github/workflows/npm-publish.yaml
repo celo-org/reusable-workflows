@@ -215,6 +215,18 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: "${{ steps.package-info.outputs.package_name }}-${{ steps.package-info.outputs.package_version }}.intoto.jsonl"
-          path: ${{ steps.attest.outputs.bundle-path }}"
+          path: ${{ steps.attest.outputs.bundle-path }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
+
+
+      - name: Upload package and provenance to GitHub Release
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event.release.tag_name }}
+          files: |
+            ${{ steps.package-info.outputs.package_name }}-${{ steps.package-info.outputs.package_version }}.tar.gz
+            ${{ steps.package-info.outputs.package_name }}-${{ steps.package-info.outputs.package_version }}.intoto.jsonl
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
