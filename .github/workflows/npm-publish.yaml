@@ -224,6 +224,8 @@ jobs:
           files: |
             ${{ steps.package-info.outputs.package_name }}-${{ steps.package-info.outputs.package_version }}.tar.gz
             ${{ steps.package-info.outputs.package_name }}-${{ steps.package-info.outputs.package_version }}.intoto.jsonl
+            "sbom-${{ steps.package-info.outputs.package_name }}-${{ steps.package-info.outputs.package_version }}.spdx.json"
+            ${{ steps.attest.outputs.bundle-path }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
