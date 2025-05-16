@@ -153,6 +153,20 @@ jobs:
           registry-url: ${{ inputs.registry-url }}
       - run: yarn install
       - run: yarn build
+      - run: yarn pack
+
+      - name: Get npm package name and version
+        id: package-info
+        shell: bash
+        run: |
+          name=$(grep "name" "${{ inputs.package-dir }}/package.json" | awk -F: '{ print $2 }')
+          version=$(grep "version" "${{ inputs.package-dir }}/package.json" | awk -F: '{ print $2 }')
+          echo "package_name=${name%,}" >> $GITHUB_OUTPUT
+          echo "package_version=${version%,}" >> $GITHUB_OUTPUT
+
+      - name: Create npm package tarball
+        run: yarn pack --out "${{ steps.package-info.outputs.package_name }}.tar.gz"
+
 
 #      # Clabs uses yarn so npm ci (the ci/cd version of npm install) won't work
 #      # without a json.package lock file, so must use yarn here too
@@ -185,27 +199,15 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
 
-      - name: Get npm package name and version
-        id: package-name-version
-        shell: bash
-        run: |
-          name=$(grep "name" "${{ inputs.package-dir }}/package.json" | awk -F: '{ print $2 }')
-          version=$(grep "version" "${{ inputs.package-dir }}/package.json" | awk -F: '{ print $2 }')
-          echo "package_name=${name%,}" >> $GITHUB_OUTPUT
-          echo "package_version=${version%,}" >> $GITHUB_OUTPUT
-
-      - name: Attest
-        uses: actions/attest@v2
+      - name: Generate provenance attestation
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-path: "${{ steps.package-info.outputs.package-name }}.tar.gz"
 
       - name: Upload provenance for all npm packages
         uses: actions/upload-artifact@v4
         with:
-          name: "${{ steps.package-name.outputs.package-name }}.intoto.jsonl"
+          name: "${{ steps.package-info.outputs.package-name }}.intoto.jsonl"
           path: "*.intoto.jsonl"
-
-      - name: Upload provenance to GitHub Release
-        uses: softprops/action-gh-release@v2
-        with:
-          files: "${{ steps.package-name.outputs.package-name }}.intoto.jsonl"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
