@@ -19,6 +19,10 @@ on:
         default: ''
         description: "Deployment environment in github"
         type: string
+      environment-url:
+        description: "Enviroment URL used to link to package"
+        type: string
+        required: true
       node-version:
         required: true
         type: string
@@ -74,7 +78,7 @@ jobs:
     # Specify an environment here if using deployment environments
     environment:
       name: ${{ inputs.environment }}
-      url: "fix this with the github packages directory"
+      url: ${{ inputs. environment-url }}
     permissions: # Required for workload identity auth and push the trivy results to GitHub
       actions: read
       contents: write
