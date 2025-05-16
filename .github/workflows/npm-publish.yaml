@@ -155,8 +155,6 @@ jobs:
           node-version: ${{ inputs.node-version }}
           cache: "npm"
           registry-url: ${{ inputs.registry-url }}
-      - run: yarn install
-      - run: yarn build
 
       - name: Get npm package name and version
         # Strip out the version and package names, and remove the @celo-org from the package name due to path constraints"
@@ -167,17 +165,34 @@ jobs:
 
           full_package_name=$(jq -r '.name' ${{ inputs.package-dir }}/package.json)
           echo package_name=$(echo $full_package_name | awk -F/ '{print $2}') >> $GITHUB_OUTPUT
-                    
+ 
+      - run: yarn install
+
+      - uses: anchore/sbom-action@v0
+        id: build-sbom
+        with:
+          output-file:: "sbom-${{ steps.package-info.outputs.package_name }}-${{ steps.package-info.outputs.package_version }}.spdx.json"
+          artifact-name: "sbom-${{ steps.package-info.outputs.package_name }}-${{ steps.package-info.outputs.package_version }}.spdx.json"
+          dependency-snapshot: true
+ 
+      - name: Generate SBOM attestation
+        uses: actions/attest-sbom@v1
+        with:
+          sbom-path: "sbom-${{ steps.package-info.outputs.package_name }}-${{ steps.package-info.outputs.package_version }}.spdx.json"
+
+      - name: Upload provenance for all npm packages
+        if: ${{ inputs.provenance }}
+        uses: actions/upload-artifact@v4
+        with:
+          path: "sbom-${{ steps.package-info.outputs.package_name }}-${{ steps.package-info.outputs.package_version }}.spdx.json"
+          name: "sbom-${{ steps.package-info.outputs.package_name }}-${{ steps.package-info.outputs.package_version }}.spdx.json"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
+
+      - run: yarn build
+                   
       - name: Create npm package tarball
         run: yarn pack --filename "${{ steps.package-info.outputs.package_name }}-${{ steps.package-info.outputs.package_version }}.tar.gz"
-
-
-#      # Clabs uses yarn so npm ci (the ci/cd version of npm install) won't work
-#      # without a json.package lock file, so must use yarn here too
-#      - uses: bahmutov/npm-install@v1
-#        if:  ${{ inputs.check-auth-only != 'true' }}
-#        with:
-#          working-directory: ${{ inputs.install-dir }}
 
       - name: Set tag
         id: set-tag
@@ -210,16 +225,6 @@ jobs:
         with:
           subject-path: "${{ steps.package-info.outputs.package_name }}-${{ steps.package-info.outputs.package_version }}.tar.gz"
 
-      - name: Upload provenance for all npm packages
-        if: ${{ inputs.provenance }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: "${{ steps.package-info.outputs.package_name }}-${{ steps.package-info.outputs.package_version }}.intoto.jsonl"
-          path: ${{ steps.attest.outputs.bundle-path }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
-
-
       - name: Upload package and provenance to GitHub Release
         if: github.event_name == 'release'
         uses: softprops/action-gh-release@v2
@@ -230,3 +235,19 @@ jobs:
             ${{ steps.package-info.outputs.package_name }}-${{ steps.package-info.outputs.package_version }}.intoto.jsonl
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Add commands to summary
+        shell: bash
+        run: |
+          # Write Provenance Verification to Summary
+          echo "### Attestation Verification" >> $GITHUB_STEP_SUMMARY
+          echo "- Verify Provenance" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          echo "gh attestation verify --repo ${{ github.repository }} --signer-repo celo-org/reusable-workflows ./${{ steps.package-info.outputs.package_name }}-${{ steps.package-info.outputs.package_version }}.tar.gz --format json | jq" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+ 
+          # Write SBOM Verification to Summary
+          echo "- Verify SBOM" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          echo "gh attestation verify --repo ${{ github.repository }} --signer-repo celo-org/reusable-workflows ./${{ steps.package-info.outputs.package_name }}-${{ steps.package-info.outputs.package_version }}.tar.gz --predicate-type https://spdx.dev/Document/v2.3 --format json | jq" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
