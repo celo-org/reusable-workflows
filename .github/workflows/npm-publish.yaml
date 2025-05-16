@@ -171,7 +171,7 @@ jobs:
       - uses: anchore/sbom-action@v0
         id: build-sbom
         with:
-          output-file:: "sbom-${{ steps.package-info.outputs.package_name }}-${{ steps.package-info.outputs.package_version }}.spdx.json"
+          output-file: "sbom-${{ steps.package-info.outputs.package_name }}-${{ steps.package-info.outputs.package_version }}.spdx.json"
           artifact-name: "sbom-${{ steps.package-info.outputs.package_name }}-${{ steps.package-info.outputs.package_version }}.spdx.json"
           dependency-snapshot: true
  
