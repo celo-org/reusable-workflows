@@ -155,13 +155,15 @@ jobs:
       - run: yarn build
 
       - name: Get npm package name and version
+        # Strip out the version and package names, and remove the @celo-org from the package name due to path constraints"
         id: package-info
         shell: bash
         run: |
           echo package_version=$(jq -r '.version' ${{ inputs.package-dir }}/package.json) >> $GITHUB_OUTPUT
-          echo package_name=$(jq -r '.name' ${{ inputs.package-dir }}/package.json) >> $GITHUB_OUTPUT
 
-
+          package_name=$(jq -r '.name' ${{ inputs.package-dir }}/package.json)
+          echo full-package_name=$(echo $package_name | awk -F/ '{print $2}') >> $GITHUB_OUTPUT
+                    
       - name: Create npm package tarball
         run: yarn pack --out "${{ steps.package-info.outputs.package_name }}-${{ steps.package-info.outputs.package_version }}.tar.gz"
 
