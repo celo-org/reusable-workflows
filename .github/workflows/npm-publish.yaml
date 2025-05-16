@@ -153,7 +153,6 @@ jobs:
           registry-url: ${{ inputs.registry-url }}
       - run: yarn install
       - run: yarn build
-      - run: yarn pack
 
       - name: Get npm package name and version
         id: package-info
@@ -165,7 +164,7 @@ jobs:
           echo "package_version=${version%,}" >> $GITHUB_OUTPUT
 
       - name: Create npm package tarball
-        run: yarn pack --out "${{ steps.package-info.outputs.package_name }}.tar.gz"
+        run: yarn pack --out "${{ steps.package-info.outputs.package-name }}-${{ steps.package-info.outputs.package_version }}.tar.gz"
 
 
 #      # Clabs uses yarn so npm ci (the ci/cd version of npm install) won't work
@@ -200,14 +199,15 @@ jobs:
           NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
 
       - name: Generate provenance attestation
+        id: attest
         uses: actions/attest-build-provenance@v2
         with:
-          subject-path: "${{ steps.package-info.outputs.package-name }}.tar.gz"
+          subject-path: "${{ steps.package-info.outputs.package-name }}-${{ steps.package-info.outputs.package_version }}.tar.gz"
 
       - name: Upload provenance for all npm packages
         uses: actions/upload-artifact@v4
         with:
-          name: "${{ steps.package-info.outputs.package-name }}.intoto.jsonl"
-          path: "*.intoto.jsonl"
+          name: "${{ steps.package-info.outputs.package_name }}-${{ steps.package-info.outputs.package_version }}.intoto.jsonl"
+          path: ${{ steps.attest.outputs.bundle-path }}"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
