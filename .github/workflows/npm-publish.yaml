@@ -161,8 +161,8 @@ jobs:
         run: |
           echo package_version=$(jq -r '.version' ${{ inputs.package-dir }}/package.json) >> $GITHUB_OUTPUT
 
-          package_name=$(jq -r '.name' ${{ inputs.package-dir }}/package.json)
-          echo full-package_name=$(echo $package_name | awk -F/ '{print $2}') >> $GITHUB_OUTPUT
+          full_package_name=$(jq -r '.name' ${{ inputs.package-dir }}/package.json)
+          echo package_name=$(echo $full_package_name | awk -F/ '{print $2}') >> $GITHUB_OUTPUT
                     
       - name: Create npm package tarball
         run: yarn pack --out "${{ steps.package-info.outputs.package_name }}-${{ steps.package-info.outputs.package_version }}.tar.gz"
