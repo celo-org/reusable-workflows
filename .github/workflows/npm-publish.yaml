@@ -158,10 +158,9 @@ jobs:
         id: package-info
         shell: bash
         run: |
-          name=$(grep "name" "${{ inputs.package-dir }}/package.json" | awk -F: '{ print $2 }')
-          version=$(grep "version" "${{ inputs.package-dir }}/package.json" | awk -F: '{ print $2 }')
-          echo "package_name=${name%,}" >> $GITHUB_OUTPUT
-          echo "package_version=${version%,}" >> $GITHUB_OUTPUT
+          echo package_version=$(jq -r '.version' ${{ inputs.package-dir }}/package.json) >> $GITHUB_OUTPUT
+          echo package_name=$(jq -r '.name' ${{ inputs.package-dir }}/package.json) >> $GITHUB_OUTPUT
+
 
       - name: Create npm package tarball
         run: yarn pack --out "${{ steps.package-info.outputs.package_name }}-${{ steps.package-info.outputs.package_version }}.tar.gz"
