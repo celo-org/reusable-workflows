@@ -165,7 +165,7 @@ jobs:
           echo package_name=$(echo $full_package_name | awk -F/ '{print $2}') >> $GITHUB_OUTPUT
                     
       - name: Create npm package tarball
-        run: yarn pack --out "${{ steps.package-info.outputs.package_name }}-${{ steps.package-info.outputs.package_version }}.tar.gz"
+        run: yarn pack --filename "${{ steps.package-info.outputs.package_name }}-${{ steps.package-info.outputs.package_version }}.tar.gz"
 
 
 #      # Clabs uses yarn so npm ci (the ci/cd version of npm install) won't work
