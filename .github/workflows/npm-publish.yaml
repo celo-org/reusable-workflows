@@ -185,15 +185,6 @@ jobs:
           sbom-path: "sbom-${{ steps.package-info.outputs.package_name }}-${{ steps.package-info.outputs.package_version }}.spdx.json"
           subject-path: "${{ steps.package-info.outputs.package_name }}-${{ steps.package-info.outputs.package_version }}.tar.gz"
 
-      - name: Upload provenance for all npm packages
-        if: ${{ inputs.provenance }}
-        uses: actions/upload-artifact@v4
-        with:
-          path: "sbom-${{ steps.package-info.outputs.package_name }}-${{ steps.package-info.outputs.package_version }}.spdx.json"
-          name: "sbom-${{ steps.package-info.outputs.package_name }}-${{ steps.package-info.outputs.package_version }}.spdx.json"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
-
       - name: Set tag
         id: set-tag
         shell: bash
