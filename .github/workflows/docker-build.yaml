@@ -154,7 +154,7 @@ jobs:
       - name: Run Trivy Scan
         id: trivy-fs
         if: inputs.trivy-enabled
-        uses: celo-org/trivy-composite-action@v1.0.0-refactor
+        uses: celo-org/trivy-composite-action@v1.0.0
         with:
           scan-type: fs
           scan-ref:  ${{ inputs.context }}
@@ -187,7 +187,7 @@ jobs:
           password: ${{ steps.auth.outputs.access_token }}
 
       - name: Build, push and scan the container
-        uses: celo-org/docker-build-composite-action@v1.0.0-refactor
+        uses: celo-org/docker-build-composite-action@v1.0.0
         id: docker-build-scan
         with:
           platforms: ${{ inputs.platforms }}
@@ -201,7 +201,7 @@ jobs:
       - name: Run Trivy Scan
         id: trivy-image
         if: inputs.trivy-enabled
-        uses: celo-org/trivy-composite-action@v1.0.0-refactor
+        uses: celo-org/trivy-composite-action@v1.0.0
         with:
           scan-type: image
           image-ref:  ${{ steps.docker-build-scan.outputs.full-image-name }}

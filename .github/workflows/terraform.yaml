@@ -166,7 +166,7 @@ jobs:
       - name: Run Trivy Scan
         id: trivy-fs
         if: inputs.trivy-enabled
-        uses: celo-org/trivy-composite-action@v1.0.0-refactor
+        uses: celo-org/trivy-composite-action@v1.0.0
         with:
           scan-type: fs
           scan-ref: ${{ inputs.working-dir }}
