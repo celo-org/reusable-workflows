@@ -186,11 +186,6 @@ jobs:
           NPM_TOKEN: ${{ env.NPM_TOKEN }}
           YARN_NPM_AUTH_TOKEN: ${{ env.NPM_TOKEN }}
 
-      - name: Bump Version
-        shell: bash
-        run: |
-          yarn version patch
-
       - name: Create Release Pull Request or Publish to npm
         id: changesets
         uses: changesets/action@v1
