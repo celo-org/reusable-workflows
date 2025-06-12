@@ -21,6 +21,9 @@ on:
         required: false
         type: string
         default: "https://registry.npmjs.org/"
+      package-dir:
+        type: string
+        default: "."
       debug-enabled:
         default: false
         required: false
