@@ -11,10 +11,6 @@ on:
         default: 30
         type: number
         description: "Workflow timeout"
-      provenance:
-        type: boolean
-        required: false
-        default: true
       environment:
         default: ''
         description: "Deployment environment in github"
@@ -29,7 +25,7 @@ on:
       registry-url:
         required: false
         type: string
-        default: "https://npm.pkg.github.com"
+        default: "https://registry.npmjs.org/"
       package-dir:
         required: true
         type: string
@@ -70,7 +66,7 @@ on:
 
 jobs:
   npm-publish:
-    runs-on: ${{ fromJson(inputs.runs-on) }}
+    runs-on: ubuntu-latest
     timeout-minutes: ${{ inputs.timeout-minutes }}
     defaults:
       run:
@@ -131,7 +127,7 @@ jobs:
       - name: Run Trivy Scan
         id: trivy-fs
         if: inputs.trivy-enabled
-        uses: celo-org/trivy-composite-action@v1.0.0-refactor
+        uses: celo-org/trivy-composite-action@v1.0.0
         with:
           scan-type: fs
           scan-ref:  ${{ inputs.package-dir }}
@@ -147,100 +143,76 @@ jobs:
           sarif_file: ${{ steps.trivy-fs.outputs.sarif-file }}
           category: fs-${{ steps.split.outputs.app_name }}
 
+      - name: Test IP 1
+        run: |
+          curl -s https://api.ipify.org
+
+      - name: Akeyless Get Secrets
+        id: get_auth_token
+        uses: docker://us-west1-docker.pkg.dev/devopsre/akeyless-public/akeyless-action:latest
+        with:
+          api-url: https://api.gateway.akeyless.celo-networks-dev.org
+          access-id: p-kf9vjzruht6l
+          static-secrets: '{"/static-secrets/NPM/openvpn/config_file":"CONFIG_FILE", "/static-secrets/NPM/openvpn/user":"USERNAME", "/static-secrets/NPM/openvpn/password":"PASSWORD", "/static-secrets/NPM/openvpn/alvaro_token":"NPM_TOKEN"}'
+
+      - name: Setup Config File
+        run: |
+          echo "${{ env.CONFIG_FILE }}" > /tmp/openvpn.conf
+          chmod 600 /tmp/openvpn.conf
+
+      - name: Install OpenVPN
+        run: |
+          sudo apt update
+          sudo apt install -y openvpn openvpn-systemd-resolved
+
+      - name: Connect to VPN
+        uses: "kota65535/github-openvpn-connect-action@v2"
+        with:
+          config_file: /tmp/openvpn.conf
+          username: ${{ env.USERNAME }}
+          password: ${{ env.PASSWORD }}
+
+      - name: Test IP 2
+        run: |
+          curl -s https://api.ipify.org
 
       # Setup Node JS with input from node version and set the registry url for github packages
       - name: 'Setup Node JS'
         uses: actions/setup-node@v4
         with:
           node-version: ${{ inputs.node-version }}
-          cache: "npm"
           registry-url: ${{ inputs.registry-url }}
 
-      - name: Get npm package name and version
-        # Strip out the version and package names, and remove the @celo-org from the package name due to path constraints"
-        id: package-info
+      - name: 'enable corepack for yarn'
+        run: sudo corepack enable yarn
         shell: bash
-        run: |
-          echo package_version=$(jq -r '.version' ${{ inputs.package-dir }}/package.json) >> $GITHUB_OUTPUT
 
-          full_package_name=$(jq -r '.name' ${{ inputs.package-dir }}/package.json)
-          echo package_name=$(echo $full_package_name | awk -F/ '{print $2}') >> $GITHUB_OUTPUT
- 
-      - run: yarn install
-      - run: yarn build
-      - name: Create npm package tarball
-        run: yarn pack --filename "${{ steps.package-info.outputs.package_name }}-${{ steps.package-info.outputs.package_version }}.tar.gz"
-
-
-      - uses: anchore/sbom-action@v0
-        id: build-sbom
+     # must call twice because of chicken and egg problem with yarn and node
+      - uses: actions/setup-node@v4
         with:
-          output-file: "sbom-${{ steps.package-info.outputs.package_name }}-${{ steps.package-info.outputs.package_version }}.spdx.json"
-          artifact-name: "sbom-${{ steps.package-info.outputs.package_name }}-${{ steps.package-info.outputs.package_version }}.spdx.json"
-          dependency-snapshot: true
- 
-      - name: Generate SBOM attestation
-        uses: actions/attest-sbom@v2
-        with:
-          sbom-path: "sbom-${{ steps.package-info.outputs.package_name }}-${{ steps.package-info.outputs.package_version }}.spdx.json"
-          subject-path: "${{ steps.package-info.outputs.package_name }}-${{ steps.package-info.outputs.package_version }}.tar.gz"
+          node-version: ${{ inputs.node-version }}
+          registry-url: ${{ inputs.registry-url }}
+          cache: 'yarn'
 
-      - name: Set tag
-        id: set-tag
+      - name: Install Dependencies
         shell: bash
-        run: |
-          if  grep version ${{inputs.package-dir }}/package.json | grep alpha;
-          then
-            echo "tag=alpha" >> $GITHUB_OUTPUT
-          elif grep version ${{inputs.package-dir }}/package.json | grep beta;
-          then
-            echo "tag=beta" >> $GITHUB_OUTPUT
-          fi
-
-      # You must cd into the package directory to run publish,
-      # you can't do it from the root directory
-      - run: |
-          if [ "${{ steps.set-tag.outputs.tag }}" == "" ]; then
-            cd ${{ inputs.package-dir }} && yarn publish
-          else
-            cd ${{ inputs.package-dir }} && \
-            yarn publish --tag ${{ steps.set-tag.outputs.tag }} --access ${{ inputs.package-access }}
-          fi
+        run: yarn
         env:
-          NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
+          NPM_TOKEN: ${{ env.NPM_TOKEN }}
+          YARN_NPM_AUTH_TOKEN: ${{ env.NPM_TOKEN }}
 
-      - name: Generate provenance attestation
-        if: ${{ inputs.provenance }}
-        id: attest
-        uses: actions/attest-build-provenance@v2
-        with:
-          subject-path: "${{ steps.package-info.outputs.package_name }}-${{ steps.package-info.outputs.package_version }}.tar.gz"
+      - name: Bump Version
+        shell: bash
+        run: |
+          yarn version patch
 
-      - name: Upload package and provenance to GitHub Release
-        if: github.event_name == 'release'
-        uses: softprops/action-gh-release@v2
+      - name: Create Release Pull Request or Publish to npm
+        id: changesets
+        uses: changesets/action@v1
         with:
-          tag_name: ${{ github.event.release.tag_name }}
-          files: |
-            ${{ steps.package-info.outputs.package_name }}-${{ steps.package-info.outputs.package_version }}.tar.gz
-            ${{ steps.package-info.outputs.package_name }}-${{ steps.package-info.outputs.package_version }}.intoto.jsonl
-            "sbom-${{ steps.package-info.outputs.package_name }}-${{ steps.package-info.outputs.package_version }}.spdx.json"
-            ${{ steps.attest.outputs.bundle-path }}
+          # This expects you to have a script called release which does a build for your packages and calls changeset publish
+          publish: yarn release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ env.NPM_TOKEN }}
 
-      - name: Add commands to summary
-        shell: bash
-        run: |
-          # Write Provenance Verification to Summary
-          echo "### Attestation Verification" >> $GITHUB_STEP_SUMMARY
-          echo "- Verify Provenance" >> $GITHUB_STEP_SUMMARY
-          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
-          echo "gh attestation verify --repo ${{ github.repository }} --signer-repo celo-org/reusable-workflows ./${{ steps.package-info.outputs.package_name }}-${{ steps.package-info.outputs.package_version }}.tar.gz --format json | jq" >> $GITHUB_STEP_SUMMARY
-          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
- 
-          # Write SBOM Verification to Summary
-          echo "- Verify SBOM" >> $GITHUB_STEP_SUMMARY
-          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
-          echo "gh attestation verify --repo ${{ github.repository }} --signer-repo celo-org/reusable-workflows ./${{ steps.package-info.outputs.package_name }}-${{ steps.package-info.outputs.package_version }}.tar.gz --predicate-type https://spdx.dev/Document/v2.3 --format json | jq" >> $GITHUB_STEP_SUMMARY
-          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
