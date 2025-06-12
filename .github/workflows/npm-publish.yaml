@@ -76,13 +76,11 @@ jobs:
       name: ${{ inputs.environment }}
       url: ${{ inputs. environment-url }}
     permissions: # Required for workload identity auth and push the trivy results to GitHub
-      actions: read
       contents: write
-      security-events: write
-      attestations: write
       pull-requests: write
-      packages: write
       id-token: write
+      repository-projects: write
+
     steps:
       # Security policy docker is configured in step security app
       # Policy can be seen here https://app.stepsecurity.io/github/celo-org/actions/policies/docker
