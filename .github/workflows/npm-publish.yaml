@@ -3,10 +3,6 @@ name: 'NPM Publish Workflow'
 on:
   workflow_call:
     inputs:
-      runs-on:
-        default: "['ubuntu-latest']"
-        type: string
-        description: "github runner tags"
       timeout-minutes:
         default: 30
         type: number
@@ -18,7 +14,6 @@ on:
       environment-url:
         description: "Enviroment URL used to link to package"
         type: string
-        required: true
       node-version:
         required: true
         type: string
@@ -26,17 +21,6 @@ on:
         required: false
         type: string
         default: "https://registry.npmjs.org/"
-      package-dir:
-        required: true
-        type: string
-      install-dir:
-        required: false
-        type: string
-        default: "."
-      package-access:
-        required: false
-        type: string
-        default: restricted
       debug-enabled:
         default: false
         required: false
