@@ -69,6 +69,7 @@ jobs:
       name: ${{ inputs.environment }}
       url: ${{ inputs. environment-url }}
     permissions: # Required for workload identity auth and push the trivy results to GitHub
+      attestations: write
       contents: write
       pull-requests: write
       id-token: write
