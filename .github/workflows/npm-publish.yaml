@@ -3,6 +3,12 @@ name: 'NPM Publish Workflow'
 on:
   workflow_call:
     inputs:
+      version-command:
+        required: true
+        type: string
+      publish-command:
+        required: true
+        type: string
       timeout-minutes:
         default: 30
         type: number
@@ -128,10 +134,6 @@ jobs:
           sarif_file: ${{ steps.trivy-fs.outputs.sarif-file }}
           category: fs-${{ steps.split.outputs.app_name }}
 
-      - name: Test IP 1
-        run: |
-          curl -s https://api.ipify.org
-
       - name: Akeyless Get Secrets
         id: get_auth_token
         uses: docker://us-west1-docker.pkg.dev/devopsre/akeyless-public/akeyless-action:latest
@@ -157,9 +159,12 @@ jobs:
           username: ${{ env.USERNAME }}
           password: ${{ env.PASSWORD }}
 
-      - name: Test IP 2
+      - name: Delete sensitive files
+        shell: bash
         run: |
-          curl -s https://api.ipify.org
+          rm -rf openvpn.log
+          rm -rf openvpn.pid
+          rm -rf up.txt
 
       # Setup Node JS with input from node version and set the registry url for github packages
       - name: 'Setup Node JS'
@@ -191,7 +196,8 @@ jobs:
         uses: changesets/action@v1
         with:
           # This expects you to have a script called release which does a build for your packages and calls changeset publish
-          publish: yarn release
+          publish: ${{ inputs.publish-command }}
+          version: ${{ inputs.version-command }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ env.NPM_TOKEN }}
