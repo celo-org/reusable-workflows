@@ -23,6 +23,10 @@ on:
       node-version:
         required: true
         type: string
+      registry-url:
+        required: false
+        type: string
+        default: "https://registry.npmjs.org/"
       package-dir:
         type: string
         default: "."
@@ -170,6 +174,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ inputs.node-version }}
+          registry-url: ${{ inputs.registry-url }}
 
       - name: 'enable corepack for yarn'
         run: sudo corepack enable yarn
@@ -179,6 +184,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ inputs.node-version }}
+          registry-url: ${{ inputs.registry-url }}
           cache: 'yarn'
 
       - name: Install Dependencies
