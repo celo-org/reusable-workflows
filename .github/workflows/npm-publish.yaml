@@ -73,6 +73,8 @@ jobs:
       pull-requests: write
       id-token: write
       repository-projects: write
+      security-events: write
+      actions: read
 
     steps:
       # Security policy docker is configured in step security app
