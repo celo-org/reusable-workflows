@@ -132,7 +132,7 @@ jobs:
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: ${{ steps.trivy-fs.outputs.sarif-file }}
-          category: fs-${{ steps.split.outputs.app_name }}
+          category: fs
 
       - name: Akeyless Get Secrets
         id: get_auth_token
