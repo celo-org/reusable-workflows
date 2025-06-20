@@ -23,10 +23,6 @@ on:
       node-version:
         required: true
         type: string
-      registry-url:
-        required: false
-        type: string
-        default: "https://registry.npmjs.org/"
       package-dir:
         type: string
         default: "."
@@ -155,9 +151,10 @@ jobs:
           sudo apt install -y openvpn openvpn-systemd-resolved
 
       - name: Connect to VPN
-        uses: "kota65535/github-openvpn-connect-action@v2"
+        uses: "kota65535/github-openvpn-connect-action@v3.1.0"
         with:
           config_file: /tmp/openvpn.conf
+          echo_config: false
           username: ${{ env.USERNAME }}
           password: ${{ env.PASSWORD }}
 
@@ -173,7 +170,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ inputs.node-version }}
-          registry-url: ${{ inputs.registry-url }}
 
       - name: 'enable corepack for yarn'
         run: sudo corepack enable yarn
@@ -183,7 +179,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ inputs.node-version }}
-          registry-url: ${{ inputs.registry-url }}
           cache: 'yarn'
 
       - name: Install Dependencies
