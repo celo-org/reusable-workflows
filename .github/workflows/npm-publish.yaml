@@ -188,7 +188,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ inputs.node-version }}
-          registry-url: ${{ inputs.registry-url }}
 
       - name: 'enable corepack for yarn'
         run: sudo corepack enable yarn
@@ -198,7 +197,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ inputs.node-version }}
-          registry-url: ${{ inputs.registry-url }}
           cache: 'yarn'
 
       - name: Install Dependencies
@@ -215,13 +213,10 @@ jobs:
       - name: Create Release Pull Request or Publish to npm
         id: changesets
         uses: changesets/action@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ env.NPM_TOKEN }}
-          YARN_NPM_AUTH_TOKEN: ${{ env.NPM_TOKEN }}
         with:
           # This expects you to have a script called release which does a build for your packages and calls changeset publish
           publish: ${{ inputs.publish-command }}
           version: ${{ inputs.version-command }}
-
-
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ env.NPM_TOKEN }}
