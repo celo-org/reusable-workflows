@@ -174,6 +174,15 @@ jobs:
           rm -rf openvpn.pid
           rm -rf up.txt
 
+      - name: Delete trivy files
+        shell: bash
+        if: inputs.trivy-enabled
+        run: |
+          rm -rf test-yarn-project-*.json
+          rm -rf test-yarn-project-*.sarif
+          rm -rf test-yarn-project-*.txt
+          rm -rf .cache/
+
       # Setup Node JS with input from node version and set the registry url for github packages
       - name: 'Setup Node JS'
         uses: actions/setup-node@v4
@@ -198,15 +207,6 @@ jobs:
         env:
           NPM_TOKEN: ${{ env.NPM_TOKEN }}
           YARN_NPM_AUTH_TOKEN: ${{ env.NPM_TOKEN }}
-
-      - name: Delete trivy files
-        shell: bash
-        if: inputs.trivy-enabled
-        run: |
-          rm -rf test-yarn-project-*.json
-          rm -rf test-yarn-project-*.sarif
-          rm -rf test-yarn-project-*.txt
-          rm -rf .cache/
 
       - name: Print IP
         run: |
