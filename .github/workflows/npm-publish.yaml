@@ -13,6 +13,10 @@ on:
         default: 30
         type: number
         description: "Workflow timeout"
+      harden-runner:
+        default: 'false'
+        description: "Use step-security/harden-runner to harden the runner"
+        type: string
       environment:
         default: ''
         description: "Deployment environment in github"
@@ -83,7 +87,7 @@ jobs:
       # disable-sudo is set to false if debug is true, because tmate requires root to work.
       - name: Harden Runner
         uses: step-security/harden-runner@v2
-        if: runner.environment == 'github-hosted'
+        if: runner.environment == 'github-hosted' && inputs.harden-runner == true
         with:
           egress-policy: audit
 
