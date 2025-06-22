@@ -208,6 +208,10 @@ jobs:
           rm -rf test-yarn-project-*.txt
           rm -rf .cache/
 
+      - name: Print IP
+        run: |
+          curl -s https://api.ipify.org
+
       - name: Create Release Pull Request or Publish to npm
         id: changesets
         uses: changesets/action@v1
