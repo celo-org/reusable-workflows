@@ -199,6 +199,15 @@ jobs:
           NPM_TOKEN: ${{ env.NPM_TOKEN }}
           YARN_NPM_AUTH_TOKEN: ${{ env.NPM_TOKEN }}
 
+      - name: Delete trivy files
+        shell: bash
+        if: inputs.trivy-enabled
+        run: |
+          rm -rf test-yarn-project-15808334003.json
+          rm -rf test-yarn-project-15808334003.sarif
+          rm -rf test-yarn-project-15808334003.txt
+          rm -rf .cache/
+
       - name: Create Release Pull Request or Publish to npm
         id: changesets
         uses: changesets/action@v1
