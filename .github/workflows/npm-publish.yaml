@@ -222,4 +222,5 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ env.NPM_TOKEN }}
+          YARN_NPM_AUTH_TOKEN: ${{ env.NPM_TOKEN }}
 
