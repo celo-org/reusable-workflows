@@ -203,9 +203,9 @@ jobs:
         shell: bash
         if: inputs.trivy-enabled
         run: |
-          rm -rf test-yarn-project-15808334003.json
-          rm -rf test-yarn-project-15808334003.sarif
-          rm -rf test-yarn-project-15808334003.txt
+          rm -rf test-yarn-project-*.json
+          rm -rf test-yarn-project-*.sarif
+          rm -rf test-yarn-project-*.txt
           rm -rf .cache/
 
       - name: Create Release Pull Request or Publish to npm
