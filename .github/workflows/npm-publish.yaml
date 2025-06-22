@@ -13,10 +13,6 @@ on:
         default: 30
         type: number
         description: "Workflow timeout"
-      # harden-runner:
-      #   default: 'false'
-      #   description: "Use step-security/harden-runner to harden the runner"
-      #   type: string
       environment:
         default: ''
         description: "Deployment environment in github"
@@ -27,10 +23,6 @@ on:
       node-version:
         required: true
         type: string
-      registry-url:
-        required: false
-        type: string
-        default: "https://registry.npmjs.org/"
       package-dir:
         type: string
         default: "."
@@ -85,11 +77,11 @@ jobs:
       # Security policy docker is configured in step security app
       # Policy can be seen here https://app.stepsecurity.io/github/celo-org/actions/policies/docker
       # disable-sudo is set to false if debug is true, because tmate requires root to work.
-      # - name: Harden Runner
-      #   uses: step-security/harden-runner@v2
-      #   if: runner.environment == 'github-hosted' && inputs.harden-runner == true
-      #   with:
-      #     egress-policy: audit
+      - name: Harden Runner
+        uses: step-security/harden-runner@v2
+        if: runner.environment == 'github-hosted'
+        with:
+          egress-policy: audit
 
       # Only turns on tmate if workflow_dispatch set debug to true.
       # limit-access-to-actor or some other security precaution should be added
@@ -184,6 +176,7 @@ jobs:
           rm -rf .cache/
 
       # Setup Node JS with input from node version and set the registry url for github packages
+      # DON'T USE registry-url due to https://github.com/changesets/action/issues/132
       - name: 'Setup Node JS'
         uses: actions/setup-node@v4
         with:
@@ -193,7 +186,8 @@ jobs:
         run: sudo corepack enable yarn
         shell: bash
 
-     # must call twice because of chicken and egg problem with yarn and node
+      # must call twice because of chicken and egg problem with yarn and node
+      # DON'T USE registry-url due to https://github.com/changesets/action/issues/132     
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ inputs.node-version }}
@@ -205,10 +199,6 @@ jobs:
         env:
           NPM_TOKEN: ${{ env.NPM_TOKEN }}
           YARN_NPM_AUTH_TOKEN: ${{ env.NPM_TOKEN }}
-
-      - name: Print IP
-        run: |
-          curl -s https://api.ipify.org
 
       - name: Create Release Pull Request or Publish to npm
         id: changesets
