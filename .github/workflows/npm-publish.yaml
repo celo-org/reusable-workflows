@@ -77,11 +77,11 @@ jobs:
       # Security policy docker is configured in step security app
       # Policy can be seen here https://app.stepsecurity.io/github/celo-org/actions/policies/docker
       # disable-sudo is set to false if debug is true, because tmate requires root to work.
-      # - name: Harden Runner
-      #   uses: step-security/harden-runner@v2
-      #   if: runner.environment == 'github-hosted'
-      #   with:
-      #     egress-policy: audit
+      - name: Harden Runner
+        uses: step-security/harden-runner@v2
+        if: runner.environment == 'github-hosted'
+        with:
+          egress-policy: audit
 
       # Only turns on tmate if workflow_dispatch set debug to true.
       # limit-access-to-actor or some other security precaution should be added
