@@ -52,6 +52,13 @@ on:
       summary:
         default: true
         type: boolean
+    outputs:
+      publishedPackages:
+        description: "Published packages"
+        value: ${{ jobs.npm-publish.outputs.publishedPackages }}
+      published:
+        description: "Was anything published"
+        value: ${{ jobs.npm-publish.outputs.published }}
 
 jobs:
   npm-publish:
@@ -72,6 +79,9 @@ jobs:
       repository-projects: write
       security-events: write
       actions: read
+    outputs:
+      publishedPackages: ${{ steps.changesets.outputs.publishedPackages }}
+      published: ${{ steps.changesets.outputs.published }}
 
     steps:
       # Security policy docker is configured in step security app
@@ -139,7 +149,7 @@ jobs:
         with:
           api-url: https://api.gateway.akeyless.celo-networks-dev.org
           access-id: p-kf9vjzruht6l
-          static-secrets: '{"/static-secrets/NPM/openvpn/config_file":"CONFIG_FILE", "/static-secrets/NPM/openvpn/user":"USERNAME", "/static-secrets/NPM/openvpn/password":"PASSWORD", "/static-secrets/NPM/openvpn/npm_token":"NPM_TOKEN"}'
+          static-secrets: '{"/static-secrets/NPM/openvpn/config_file":"CONFIG_FILE", "/static-secrets/NPM/openvpn/user":"USERNAME", "/static-secrets/NPM/openvpn/password":"PASSWORD", "/static-secrets/NPM/openvpn/alvaro_token":"NPM_TOKEN"}'
 
       - name: Setup Config File
         run: |
