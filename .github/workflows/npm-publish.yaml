@@ -3,6 +3,12 @@ name: 'NPM Publish Workflow'
 on:
   workflow_call:
     inputs:
+      version-command:
+        required: true
+        type: string
+      publish-command:
+        required: true
+        type: string
       timeout-minutes:
         default: 30
         type: number
@@ -17,10 +23,6 @@ on:
       node-version:
         required: true
         type: string
-      registry-url:
-        required: false
-        type: string
-        default: "https://registry.npmjs.org/"
       package-dir:
         type: string
         default: "."
@@ -61,12 +63,15 @@ jobs:
     # Specify an environment here if using deployment environments
     environment:
       name: ${{ inputs.environment }}
-      url: ${{ inputs. environment-url }}
+      url: ${{ inputs.environment-url }}
     permissions: # Required for workload identity auth and push the trivy results to GitHub
+      attestations: write
       contents: write
       pull-requests: write
       id-token: write
       repository-projects: write
+      security-events: write
+      actions: read
 
     steps:
       # Security policy docker is configured in step security app
@@ -128,17 +133,13 @@ jobs:
           sarif_file: ${{ steps.trivy-fs.outputs.sarif-file }}
           category: fs-${{ steps.split.outputs.app_name }}
 
-      - name: Test IP 1
-        run: |
-          curl -s https://api.ipify.org
-
       - name: Akeyless Get Secrets
         id: get_auth_token
         uses: docker://us-west1-docker.pkg.dev/devopsre/akeyless-public/akeyless-action:latest
         with:
           api-url: https://api.gateway.akeyless.celo-networks-dev.org
           access-id: p-kf9vjzruht6l
-          static-secrets: '{"/static-secrets/NPM/openvpn/config_file":"CONFIG_FILE", "/static-secrets/NPM/openvpn/user":"USERNAME", "/static-secrets/NPM/openvpn/password":"PASSWORD", "/static-secrets/NPM/openvpn/alvaro_token":"NPM_TOKEN"}'
+          static-secrets: '{"/static-secrets/NPM/openvpn/config_file":"CONFIG_FILE", "/static-secrets/NPM/openvpn/user":"USERNAME", "/static-secrets/NPM/openvpn/password":"PASSWORD", "/static-secrets/NPM/openvpn/npm_token":"NPM_TOKEN"}'
 
       - name: Setup Config File
         run: |
@@ -151,32 +152,46 @@ jobs:
           sudo apt install -y openvpn openvpn-systemd-resolved
 
       - name: Connect to VPN
-        uses: "kota65535/github-openvpn-connect-action@v2"
+        uses: "kota65535/github-openvpn-connect-action@v3.1.0"
         with:
           config_file: /tmp/openvpn.conf
+          echo_config: false
           username: ${{ env.USERNAME }}
           password: ${{ env.PASSWORD }}
 
-      - name: Test IP 2
+      - name: Delete sensitive files
+        shell: bash
         run: |
-          curl -s https://api.ipify.org
+          rm -rf openvpn.log
+          rm -rf openvpn.pid
+          rm -rf up.txt
+
+      - name: Delete trivy files
+        shell: bash
+        if: inputs.trivy-enabled
+        run: |
+          repo_name=$(basename "$GITHUB_REPOSITORY")
+          rm -rf "${repo_name}"-*.json
+          rm -rf "${repo_name}"-*.sarif
+          rm -rf "${repo_name}"-*.txt
+          rm -rf .cache/
 
       # Setup Node JS with input from node version and set the registry url for github packages
+      # DON'T USE registry-url due to https://github.com/changesets/action/issues/132
       - name: 'Setup Node JS'
         uses: actions/setup-node@v4
         with:
           node-version: ${{ inputs.node-version }}
-          registry-url: ${{ inputs.registry-url }}
 
       - name: 'enable corepack for yarn'
         run: sudo corepack enable yarn
         shell: bash
 
-     # must call twice because of chicken and egg problem with yarn and node
+      # must call twice because of chicken and egg problem with yarn and node
+      # DON'T USE registry-url due to https://github.com/changesets/action/issues/132     
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ inputs.node-version }}
-          registry-url: ${{ inputs.registry-url }}
           cache: 'yarn'
 
       - name: Install Dependencies
@@ -191,8 +206,8 @@ jobs:
         uses: changesets/action@v1
         with:
           # This expects you to have a script called release which does a build for your packages and calls changeset publish
-          publish: yarn release
+          publish: ${{ inputs.publish-command }}
+          version: ${{ inputs.version-command }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ env.NPM_TOKEN }}
-
