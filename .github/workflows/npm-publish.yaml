@@ -223,7 +223,8 @@ jobs:
           NPM_TOKEN: ${{ env.NPM_TOKEN }}
 
       - name: Parse Package
-        id: generate_urls
+        if: steps.changesets.outputs.published 
+	id: generate_urls
         env:
           PACKAGES: ${{ steps.changesets.outputs.publishedPackages }}
         run: |
@@ -270,7 +271,7 @@ jobs:
  
       - name: Add attestation link to summary
         shell: bash
-        if: steps.generate_urls.outputs.urls != ''
+        if: steps.changesets.outputs.published 
         env:
           URLS: ${{ steps.generate_urls.outputs.urls }}
         run: |
