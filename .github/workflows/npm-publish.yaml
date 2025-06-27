@@ -222,13 +222,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ env.NPM_TOKEN }}
 
-
-
-
-      https://www.npmjs.com/package/@fernandezfalvaro/test-files/v/1.2.5
-publishedPackages: [{name:@fernandezfalvaro/test-files,version:1.2.5}]
-
-
       - name: Parse Package
         id: generate_urls
         env:
