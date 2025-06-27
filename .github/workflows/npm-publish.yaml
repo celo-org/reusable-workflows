@@ -281,5 +281,5 @@ jobs:
 
           IFS=',' read -ra url_array <<< "$URLS"
           for url in "${url_array[@]}"; do
-            echo "$url >> $GITHUB_STEP_SUMMARY"
+            echo "$url" >> $GITHUB_STEP_SUMMARY
           done
