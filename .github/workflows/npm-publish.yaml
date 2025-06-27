@@ -226,7 +226,7 @@ jobs:
         id: generate_urls
         env:
           PACKAGES: ${{ steps.changesets.outputs.publishedPackages }}
-        run:
+        run: |
           # Remove outer square brackets
           trimmed="${input#[}"
           trimmed="${trimmed%]}"
