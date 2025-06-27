@@ -228,46 +228,8 @@ jobs:
         env:
           PACKAGES: ${{ steps.changesets.outputs.publishedPackages }}
         run: |
-          # Remove outer square brackets
-          trimmed="${PACKAGES#[}"
-          trimmed="${trimmed%]}"
-
-          # Split into individual package-like objects
-          IFS='},{' read -ra items <<< "$trimmed"
-
-          # Declare an array to hold the URLs
-          urls=()
-
-          for item in "${items[@]}"; do
-            # Clean up any stray braces
-            clean_item="${item#\{}"
-            clean_item="${clean_item%\}}"
-
-            # Extract key-values
-            IFS=',' read -ra kv_pairs <<< "$clean_item"
-            unset name version
-
-            for pair in "${kv_pairs[@]}"; do
-              key="${pair%%:*}"
-              value="${pair#*:}"
-              if [[ $key == "name" ]]; then
-                name="$value"
-              elif [[ $key == "version" ]]; then
-               version="$value"
-              fi
-            done
-
-            if [[ -n "$name" && -n "$version" ]]; then
-              urls+=("https://www.npmjs.com/package/$name/v/$version")
-            fi
-          done
-
-          # Join the array into a comma-separated string
-          joined_urls=$(IFS=','; echo "${urls[*]}")
-
-          # Set output so other steps can access it
-          echo "urls=$joined_urls" >> "$GITHUB_OUTPUT"
-
+          urls=$(jq -r '.[] | "https://www.npmjs.com/package/\(.name)/v/\(.version)"' <<< "$PACKAGES" | paste -sd, -)
+          echo "urls=$urls" >> "$GITHUB_OUTPUT"
  
       - name: Add attestation link to summary
         shell: bash
