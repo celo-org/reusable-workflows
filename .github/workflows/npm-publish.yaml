@@ -224,7 +224,7 @@ jobs:
 
       - name: Parse Package
         if: steps.changesets.outputs.published 
-	id: generate_urls
+        id: generate_urls
         env:
           PACKAGES: ${{ steps.changesets.outputs.publishedPackages }}
         run: |
