@@ -270,6 +270,7 @@ jobs:
  
       - name: Add attestation link to summary
         shell: bash
+        if: steps.generate_urls.outputs.urls != ''
         env:
           URLS: ${{ steps.generate_urls.outputs.urls }}
         run: |
