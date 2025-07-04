@@ -66,7 +66,7 @@ jobs:
       artifact-registry: us-west1-docker.pkg.dev/mycircle/myrepo
       tags: mytag
       context: .
-      environment: development  # Only if using GitHub Environments: https://docs.github.com/en/actions/deployment/targeting-different-environments/using-environments-for-deployment
+      environment: development  # Only if using GitHub Environments: https://docs.github.com/en/actions/how-tos/writing-workflows/choosing-what-your-workflow-does/using-environments-for-deployment
       debug-enabled: ${{ inputs.debug != '' && inputs.debug || false }}
 ```
 
@@ -147,7 +147,7 @@ Run Terraform `plan` (on pull requests) and `apply` (on merges) using GCP/Akeyle
 jobs:
   Terraform-Plan:
     if: github.ref_name != github.event.repository.default_branch
-    permissions:
+    permissions: # Must change the job token permissions to use JWT auth
       contents: read
       id-token: write
       pull-requests: write
@@ -160,6 +160,7 @@ jobs:
         dir: ["terraform-config/dir1", "terraform-config/dir2", "terraform-config/dir3"]
     uses: celo-org/reusable-workflows/.github/workflows/terraform.yaml@v3.0.0
     with:
+      # Request these values from DevOps or Security if unsure
       working-dir: ${{ matrix.dir }}
       workload-id-provider: projects/12345/locations/global/workloadIdentityPools/gh-pool-name/providers/github-by-repos
       service-account: my-svc-account@gcp-project.iam.gserviceaccount.com
@@ -170,7 +171,7 @@ jobs:
 
   Terraform-Apply:
     if: github.ref_name == github.event.repository.default_branch
-    permissions:
+    permissions: # Must change the job token permissions to use JWT auth
       contents: read
       id-token: write
       pull-requests: write
@@ -183,6 +184,7 @@ jobs:
         dir: ["terraform-config/dir1", "terraform-config/dir2", "terraform-config/dir3"]
     uses: celo-org/reusable-workflows/.github/workflows/terraform.yaml@v3.0.0
     with:
+      # Request these values from DevOps or Security if unsure
       working-dir: ${{ matrix.dir }}
       workload-id-provider: projects/12345/locations/global/workloadIdentityPools/gh-pool-name/providers/github-by-repos
       service-account: my-svc-account@gcp-project.iam.gserviceaccount.com
