@@ -1,26 +1,49 @@
 # Celo Org Reusable Workflows (`v3.0.0`)
 
-This repository provides reusable GitHub Actions workflows for CI/CD tasks such as Docker image builds, Go test automation, npm publishing, security scorecard checks, and Terraform operations.
-Using these workflows to build artifacts (container images or NPM packages) should meet all requirements for SLSA level 3 https://slsa.dev/
+This repository provides **reusable GitHub Actions workflows** for common CI/CD tasks:
+
+- Docker image builds
+- Go test automation
+- NPM package publishing
+- OpenSSF Scorecard checks
+- Terraform operations
+
+These workflows are designed to meet the requirements of [SLSA Level 3](https://slsa.dev/) when used to build artifacts such as container images or NPM packages.
+
+---
 
 ## Usage
 
-To use these workflows in your own repository, call them via `workflow_call`:
+To use these workflows in your own repository, reference them via `workflow_call`:
 
 ```yaml
 jobs:
   example:
-    uses: celo-org/reusable-workflows/.github/workflows/<workflow-file>.yaml@v3.0.0
+    uses: celo-org/reusable-workflows/.github/workflows/<workflow-file>.yaml@v3.0.0  # e.g., docker-build.yaml
     with:
       # ...workflow inputs...
 ```
 
+---
+
+## Available Workflows
+
+| Workflow File         | Description                               |
+|------------------------|-------------------------------------------|
+| `docker-build.yaml`    | Build and push Docker images              |
+| `go-tests.yaml`        | Run Go tests, vet, and lint               |
+| `npm-publish.yaml`     | Publish NPM packages using OpenVPN & Akeyless |
+| `scorecard.yaml`       | Run OpenSSF Scorecard checks              |
+| `terraform.yaml`       | Run Terraform plan and apply operations   |
+
+---
+
 ## Workflows
 
 ### 1. Docker Build (`docker-build.yaml`)
+
 Build and optionally push a Docker image.
 
-**Example:**
 ```yaml
 jobs:
   Build-Container:
@@ -32,25 +55,27 @@ jobs:
       attestations: write
       id-token: write
     concurrency:
-      group:   ${{ github.workflow }}-${{ github.head_ref || github.ref }}
+      group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
       cancel-in-progress: true
     if: github.ref_name != github.event.repository.default_branch
     uses: celo-org/reusable-workflows/.github/workflows/docker-build.yaml@v3.0.0
     with:
-      workload-id-provider: projects/12345/locations/global/workloadIdentityPools/gh-pool-name/providers/github-by-repos # If unsure request from Devops/Security
+      # Request these values from DevOps or Security if unsure
+      workload-id-provider: projects/12345/locations/global/workloadIdentityPools/gh-pool-name/providers/github-by-repos
       service-account: my-svc-account@gcp-project.iam.gserviceaccount.com
-      artifact-registry: us-west1-docker.pkg.dev/mycircle/myrepo # If unsure request from Devops/Security
+      artifact-registry: us-west1-docker.pkg.dev/mycircle/myrepo
       tags: mytag
       context: .
-      environment: development      # Only if using github environments: https://docs.github.com/en/actions/how-tos/writing-workflows/choosing-what-your-workflow-does/using-environments-for-deployment
+      environment: development  # Only if using GitHub Environments: https://docs.github.com/en/actions/deployment/targeting-different-environments/using-environments-for-deployment
       debug-enabled: ${{ inputs.debug != '' && inputs.debug || false }}
-
 ```
 
-### 2. Go Tests (`go-tests.yaml`)
-Run Go tests, build, vet, and lint.
+---
 
-**Example:**
+### 2. Go Tests (`go-tests.yaml`)
+
+Run Go tests, vet, build, and lint.
+
 ```yaml
 jobs:
   Go-Tests:
@@ -65,10 +90,12 @@ jobs:
       warn-only: true
 ```
 
-### 3. NPM Publish (`npm-publish.yaml`)
-Publish npm packages, optionally using Akeyless for secrets.  Uses OpenVPN through GCP to restrict token access
+---
 
-**Example:**
+### 3. NPM Publish (`npm-publish.yaml`)
+
+Publish NPM packages. Uses **OpenVPN through GCP** and optionally **Akeyless** to securely manage secrets and restrict token access.
+
 ```yaml
 jobs:
   openvpn:
@@ -81,7 +108,7 @@ jobs:
       id-token: write
       repository-projects: write
     concurrency:
-      group:   ${{ github.workflow }}-${{ github.head_ref || github.ref }}
+      group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
       cancel-in-progress: true
     uses: celo-org/reusable-workflows/.github/workflows/npm-publish.yaml@v3.0.0
     with:
@@ -90,10 +117,12 @@ jobs:
       publish-command: yarn release
 ```
 
-### 4. Scorecard (`scorecard.yaml`)
-Run OpenSSF Scorecard checks for repository security.  This only works on public repositories
+---
 
-**Example:**
+### 4. Scorecard (`scorecard.yaml`)
+
+Run [OpenSSF Scorecard](https://github.com/ossf/scorecard) checks to assess repository security. This workflow **only works on public repositories**.
+
 ```yaml
 jobs:
   analysis:
@@ -103,64 +132,66 @@ jobs:
       actions: read
       contents: read
     concurrency:
-      group:   ${{ github.workflow }}-${{ github.head_ref || github.ref }}
+      group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
       cancel-in-progress: true
     uses: celo-org/reusable-workflows/.github/workflows/scorecard.yaml@v3.0.0
 ```
 
-### 5. Terraform Plan & Apply (`terraform.yaml`)
-Run Terraform plan and apply with GCP/Akeyless integration.  Requires running for both a PR (plan), and merge (apply) so 2 entries needed.  This supports multiple directories with matrix
+---
 
-**Example:**
+### 5. Terraform Plan & Apply (`terraform.yaml`)
+
+Run Terraform `plan` (on pull requests) and `apply` (on merges) using GCP/Akeyless integration. Supports **matrixed directories** for monorepos.
+
 ```yaml
 jobs:
   Terraform-Plan:
     if: github.ref_name != github.event.repository.default_branch
-    permissions: # Must change the job token permissions to use JWT auth
+    permissions:
       contents: read
       id-token: write
       pull-requests: write
     concurrency:
-      group:   ${{ github.workflow }}-${{ matrix.dir }}-${{ github.head_ref || github.ref }}
+      group: ${{ github.workflow }}-${{ matrix.dir }}-${{ github.head_ref || github.ref }}
       cancel-in-progress: true
     strategy:
       fail-fast: false
       matrix:
-        dir: ["terraform-config/dir1","terraform-config/dir2","terraform-config/dir3"]
+        dir: ["terraform-config/dir1", "terraform-config/dir2", "terraform-config/dir3"]
     uses: celo-org/reusable-workflows/.github/workflows/terraform.yaml@v3.0.0
     with:
       working-dir: ${{ matrix.dir }}
-      workload-id-provider: projects/12345/locations/global/workloadIdentityPools/gh-pool-name/providers/github-by-repos # If unsure request from Devops/Security
-      service-account: my-svc-account@gcp-project.iam.gserviceaccount.com # If unsure request from Devops/Security
-      akeyless-api-gateway: https://my-akeyless-gateway # If unsure request from Devops/Security
-      akeyless-github-access-id: p-my-access-id # If unsure request from Devops/Security
-      environment: development # optional for github development environments
+      workload-id-provider: projects/12345/locations/global/workloadIdentityPools/gh-pool-name/providers/github-by-repos
+      service-account: my-svc-account@gcp-project.iam.gserviceaccount.com
+      akeyless-api-gateway: https://my-akeyless-gateway
+      akeyless-github-access-id: p-my-access-id
+      environment: development
       debug-enabled: ${{ inputs.debug != '' && inputs.debug || false }}
 
   Terraform-Apply:
     if: github.ref_name == github.event.repository.default_branch
-    permissions: # Must change the job token permissions to use JWT auth
+    permissions:
       contents: read
       id-token: write
       pull-requests: write
     concurrency:
-      group:   ${{ github.workflow }}-${{ matrix.dir }}-${{ github.head_ref || github.ref }}
+      group: ${{ github.workflow }}-${{ matrix.dir }}-${{ github.head_ref || github.ref }}
       cancel-in-progress: true
     strategy:
       fail-fast: false
       matrix:
-        dir: ["terraform-config/dir1","terraform-config/dir2","terraform-config/dir3"]
+        dir: ["terraform-config/dir1", "terraform-config/dir2", "terraform-config/dir3"]
     uses: celo-org/reusable-workflows/.github/workflows/terraform.yaml@v3.0.0
     with:
       working-dir: ${{ matrix.dir }}
-      workload-id-provider: projects/12345/locations/global/workloadIdentityPools/gh-pool-name/providers/github-by-repos # If unsure request from Devops/Security
-      service-account: my-svc-account@gcp-project.iam.gserviceaccount.com # If unsure request from Devops/Security
-      akeyless-api-gateway: https://my-akeyless-gateway # If unsure request from Devops/Security
-      akeyless-github-access-id: p-my-access-id # If unsure request from Devops/Security
-      environment: production   #options for github development environments
+      workload-id-provider: projects/12345/locations/global/workloadIdentityPools/gh-pool-name/providers/github-by-repos
+      service-account: my-svc-account@gcp-project.iam.gserviceaccount.com
+      akeyless-api-gateway: https://my-akeyless-gateway
+      akeyless-github-access-id: p-my-access-id
+      environment: production  # Optional: GitHub environment name
       debug-enabled: ${{ inputs.debug != '' && inputs.debug || false }}
 ```
 
 ---
 
-> For the most up-to-date list of workflows, [browse the v3.0.0 branch](https://github.com/celo-org/reusable-workflows/tree/v3.0.0/.github/workflows).
+> 🗂 For the most up-to-date list of workflows, [browse the `v3.0.0` branch](https://github.com/celo-org/reusable-workflows/tree/v3.0.0/.github/workflows).
