@@ -8,7 +8,7 @@ This repository provides **reusable GitHub Actions workflows** for common CI/CD 
 - OpenSSF Scorecard checks
 - Terraform operations
 
-These workflows are designed to meet the requirements of [SLSA Level 3]([https://slsa.dev/](https://slsa.dev/spec/v1.1/levels)) when used to build artifacts such as container images or NPM packages.
+These workflows are designed to meet the requirements of [SLSA Level 3]([https://slsa.dev/spec/v1.1/levels]) when used to build artifacts such as container images or NPM packages.
 
 ---
 
