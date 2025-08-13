@@ -40,10 +40,15 @@ on:
         required: false
         type: boolean
         default: true
+      runner:
+        description: "runner label(s) - (JSON formatted list)"
+        required: false
+        type: string
+        default: '["ubuntu-latest"]'
 
 jobs:
   auth-build-push-scan-container:
-    runs-on: ubuntu-latest
+    runs-on: ${{ fromJSON(inputs.runner) }}
     permissions: # Required for workload identity auth and push the trivy results to GitHub
       contents: read
       id-token: write
