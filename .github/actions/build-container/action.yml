@@ -66,6 +66,18 @@ runs:
           type=sha
           ${{ inputs.force-extra-tag != '' && format('type=raw,value={0}', inputs.force-extra-tag) || '' }}
 
+    - name: Set output tags
+      id: tags
+      shell: bash
+      run: |
+        set -euo pipefail
+        # that's the tag with the highest priority in metadata-action
+        first_tag="$(echo "${{ steps.meta.outputs.tags }}" | head -n 1)"
+        # extract the repo base (everything before the last colon)
+        repo_base="${first_tag%:*}"
+        echo "repo-base=${repo_base}" >> "$GITHUB_OUTPUT"
+        echo "main-tag=${first_tag}" >> "$GITHUB_OUTPUT"
+
     - name: Build container image
       uses: docker/build-push-action@v6
       id: docker-build
@@ -73,7 +85,7 @@ runs:
         platforms: ${{ inputs.runner_platform }}
         file: ${{ inputs.dockerfile }}
         context: ${{ inputs.context }}
-        cache-from: type=registry,ref=${{ inputs.registry }}/${{ inputs.app-name }}:buildcache
+        cache-from: type=registry,ref=${{ steps.tags.outputs.repo-base }}:buildcache
         cache-to: type=local,dest=cache
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
@@ -107,9 +119,9 @@ runs:
         labels: ${{ steps.meta.outputs.labels }}
         build-args: ${{ inputs.build-args }}
         cache-from: type=local,src=cache
-        cache-to: type=registry,ref=${{ inputs.registry }}/${{ inputs.app-name }}:buildcache,mode=max
+        cache-to: type=registry,ref=${{ steps.tags.outputs.repo-base }}:buildcache,mode=max
         provenance: ${{ fromJSON(true) }}
-
+    
     - uses: sigstore/cosign-installer@main
 
     - name: Sign container image
@@ -117,15 +129,13 @@ runs:
         COSIGN_EXPERIMENTAL: "true"
       shell: bash
       run: |
-        cosign sign --yes ${{ inputs.registry }}/${{ inputs.app-name }}@${{ steps.docker-build-push.outputs.digest }}
+        cosign sign --yes ${{ steps.tags.outputs.repo-base }}@${{ steps.docker-build-push.outputs.digest }}
 
     - name: Run Trivy vulnerability scanner
       uses: aquasecurity/trivy-action@master
       if: ${{ inputs.trivy == 'true' }}
-      env:
-        REGISTRY: ${{ inputs.registry }}/${{ inputs.app-name }}
       with:
-        image-ref: "${{ steps.meta.outputs.version }}"
+        image-ref: "${{ steps.tags.outputs.main-tag }}"
         timeout: 15m
         vuln-type: "os,library"
         severity: "UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL"
