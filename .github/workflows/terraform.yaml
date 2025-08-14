@@ -207,7 +207,7 @@ jobs:
 
       - name: Terraform Plan
         id: plan
-        run: terraform plan -no-color -input=false -out=tfplan "-detailed-exitcode" -var="branch_name=${{ github.ref_name }}" -var="default_branch_name=${{ github.event.repository.default_branch }}"
+        run: terraform plan -no-color -input=false -out=tfplan "-detailed-exitcode"
         shell: bash
 
       # Show Plan is used so we can get rid of all the "refreshing" comments that are noisy
