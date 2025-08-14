@@ -86,7 +86,7 @@ runs:
         file: ${{ inputs.dockerfile }}
         context: ${{ inputs.context }}
         cache-from: type=registry,ref=${{ steps.tags.outputs.repo-base }}:buildcache
-        cache-to: type=local,dest=cache
+        cache-to: type=local,dest=cache,mode=max
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
         load: true
