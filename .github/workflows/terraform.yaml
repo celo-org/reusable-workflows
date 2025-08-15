@@ -329,8 +329,8 @@ jobs:
         if: always() && github.ref_name == github.event.repository.default_branch && steps.build-report.outputs.report != ''
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ steps.build-report.outputs.report  }}-apply.txt
-          path: ${{ inputs.working-dir}}/${{ steps.build-report.outputs.report  }}
+          name: ${{ steps.config-vars.outputs.app-name  }}-apply.txt
+          path: ${{ inputs.working-dir}}/${{ steps.build-report.outputs.report }}
 
       - name: Post Apply Results to GitHub PR
         if: github.event_name == 'pull_request' && inputs.pr-comment && (steps.build-report.outputs.report != '')
