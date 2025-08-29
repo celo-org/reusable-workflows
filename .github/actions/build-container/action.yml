@@ -18,7 +18,7 @@ inputs:
   push:
     description: "Push the image to the remote repository. Requires to be pre-authenticated to the registry."
     required: true
-    default: 'true'
+    default: "true"
   build-args:
     description: "List of build-time variables"
     required: false
@@ -29,7 +29,7 @@ inputs:
     description: "sets the registry subfolder like {registry}/{app-name}:{tag}"
     required: true
   force-extra-tag:
-    description: > 
+    description: >
       Sets one specific tag in addition to the automatically inferred 
       'release', 'edge', 'latest' and 'sha' tags
     required: false
@@ -37,26 +37,26 @@ inputs:
   trivy:
     description: "Run trivy scan"
     required: true
-    default: 'true'
+    default: "true"
 
 runs:
   using: "composite"
   steps:
-
     - name: Set up QEMU
       uses: docker/setup-qemu-action@v3
 
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
 
+    #TODO: strip the last / from the registry
     - name: Docker metadata
-      id: meta 
+      id: meta
       uses: docker/metadata-action@v5
       with:
         images: ${{inputs.registry}}/${{ inputs.app-name }}
         # see https://github.com/docker/metadata-action?tab=readme-ov-file#tags-input
-        # for reference. 
-        # "edge" is the latest on the default branch 
+        # for reference.
+        # "edge" is the latest on the default branch
         #   - this is mirrored with the "latest" tag for backwards compatibility
         #  An additional tag can be forced with inputs.force-extra-tag by the user.
         tags: |
@@ -121,7 +121,7 @@ runs:
         cache-from: type=local,src=cache
         cache-to: type=registry,ref=${{ steps.tags.outputs.repo-base }}:buildcache,mode=max
         provenance: ${{ fromJSON(true) }}
-    
+
     - uses: sigstore/cosign-installer@main
 
     - name: Sign container image
