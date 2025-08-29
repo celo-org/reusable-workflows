@@ -92,7 +92,7 @@ runs:
         file: ${{ inputs.dockerfile }}
         context: ${{ inputs.context }}
         cache-from: type=registry,ref=${{ inputs.registry }}:buildcache
-        cache-to: type=local,dest=/tmp/.buildx-cache
+        cache-to: type=local,dest=/tmp/.buildx-cache,mode=max
         tags: ${{ steps.process_tags.outputs.processed }}
         load: true
         build-args: ${{ inputs.build-args }}
