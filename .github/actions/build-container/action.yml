@@ -92,7 +92,7 @@ runs:
         file: ${{ inputs.dockerfile }}
         context: ${{ inputs.context }}
         cache-from: type=registry,ref=${{ inputs.registry }}:buildcache
-        cache-to: type=local,dest=cache
+        cache-to: type=local,dest=/tmp/.buildx-cache
         tags: ${{ steps.process_tags.outputs.processed }}
         load: true
         build-args: ${{ inputs.build-args }}
@@ -122,7 +122,7 @@ runs:
         push: ${{ fromJSON(inputs.push) }}
         tags: ${{ steps.process_tags.outputs.processed }}
         build-args: ${{ inputs.build-args }}
-        cache-from: type=local,src=cache
+        cache-from: type=local,src=/tmp/.buildx-cache
         cache-to: type=registry,ref=${{ inputs.registry }}:buildcache,mode=max
         provenance: ${{ fromJSON(true) }}
 
