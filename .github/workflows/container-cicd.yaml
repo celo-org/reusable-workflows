@@ -14,10 +14,7 @@ on:
         required: false
         type: string
         default: "20m" 
-      artifact-registry:
-        required: true
-        type: string
-      tags:
+      registry:
         required: true
         type: string
       platforms:
@@ -32,6 +29,19 @@ on:
       build-args:
         required: false
         type: string
+      force-extra-tag:
+        description: > 
+          Sets one specific tag in addition to the automatically inferred 
+          'release', 'edge', 'latest' and 'sha' tags
+        required: false
+        default: ""
+      force-app-name:
+        description: > 
+          Sets the app name as a registry subfolder
+          {registry}/{app-name}:{tag}
+          If not set this will default to the repository name
+        required: false
+        default: ""
       provenance:
         required: false
         type: boolean
@@ -51,34 +61,21 @@ jobs:
     steps:
       - name: 'Checkout'
         uses: actions/checkout@v4
-      
-      - name: Split location and app names
-        id: split
-        env:
-          REGISTRY: ${{ inputs.artifact-registry }}
-        shell: bash
-        run: |
-            location=${REGISTRY%%/*}
-            app_name=${REGISTRY##*/}
-            echo "location=$location"
-            echo "app_name=$app_name"
-            echo "location=$location" >> $GITHUB_OUTPUT
-            echo "app_name=$app_name" >> $GITHUB_OUTPUT
-
       - name: Authenticate to Google Cloud
         uses: celo-org/reusable-workflows/.github/actions/auth-gcp-artifact-registry@main
         with:
           workload-id-provider: ${{ inputs.workload-id-provider }}
           service-account: ${{ inputs.service-account }}
           access-token-lifetime: ${{ inputs.access-token-lifetime }}
-          docker-gcp-registries: ${{ steps.split.outputs.location }}
+          docker-gcp-registries: ${{ inputs.registry}
 
       - name: Build, push and scan the container
         uses: celo-org/reusable-workflows/.github/actions/build-container@main
         with:
           platforms: ${{ inputs.platforms }}
-          registry: ${{ inputs.artifact-registry }}
-          tags: ${{ inputs.tags }}
+          registry: ${{ inputs.registry }}
+          app-name: ${{ inputs.registry || github.event.repository.name }}
+          force-extra-tag: ${{ inputs.force-extra-tag }}
           context: ${{ inputs.context }}
           dockerfile: ${{ inputs.file }}
           build-args: ${{ inputs.build-args }}
