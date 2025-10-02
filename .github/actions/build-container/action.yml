@@ -126,7 +126,7 @@ runs:
         cache-to: type=registry,ref=${{ inputs.registry }}:buildcache,mode=max
         provenance: ${{ fromJSON(true) }}
 
-    - uses: sigstore/cosign-installer@main
+    - uses: sigstore/cosign-installer@v3
 
     - name: Sign container image
       env:
@@ -136,7 +136,7 @@ runs:
         cosign sign --yes ${{ inputs.registry }}@${{ steps.docker-build-push.outputs.digest }}
 
     - name: Run Trivy vulnerability scanner
-      uses: aquasecurity/trivy-action@master
+      uses: aquasecurity/trivy-action@v0.33.1
       if: ${{ inputs.trivy == 'true' }}
       env:
         REGISTRY: ${{ inputs.registry }}
