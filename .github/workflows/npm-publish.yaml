@@ -44,7 +44,7 @@ jobs:
         uses: actions/checkout@v4
       
       - name: Build and publish npm package
-        uses: celo-org/reusable-workflows/.github/actions/npm-publish@main
+        uses: celo-org/reusable-workflows/.github/actions/npm-publish@v2.0.6
         with:
           node-version: ${{ inputs.node-version }}
           package-dir: ${{ inputs.package-dir }}
