@@ -41,7 +41,7 @@ on:
         description: "GCP Artifact registry to login into. Check https://cloud.google.com/artifact-registry/docs/docker/authentication"
         default: "us-west1-docker.pkg.dev,us-central1-docker.pkg.dev"
       runs-on:
-        default: "['ubuntu-latest']"
+        default: "['ubuntu-24.04']"
         type: string
         description: "github runner tags"
       timeout-minutes:

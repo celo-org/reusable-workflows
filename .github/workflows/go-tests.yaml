@@ -59,7 +59,8 @@ on:
 
 jobs:
   go-tests:
-    permissions:
+    runs-on: ubuntu-24.04
+    permissions: # Must change the job token permissions to use JWT auth
       contents: read
       pull-requests: read
       id-token: write
