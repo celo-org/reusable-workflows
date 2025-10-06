@@ -43,7 +43,7 @@ on:
 
 jobs:
   auth-build-push-scan-container:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions: # Required for workload identity auth and push the trivy results to GitHub
       contents: read
       id-token: write

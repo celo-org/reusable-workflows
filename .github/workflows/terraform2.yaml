@@ -35,7 +35,7 @@ env:
 jobs:
   terraform:
     name: 'Terraform'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions: # Must change the job token permissions to use JWT auth
       id-token: write
       contents: read
