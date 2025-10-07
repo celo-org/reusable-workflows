@@ -1,6 +1,37 @@
 name: Release
 
 on:
+  workflow_call:
+    inputs:
+      release-branch:
+        description: 'Branch that triggers releases'
+        required: false
+        type: string
+        default: 'release'
+      config-file:
+        description: 'Path to semantic-release config file'
+        required: false
+        type: string
+        default: '.releaserc.json'
+      dry-run:
+        description: 'Run in dry-run mode for testing'
+        required: false
+        type: boolean
+        default: false
+      working-directory:
+        description: 'Working directory for monorepos'
+        required: false
+        type: string
+        default: '.'
+      extends:
+        description: 'Shareable config to extend (alternative to config-file)'
+        required: false
+        type: string
+        default: ''
+    secrets:
+      github-token:
+        description: 'GitHub token for releases'
+        required: false
   push:
     branches:
       - release
@@ -14,28 +45,36 @@ jobs:
   release:
     name: Release
     runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: ${{ inputs.working-directory }}
     concurrency:
       group: ${{ github.workflow }}-${{ github.ref }}
       cancel-in-progress: false
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.github-token || secrets.GITHUB_TOKEN }}
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: 20
 
       - name: Install semantic-release
         run: |
           npm install -g semantic-release@24
-          npm install -g @semantic-release/git@10
-          npm install -g @semantic-release/github@11
 
       - name: Release
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: semantic-release
+          GITHUB_TOKEN: ${{ secrets.github-token || secrets.GITHUB_TOKEN }}
+        run: |
+          if [ "${{ inputs.extends }}" != "" ]; then
+            echo "Using shareable config: ${{ inputs.extends }}"
+            semantic-release --extends ${{ inputs.extends }} ${{ inputs.dry-run && '--dry-run' || '' }}
+          else
+            echo "Using config file: ${{ inputs.config-file }}"
+            semantic-release --config ${{ inputs.config-file }} ${{ inputs.dry-run && '--dry-run' || '' }}
+          fi
