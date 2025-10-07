@@ -32,9 +32,6 @@ on:
       github-token:
         description: 'GitHub token for releases'
         required: false
-  push:
-    branches:
-      - release
 
 permissions:
   contents: write
