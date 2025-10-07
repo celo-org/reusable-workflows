@@ -28,6 +28,11 @@ on:
         required: false
         type: string
         default: ''
+      environment:
+        description: 'GitHub environment for deployment protection'
+        required: false
+        type: string
+        default: ''
     secrets:
       github-token:
         description: 'GitHub token for releases'
@@ -42,6 +47,7 @@ jobs:
   release:
     name: Release
     runs-on: ubuntu-24.04
+    environment: ${{ inputs.environment != '' && inputs.environment || null }}
     defaults:
       run:
         working-directory: ${{ inputs.working-directory }}
