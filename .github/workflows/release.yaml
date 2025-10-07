@@ -69,6 +69,7 @@ jobs:
       - name: Install semantic-release
         run: |
           npm install -g semantic-release@24
+          npm install -g conventional-changelog-conventionalcommits@9
 
       - name: Release
         env:
