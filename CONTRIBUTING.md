@@ -65,19 +65,53 @@ feat!: require Node.js 20+ for all workflows
 
 ## Development Process
 
-1. **Create a feature branch** from `release` for your changes
+1. **Create a feature branch** from `develop` for your changes
 2. **Make your changes** following the commit message format above
 3. **Test your changes** thoroughly
-4. **Create a pull request** to `release`
-5. **After merge**, changes will be automatically released when pushed to the `release` branch
+4. **Create a pull request** to `develop`
+5. **After merge to develop**, follow the release process below
 
 ## Release Process
 
-This repository uses automated semantic versioning:
+This repository uses a structured branching model for releases:
 
-- Commits are analyzed to determine the next version number
-- Releases are triggered only from the `release` branch
-- Tags follow the format `vX.X.X` (e.g., `v3.1.0`)
+### Branch Structure
+- **`develop`**: Main development branch for day-to-day development
+- **`rc`**: Release candidate branch for testing feature and major releases
+- **`release`**: Production release branch
+
+### Release Flow
+
+**For patch releases (bug fixes):**
+```
+develop → release (direct merge for hotfixes)
+```
+
+**For feature/major releases:**
+```
+develop → rc → release (after testing)
+```
+
+### Step-by-Step Release Process
+
+1. **Daily Development**: Merge feature branches to `develop`
+
+2. **For Patch Releases**:
+   - Merge `develop` directly to `release`
+   - Semantic-release creates patch version (e.g., v3.0.1)
+
+3. **For Feature/Major Releases**:
+   - Merge `develop` to `rc` branch
+   - Semantic-release creates RC version (e.g., v3.1.0-rc.1)
+   - Test the release candidate thoroughly
+   - When ready, merge `rc` to `release`
+   - Semantic-release creates production version (e.g., v3.1.0) with major/minor tags
+
+## Automated Versioning
+
+- Commits are analyzed using conventional commit format to determine version bumps
+- **RC releases**: Only specific version tags (e.g., `v3.1.0-rc.1`)
+- **Production releases**: Specific version + major/minor tags (e.g., `v3.1.0`, `v3.1`, `v3`)
 - Release notes are automatically generated from commit messages
 
 ## Questions?
