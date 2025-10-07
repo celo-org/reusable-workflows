@@ -1,14 +1,14 @@
-name: Release Self
+name: Release RC
 
 on:
   push:
     branches:
-      - release
+      - rc
 
 jobs:
   release:
     uses: ./.github/workflows/release.yaml
-    environment: production
+    environment: staging
     permissions:
       contents: write
       issues: write
