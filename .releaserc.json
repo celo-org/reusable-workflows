@@ -22,7 +22,8 @@
     [
       "@semantic-release/exec",
       {
-        "publishCmd": "if [ -z \"${nextRelease.prerelease}\" ]; then git tag -f v${nextRelease.major} && git tag -f v${nextRelease.major}.${nextRelease.minor} && git push origin --tags --force; else echo 'Skipping major/minor tags for prerelease'; fi"
+        "publishCmd": "./scripts/tag-versions.sh '${nextRelease.type}' '${nextRelease.version}'",
+        "shell": "/bin/bash"
       }
     ]
   ],
