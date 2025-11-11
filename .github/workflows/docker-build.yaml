@@ -1,6 +1,6 @@
 ---
-name: 'Run Container Workflow'
-on: 
+name: "Run Container Workflow"
+on:
   workflow_call:
     inputs:
       workload-id-provider:
@@ -13,7 +13,7 @@ on:
         description: "GCP token expiration timeout"
         required: false
         type: string
-        default: "20m" 
+        default: "20m"
       artifact-registry:
         required: true
         type: string
@@ -49,7 +49,7 @@ on:
         type: number
         description: "Workflow timeout"
       environment:
-        default: ''
+        default: ""
         description: "Deployment environment in github"
         type: string
       debug-enabled:
@@ -85,7 +85,7 @@ jobs:
     timeout-minutes: ${{ inputs.timeout-minutes }}
     defaults:
       run:
-        shell: bash 
+        shell: bash
     # Specify an environment here if using deployment environments
     environment:
       name: ${{ inputs.environment }}
@@ -137,12 +137,12 @@ jobs:
 
       - name: Setup tmate session
         uses: mxschmitt/action-tmate@e5c7151931ca95bad1c6f4190c730ecf8c7dde48
-        if: inputs.debug-enabled == true 
+        if: inputs.debug-enabled == true
         with:
           detached: true
           limit-access-to-actor: true
-    
-      - name: 'Checkout'
+
+      - name: "Checkout"
         uses: actions/checkout@v4
 
       - name: Check if GHAS is Enabled
@@ -166,7 +166,7 @@ jobs:
         uses: celo-org/trivy-composite-action@v1.0.0
         with:
           scan-type: fs
-          scan-ref:  ${{ inputs.context }}
+          scan-ref: ${{ inputs.context }}
           timeout: ${{ inputs.trivy-timeout }}
           vuln-type: ${{ inputs.trivy-vuln-type }}
           severity: ${{ inputs.trivy-severity }}
@@ -186,7 +186,7 @@ jobs:
           workload_identity_provider: ${{ inputs.workload-id-provider }}
           service_account: ${{ inputs.service-account }}
           access_token_lifetime: ${{ inputs.access-token-lifetime }}
-          token_format: access_token 
+          token_format: access_token
 
       - name: Login to GAR
         uses: docker/login-action@v3
@@ -213,7 +213,7 @@ jobs:
         uses: celo-org/trivy-composite-action@v1.0.0
         with:
           scan-type: image
-          image-ref:  ${{ steps.docker-build-scan.outputs.full-image-name }}
+          image-ref: ${{ steps.docker-build-scan.outputs.full-image-name }}
           timeout: ${{ inputs.trivy-timeout }}
           vuln-type: ${{ inputs.trivy-vuln-type }}
           severity: ${{ inputs.trivy-severity }}
