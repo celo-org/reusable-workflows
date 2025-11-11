@@ -98,6 +98,20 @@ jobs:
       attestations: write
       pull-requests: write
     steps:
+      - name: Preprocess inputs
+        id: preprocessed_inputs
+        env:
+          RAW_REGISTRY: ${{ inputs.artifact-registry }}
+        run: |
+          set -euo pipefail
+
+          location=${RAW_REGISTRY%%/*}
+          app_name=${RAW_REGISTRY##*/}
+          echo "::debug::location=$location"
+          echo "::debug::app_name=$app_name"
+          echo "location=$location" >> $GITHUB_OUTPUT
+          echo "app_name=$app_name" >> $GITHUB_OUTPUT
+
       # Security policy docker is configured in step security app
       # Policy can be seen here https://app.stepsecurity.io/github/celo-org/actions/policies/docker
       # disable-sudo is set to false if debug is true, because tmate requires root to work.
@@ -138,19 +152,6 @@ jobs:
             }
             return true;
 
-      # Split the artifact-registry to give us both the registry url and app/image name
-      - name: Split location and app names
-        id: split
-        env:
-          REGISTRY: ${{ inputs.artifact-registry }}
-        run: |
-            location=${REGISTRY%%/*}
-            app_name=${REGISTRY##*/}
-            echo "::debug::location=$location"
-            echo "::debug::app_name=$app_name"
-            echo "location=$location" >> $GITHUB_OUTPUT
-            echo "app_name=$app_name" >> $GITHUB_OUTPUT
-
       - name: Run Trivy Scan
         id: trivy-fs
         if: inputs.trivy-enabled
@@ -168,7 +169,7 @@ jobs:
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: ${{ steps.trivy-fs.outputs.sarif-file }}
-          category: fs-${{ steps.split.outputs.app_name }}
+          category: fs-${{ steps.preprocessed_inputs.outputs.app_name }}
 
       - name: Authenticate to Google Cloud
         id: auth
@@ -216,7 +217,7 @@ jobs:
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: ${{ steps.trivy-image.outputs.sarif-file }}
-          category: image-${{ steps.split.outputs.app_name }}
+          category: image-${{ steps.preprocessed_inputs.outputs.app_name }}
 
       - name: Add Trivy FileSystem Report to Workflow Summary
         if: inputs.summary && (steps.trivy-fs.outputs.text-report != '' || steps.trivy-image.outputs.text-report )
