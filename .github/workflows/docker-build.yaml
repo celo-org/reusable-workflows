@@ -101,14 +101,23 @@ jobs:
       - name: Preprocess inputs
         id: preprocessed_inputs
         env:
+          RAW_TAGS: ${{ inputs.tags }}
           RAW_REGISTRY: ${{ inputs.artifact-registry }}
         run: |
           set -euo pipefail
 
           location=${RAW_REGISTRY%%/*}
           app_name=${RAW_REGISTRY##*/}
+          raw_tags="${RAW_TAGS//$'\r'/}"
+
+          normalized_tags="$(printf '%s' "$raw_tags" | tr ',' '\n' | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' -e '/^$/d')"
+          tags_csv="$(printf '%s' "$normalized_tags" | paste -sd, -)"
+
           echo "::debug::location=$location"
           echo "::debug::app_name=$app_name"
+          echo "::debug::tags=$tags_csv"
+
+          echo "tags_csv=$tags_csv" >> "$GITHUB_OUTPUT"
           echo "location=$location" >> $GITHUB_OUTPUT
           echo "app_name=$app_name" >> $GITHUB_OUTPUT
 
@@ -193,7 +202,7 @@ jobs:
         with:
           platforms: ${{ inputs.platforms }}
           registry: ${{ inputs.artifact-registry }}
-          tags: ${{ inputs.tags }}
+          tags: ${{ steps.preprocessed_inputs.outputs.tags_csv }}
           context: ${{ inputs.context }}
           dockerfile: ${{ inputs.file }}
           build-args: ${{ inputs.build-args }}
