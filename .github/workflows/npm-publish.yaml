@@ -1,5 +1,5 @@
 ---
-name: 'NPM Publish Workflow'
+name: "NPM Publish Workflow"
 on:
   workflow_call:
     inputs:
@@ -14,7 +14,7 @@ on:
         type: number
         description: "Workflow timeout"
       environment:
-        default: ''
+        default: ""
         description: "Deployment environment in github"
         type: string
       environment-url:
@@ -66,7 +66,7 @@ jobs:
     timeout-minutes: ${{ inputs.timeout-minutes }}
     defaults:
       run:
-        shell: bash 
+        shell: bash
     # Specify an environment here if using deployment environments
     environment:
       name: ${{ inputs.environment }}
@@ -101,12 +101,12 @@ jobs:
 
       - name: Setup tmate session
         uses: mxschmitt/action-tmate@e5c7151931ca95bad1c6f4190c730ecf8c7dde48
-        if: inputs.debug-enabled == true 
+        if: inputs.debug-enabled == true
         with:
           detached: true
           limit-access-to-actor: true
-    
-      - name: 'Checkout'
+
+      - name: "Checkout"
         uses: actions/checkout@v4
 
       - name: Check if GHAS is Enabled
@@ -127,10 +127,10 @@ jobs:
       - name: Run Trivy Scan
         id: trivy-fs
         if: inputs.trivy-enabled
-        uses: celo-org/trivy-composite-action@v1.0.0
+        uses: celo-org/trivy-composite-action@v1.0.1
         with:
           scan-type: fs
-          scan-ref:  ${{ inputs.package-dir }}
+          scan-ref: ${{ inputs.package-dir }}
           timeout: ${{ inputs.trivy-timeout }}
           vuln-type: ${{ inputs.trivy-vuln-type }}
           severity: ${{ inputs.trivy-severity }}
@@ -188,21 +188,21 @@ jobs:
 
       # Setup Node JS with input from node version and set the registry url for github packages
       # DON'T USE registry-url due to https://github.com/changesets/action/issues/132
-      - name: 'Setup Node JS'
+      - name: "Setup Node JS"
         uses: actions/setup-node@v4
         with:
           node-version: ${{ inputs.node-version }}
 
-      - name: 'enable corepack for yarn'
+      - name: "enable corepack for yarn"
         run: sudo corepack enable yarn
         shell: bash
 
       # must call twice because of chicken and egg problem with yarn and node
-      # DON'T USE registry-url due to https://github.com/changesets/action/issues/132     
+      # DON'T USE registry-url due to https://github.com/changesets/action/issues/132
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ inputs.node-version }}
-          cache: 'yarn'
+          cache: "yarn"
 
       - name: Install Dependencies
         shell: bash
@@ -221,4 +221,4 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ env.NPM_TOKEN }}
-          NPM_PROVENANCE: "1" 
+          NPM_PROVENANCE: "1"
