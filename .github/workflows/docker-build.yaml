@@ -104,6 +104,8 @@ jobs:
           RAW_REGISTRY: ${{ inputs.artifact-registry }}
         run: |
           set -euo pipefail
+          START_TIME=$(date +%s)
+          echo "⏱️ Starting input preprocessing at $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
 
           location=${RAW_REGISTRY%%/*}
           app_name=${RAW_REGISTRY##*/}
@@ -119,6 +121,10 @@ jobs:
           echo "tags_csv=$tags_csv" >> "$GITHUB_OUTPUT"
           echo "location=$location" >> $GITHUB_OUTPUT
           echo "app_name=$app_name" >> $GITHUB_OUTPUT
+
+          END_TIME=$(date +%s)
+          DURATION=$((END_TIME - START_TIME))
+          echo "✅ Input preprocessing completed in ${DURATION}s"
 
       # Security policy docker is configured in step security app
       # Policy can be seen here https://app.stepsecurity.io/github/celo-org/actions/policies/docker
@@ -144,6 +150,9 @@ jobs:
 
       - name: "Checkout"
         uses: actions/checkout@v4
+        
+      - name: Log checkout completion
+        run: echo "✅ Checkout completed at $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
 
       - name: Check if GHAS is Enabled
         uses: actions/github-script@v7
@@ -160,6 +169,10 @@ jobs:
             }
             return true;
 
+      - name: Log Trivy FS scan start
+        if: inputs.trivy-enabled
+        run: echo "⏱️ Starting Trivy filesystem scan at $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
+
       - name: Run Trivy Scan
         id: trivy-fs
         if: inputs.trivy-enabled
@@ -171,6 +184,10 @@ jobs:
           vuln-type: ${{ inputs.trivy-vuln-type }}
           severity: ${{ inputs.trivy-severity }}
           skip-dirs: ${{ inputs.trivy-skip-dirs }}
+      
+      - name: Log Trivy FS scan completion
+        if: inputs.trivy-enabled
+        run: echo "✅ Trivy filesystem scan completed at $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
 
       - name: Upload SARIF to Security Tab
         if: inputs.trivy-enabled &&fromJSON(steps.ghas-check.outputs.result)
@@ -178,6 +195,9 @@ jobs:
         with:
           sarif_file: ${{ steps.trivy-fs.outputs.sarif-file }}
           category: fs-${{ steps.preprocessed_inputs.outputs.app_name }}
+
+      - name: Log GCP authentication start
+        run: echo "⏱️ Starting GCP authentication at $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
 
       - name: Authenticate to Google Cloud
         id: auth
@@ -187,6 +207,9 @@ jobs:
           service_account: ${{ inputs.service-account }}
           access_token_lifetime: ${{ inputs.access-token-lifetime }}
           token_format: access_token
+      
+      - name: Log GCP authentication completion
+        run: echo "✅ GCP authentication completed at $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
 
       - name: Login to GAR
         uses: docker/login-action@v3
@@ -195,8 +218,11 @@ jobs:
           username: oauth2accesstoken
           password: ${{ steps.auth.outputs.access_token }}
 
+      - name: Log Docker build start
+        run: echo "⏱️ Starting Docker build and push at $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
+
       - name: Build, push and scan the container
-        uses: celo-org/docker-build-composite-action@v1.0.2
+        uses: celo-org/docker-build-composite-action@v1.0.3
         id: docker-build-scan
         with:
           platforms: ${{ inputs.platforms }}
@@ -206,6 +232,13 @@ jobs:
           dockerfile: ${{ inputs.file }}
           build-args: ${{ inputs.build-args }}
           push: ${{ fromJSON(true) }}
+      
+      - name: Log Docker build completion
+        run: echo "✅ Docker build and push completed at $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
+
+      - name: Log Trivy image scan start
+        if: inputs.trivy-enabled
+        run: echo "⏱️ Starting Trivy image scan at $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
 
       - name: Run Trivy Scan
         id: trivy-image
@@ -219,6 +252,10 @@ jobs:
           severity: ${{ inputs.trivy-severity }}
           skip-dirs: ${{ inputs.trivy-skip-dirs }}
           skip-setup-trivy: true
+      
+      - name: Log Trivy image scan completion
+        if: inputs.trivy-enabled
+        run: echo "✅ Trivy image scan completed at $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
 
       - name: Upload SARIF to Security Tab
         if: inputs.trivy-enabled &&fromJSON(steps.ghas-check.outputs.result)
@@ -235,3 +272,7 @@ jobs:
           cat ${{ steps.trivy-fs.outputs.text-report }} >> $GITHUB_STEP_SUMMARY
           echo -e "\n" >> $GITHUB_STEP_SUMMARY # Add a blank line
           cat ${{ steps.trivy-image.outputs.text-report }} >> $GITHUB_STEP_SUMMARY
+      
+      - name: Log workflow completion
+        if: always()
+        run: echo "🏁 Workflow completed at $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
