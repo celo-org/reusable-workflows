@@ -143,39 +143,6 @@ jobs:
           sarif_file: ${{ steps.trivy-fs.outputs.sarif-file }}
           category: fs-${{ steps.split.outputs.app_name }}
 
-      - name: Akeyless Get Secrets
-        id: get_auth_token
-        uses: docker://us-west1-docker.pkg.dev/devopsre/akeyless-public/akeyless-action:latest
-        with:
-          api-url: https://api.gateway.akeyless.celo-networks-dev.org
-          access-id: p-kf9vjzruht6l
-          static-secrets: '{"/static-secrets/NPM/openvpn/config_file":"CONFIG_FILE", "/static-secrets/NPM/openvpn/user":"USERNAME", "/static-secrets/NPM/openvpn/password":"PASSWORD", "/static-secrets/NPM/openvpn/npm_token":"NPM_TOKEN"}'
-
-      - name: Setup Config File
-        run: |
-          echo "${{ env.CONFIG_FILE }}" > /tmp/openvpn.conf
-          chmod 600 /tmp/openvpn.conf
-
-      - name: Install OpenVPN
-        run: |
-          sudo apt update
-          sudo apt install -y openvpn openvpn-systemd-resolved
-
-      - name: Connect to VPN
-        uses: "kota65535/github-openvpn-connect-action@v3.1.0"
-        with:
-          config_file: /tmp/openvpn.conf
-          echo_config: false
-          username: ${{ env.USERNAME }}
-          password: ${{ env.PASSWORD }}
-
-      - name: Delete sensitive files
-        shell: bash
-        run: |
-          rm -rf openvpn.log
-          rm -rf openvpn.pid
-          rm -rf up.txt 
-
       - name: Delete trivy files
         shell: bash
         if: inputs.trivy-enabled
@@ -208,6 +175,16 @@ jobs:
         shell: bash
         run: yarn
 
+      - name: Upgrade npm CLI
+        run: npm install -g npm@11.5.1
+
+      - name: Debug Versions
+        if: inputs.debug-enabled == true
+        run: |
+          node -v
+          npm -v
+          yarn -v
+
       - name: Create Release Pull Request or Publish to npm
         id: changesets
         uses: changesets/action@v1
@@ -217,4 +194,3 @@ jobs:
           version: ${{ inputs.version-command }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ env.NPM_TOKEN }}
