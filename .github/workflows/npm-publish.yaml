@@ -211,8 +211,8 @@ jobs:
         #   NPM_TOKEN: ${{ env.NPM_TOKEN }}
         #   YARN_NPM_AUTH_TOKEN: ${{ env.NPM_TOKEN }}
 
-      - name: Upgrade npm CLI
-        run: npm install -g npm@11.5.1
+      # - name: Upgrade npm CLI
+      #   run: npm install -g npm@11.5.1
 
       - name: Debug Versions
         run: |
