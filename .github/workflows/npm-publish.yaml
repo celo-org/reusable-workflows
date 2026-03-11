@@ -211,6 +211,11 @@ jobs:
         #   NPM_TOKEN: ${{ env.NPM_TOKEN }}
         #   YARN_NPM_AUTH_TOKEN: ${{ env.NPM_TOKEN }}
 
+      - name: Debug Versions
+        run: |
+          node -v
+          npm -v
+
       - name: Create Release Pull Request or Publish to npm
         id: changesets
         uses: changesets/action@v1
