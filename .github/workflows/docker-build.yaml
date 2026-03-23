@@ -78,6 +78,10 @@ on:
         default: "os,library"
         type: string
         description: "trivy vulnerability types"
+    secrets:
+      build-secrets:
+        required: false
+        description: "Newline-separated list of secrets to pass to docker build (e.g. 'gh_token=<TOKEN>'). Exposed via --mount=type=secret in Dockerfile RUN steps."
 
 jobs:
   auth-build-push-scan-container:
@@ -196,7 +200,7 @@ jobs:
           password: ${{ steps.auth.outputs.access_token }}
 
       - name: Build, push and scan the container
-        uses: celo-org/docker-build-composite-action@v1.0.2
+        uses: celo-org/docker-build-composite-action@ezdac/docker-build-secrets
         id: docker-build-scan
         with:
           platforms: ${{ inputs.platforms }}
@@ -205,6 +209,7 @@ jobs:
           context: ${{ inputs.context }}
           dockerfile: ${{ inputs.file }}
           build-args: ${{ inputs.build-args }}
+          secrets: ${{ secrets.build-secrets }}
           push: ${{ fromJSON(true) }}
 
       - name: Run Trivy Scan
