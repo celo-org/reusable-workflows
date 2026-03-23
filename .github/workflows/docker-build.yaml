@@ -204,7 +204,9 @@ jobs:
           tags: ${{ steps.preprocessed_inputs.outputs.tags_csv }}
           context: ${{ inputs.context }}
           dockerfile: ${{ inputs.file }}
-          build-args: GH_TOKEN=${{ secrets.GITHUB_TOKEN }},${{ inputs.build-args }}
+          build-args: |
+            GH_TOKEN=${{ secrets.GITHUB_TOKEN }}
+            ${{ inputs.build-args }}
           push: ${{ fromJSON(true) }}
 
       - name: Run Trivy Scan
