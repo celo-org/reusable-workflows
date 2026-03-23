@@ -205,7 +205,7 @@ jobs:
           context: ${{ inputs.context }}
           dockerfile: ${{ inputs.file }}
           build-args: |
-            GH_TOKEN=${{ secrets.GITHUB_TOKEN }}
+            GH_TOKEN=${{ secrets.GH_PAT }}
             ${{ inputs.build-args }}
           push: ${{ fromJSON(true) }}
 
