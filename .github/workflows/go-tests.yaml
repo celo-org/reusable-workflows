@@ -106,7 +106,7 @@ jobs:
         run: go mod verify
 
       - name: golangci-lint
-        uses: golangci/golangci-lint-action@971e284b6050e8a5849b72094c50ab08da042db8
+        uses: golangci/golangci-lint-action@46c9287ccb5fd9a896cb5705a7012084e34f6736
         continue-on-error: ${{ inputs.warn-only }}
         with:
           version: ${{ inputs.golangci-lint-version }}
