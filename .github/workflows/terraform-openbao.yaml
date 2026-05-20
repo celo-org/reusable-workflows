@@ -203,6 +203,8 @@ jobs:
         id: plan
         run: terraform plan -no-color -input=false -out=tfplan "-detailed-exitcode"
         shell: bash
+        env:
+          TF_VAR_VAULT_ROLE: ${{ inputs.openbao-role }}
 
       # Show Plan is used so we can get rid of all the "refreshing" comments that are noisy
       - name: Terraform Show Plan
@@ -256,6 +258,8 @@ jobs:
         if: github.ref_name == github.event.repository.default_branch && github.event_name == 'push' && steps.plan.outcome == 'success' && steps.plan.outputs.exitcode == '2'
         shell: bash
         run: terraform apply -no-color -auto-approve "tfplan"
+        env:
+          TF_VAR_VAULT_ROLE: ${{ inputs.openbao-role }}
 
       - name: Post Plan to Github PR
         if: github.event_name == 'pull_request' && inputs.pr-comment && steps.format-plan.outputs.formatted-plan != ''
