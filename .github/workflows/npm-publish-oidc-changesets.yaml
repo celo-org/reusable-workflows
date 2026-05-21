@@ -1,0 +1,196 @@
+---
+name: "NPM Publish Workflow OIDC+changesets"
+on:
+  workflow_call:
+    inputs:
+      version-command:
+        required: true
+        type: string
+      publish-command:
+        required: true
+        type: string
+      timeout-minutes:
+        default: 30
+        type: number
+        description: "Workflow timeout"
+      environment:
+        default: ""
+        description: "Deployment environment in github"
+        type: string
+      environment-url:
+        description: "Enviroment URL used to link to package"
+        type: string
+      node-version:
+        required: true
+        type: string
+      package-dir:
+        type: string
+        default: "."
+      debug-enabled:
+        default: false
+        required: false
+        type: boolean
+        description: "run tmate for troubleshooting"
+      trivy-enabled:
+        default: true
+        type: boolean
+      trivy-timeout:
+        default: 15m
+        type: string
+        description: "trivy timeout 15 minutes"
+      trivy-skip-dirs:
+        type: string
+        description: "Directories to skip scanning"
+      trivy-severity:
+        default: "UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL"
+        type: string
+        description: "trivy severity types to scan for"
+      trivy-vuln-type:
+        default: "os,library"
+        type: string
+        description: "trivy vulnerability types"
+      summary:
+        default: true
+        type: boolean
+    outputs:
+      publishedPackages:
+        description: "Published packages"
+        value: ${{ jobs.npm-publish.outputs.publishedPackages }}
+      published:
+        description: "Was anything published"
+        value: ${{ jobs.npm-publish.outputs.published }}
+
+jobs:
+  npm-publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: ${{ inputs.timeout-minutes }}
+    defaults:
+      run:
+        shell: bash
+    # Specify an environment here if using deployment environments
+    environment:
+      name: ${{ inputs.environment }}
+      url: ${{ inputs.environment-url }}
+    permissions: # Required for workload identity auth and push the trivy results to GitHub
+      attestations: write
+      contents: write
+      pull-requests: write
+      id-token: write
+      repository-projects: write
+      security-events: write
+      actions: read
+    outputs:
+      publishedPackages: ${{ steps.changesets.outputs.publishedPackages }}
+      published: ${{ steps.changesets.outputs.published }}
+
+    steps:
+      # Security policy docker is configured in step security app
+      # Policy can be seen here https://app.stepsecurity.io/github/celo-org/actions/policies/docker
+      # disable-sudo is set to false if debug is true, because tmate requires root to work.
+      - name: Harden Runner
+        uses: step-security/harden-runner@v2
+        if: runner.environment == 'github-hosted'
+        with:
+          egress-policy: audit
+
+      # Only turns on tmate if workflow_dispatch set debug to true.
+      # limit-access-to-actor or some other security precaution should be added
+      # so anyone with the link can't ssh in without a key.
+      # Currently detaches and runs concurrently with workflow, can change
+      # if needed
+
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@e5c7151931ca95bad1c6f4190c730ecf8c7dde48
+        if: inputs.debug-enabled == true
+        with:
+          detached: true
+          limit-access-to-actor: true
+
+      - name: "Checkout"
+        uses: actions/checkout@v4
+
+      - name: Check if GHAS is Enabled
+        uses: actions/github-script@v7
+        id: ghas-check
+        with:
+          script: |
+            const [owner, repo] = '${{ github.repository }}'.split("/");
+            const res = await github.rest.repos.get({ owner, repo });
+            const isPrivate = res.data.private;
+            const hasGhas = res.data.security_and_analysis?.advanced_security?.status === 'enabled';
+            if (isPrivate && !hasGhas) {
+              core.warning('GHAS is NOT enabled and repo is private. Cannot upload SARIF.');
+              return false;
+            }
+            return true;
+
+      - name: Run Trivy Scan
+        id: trivy-fs
+        if: inputs.trivy-enabled
+        uses: celo-org/trivy-composite-action@v1.0.1
+        with:
+          scan-type: fs
+          scan-ref: ${{ inputs.package-dir }}
+          timeout: ${{ inputs.trivy-timeout }}
+          vuln-type: ${{ inputs.trivy-vuln-type }}
+          severity: ${{ inputs.trivy-severity }}
+          skip-dirs: ${{ inputs.trivy-skip-dirs }}
+
+      - name: Upload SARIF to Security Tab
+        if: inputs.trivy-enabled &&fromJSON(steps.ghas-check.outputs.result)
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: ${{ steps.trivy-fs.outputs.sarif-file }}
+          category: fs-${{ steps.split.outputs.app_name }}
+
+      - name: Delete trivy files
+        shell: bash
+        if: inputs.trivy-enabled
+        run: |
+          repo_name=$(basename "$GITHUB_REPOSITORY")
+          rm -rf "${repo_name}"-*.json
+          rm -rf "${repo_name}"-*.sarif
+          rm -rf "${repo_name}"-*.txt
+          rm -rf .cache/
+
+      # Setup Node JS with input from node version and set the registry url for github packages
+      # DON'T USE registry-url due to https://github.com/changesets/action/issues/132
+      - name: "Setup Node JS"
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ inputs.node-version }}
+
+      - name: "enable corepack for yarn"
+        run: sudo corepack enable yarn
+        shell: bash
+
+      # must call twice because of chicken and egg problem with yarn and node
+      # DON'T USE registry-url due to https://github.com/changesets/action/issues/132
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ inputs.node-version }}
+          cache: "yarn"
+
+      - name: Install Dependencies
+        shell: bash
+        run: yarn
+
+      - name: Upgrade npm CLI
+        run: npm install -g npm@11.5.1
+
+      - name: Debug Versions
+        if: inputs.debug-enabled == true
+        run: |
+          node -v
+          npm -v
+          yarn -v
+
+      - name: Create Release Pull Request or Publish to npm
+        id: changesets
+        uses: changesets/action@v1
+        with:
+          # This expects you to have a script called release which does a build for your packages and calls changeset publish
+          publish: ${{ inputs.publish-command }}
+          version: ${{ inputs.version-command }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
