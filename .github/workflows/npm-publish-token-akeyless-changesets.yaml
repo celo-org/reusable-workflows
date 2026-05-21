@@ -1,5 +1,5 @@
 ---
-name: "NPM Publish Workflow"
+name: "NPM Publish Workflow token+akeyless+changesets"
 on:
   workflow_call:
     inputs:
