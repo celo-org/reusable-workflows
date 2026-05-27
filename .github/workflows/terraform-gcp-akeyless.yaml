@@ -251,7 +251,7 @@ jobs:
 
       - name: Upload Terraform Plan
         if: github.event_name == 'pull_request' && steps.plan.outputs.exitcode != '0'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: terraform-${{ steps.config-vars.outputs.app-name }}-plan.txt
           path: ${{ inputs.working-dir }}/${{ steps.format-plan.outputs.original-plan }}
@@ -327,7 +327,7 @@ jobs:
 
       - name: Upload Apply Report
         if: always() && github.ref_name == github.event.repository.default_branch && steps.build-report.outputs.report != ''
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: ${{ steps.config-vars.outputs.app-name  }}-apply.txt
           path: ${{ inputs.working-dir}}/${{ steps.build-report.outputs.report }}
