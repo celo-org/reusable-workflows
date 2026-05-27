@@ -1,5 +1,5 @@
 ---
-name: "Terraform plan and apply"
+name: "Terraform plan and apply with GCP and Akeyless access"
 
 on:
   workflow_call:
@@ -12,6 +12,14 @@ on:
         required: true
         type: string
         description: "Google service account for authentication"
+      akeyless-api-gateway:
+        required: false
+        type: string
+        description: "Akeyless API Gateway URL for secret management"
+      akeyless-github-access-id:
+        required: false
+        type: string
+        description: "Akeyless GitHub Access ID for secret management"
       working-dir:
         required: true
         type: string
@@ -76,9 +84,6 @@ on:
         default: true
         type: boolean
         description: "Add results to workflow summary"
-      openbao-role:
-        required: true
-        type: string
 
 jobs:
   terraform:
@@ -114,14 +119,15 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Get OIDC Token
-        # Use the internal GitHub Actions token request tool
-        run: |
-          JWT=$(curl -sSL -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL")
-          VALUE=$(echo $JWT | jq -r .value)
-          # echo "$VALUE" | awk -F. '{print $2}' | base64 -d 2>/dev/null | jq -r
-          echo "::add-mask::$VALUE"
-          echo "TERRAFORM_VAULT_AUTH_JWT=$VALUE" >> $GITHUB_ENV
+      # Akeyless Get Secrets will take the specified dynamic or static secrets and set them to their corresponding environment variables.  It will also
+      # export github's JWT Token as AKEYLESS_AUTH_JWT (which their terraform provider uses for JWT authentication, and AUTH_TOKEN - The akeyless auth token
+      # it gets back after authenticating, which can be used for certain things (such as ansible)
+      - name: Akeyless Get Secrets
+        id: get_auth_token
+        uses: docker://us-west1-docker.pkg.dev/devopsre/akeyless-public/akeyless-action:sha256-26b7acdb3483678d2441a8744fb02184a85d5f275f07434dde8587d6b24944d6
+        with:
+          api-url: ${{ inputs.akeyless-api-gateway }}
+          access-id: ${{ inputs.akeyless-github-access-id }}
 
       # Authenticate with Google Cloud
       - name: Authenticate to Google Cloud
@@ -203,8 +209,6 @@ jobs:
         id: plan
         run: terraform plan -no-color -input=false -out=tfplan "-detailed-exitcode"
         shell: bash
-        env:
-          TF_VAR_VAULT_ROLE: ${{ inputs.openbao-role }}
 
       # Show Plan is used so we can get rid of all the "refreshing" comments that are noisy
       - name: Terraform Show Plan
@@ -258,8 +262,6 @@ jobs:
         if: github.ref_name == github.event.repository.default_branch && github.event_name == 'push' && steps.plan.outcome == 'success' && steps.plan.outputs.exitcode == '2'
         shell: bash
         run: terraform apply -no-color -auto-approve "tfplan"
-        env:
-          TF_VAR_VAULT_ROLE: ${{ inputs.openbao-role }}
 
       - name: Post Plan to Github PR
         if: github.event_name == 'pull_request' && inputs.pr-comment && steps.format-plan.outputs.formatted-plan != ''
