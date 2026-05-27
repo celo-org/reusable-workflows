@@ -212,7 +212,7 @@ jobs:
         run: echo "✅ GCP authentication completed at $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
 
       - name: Login to GAR
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           registry: ${{ inputs.artifact-registry }}
           username: oauth2accesstoken
