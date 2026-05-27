@@ -50,7 +50,7 @@ on:
         type: boolean
         description: "Enable tmate for debugging"
       runs-on:
-        default: "['self-hosted', 'org', 'terraform']"
+        default: '["self-hosted","org","terraform"]'
         type: string
         description: "GitHub runner tags"
       trivy-enabled:
@@ -180,7 +180,7 @@ jobs:
         if: inputs.trivy-enabled &&fromJSON(steps.ghas-check.outputs.result)
         uses: github/codeql-action/upload-sarif@v3
         with:
-          sarif_file: ${{ steps.trivy-image.outputs.sarif-file }}
+          sarif_file: ${{ steps.trivy-fs.outputs.sarif-file }}
           category: terraform-${{ steps.config-vars.outputs.app-name }}
 
       # Setup Terraform
