@@ -1,0 +1,16 @@
+name: Release RC
+
+on:
+  push:
+    branches:
+      - rc
+
+jobs:
+  release:
+    uses: ./.github/workflows/release.yaml
+    with:
+      environment: staging
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write

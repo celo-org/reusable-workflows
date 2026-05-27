@@ -1,0 +1,16 @@
+name: Release Self
+
+on:
+  push:
+    branches:
+      - release
+
+jobs:
+  release:
+    uses: ./.github/workflows/release.yaml
+    with:
+      environment: production
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write

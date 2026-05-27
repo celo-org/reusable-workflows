@@ -1,5 +1,5 @@
 ---
-name: 'Terraform plan and apply'
+name: "Terraform plan and apply with GCP and Akeyless access"
 
 on:
   workflow_call:
@@ -37,11 +37,11 @@ on:
         type: number
         description: "Workflow timeout in minutes"
       environment:
-        default: ''
+        default: ""
         description: "Deployment environment in GitHub"
         type: string
       environment-url:
-        default: ''
+        default: ""
         description: "Deployment environment URL in Okta"
         type: string
       debug-enabled:
@@ -124,7 +124,7 @@ jobs:
       # it gets back after authenticating, which can be used for certain things (such as ansible)
       - name: Akeyless Get Secrets
         id: get_auth_token
-        uses: docker://us-west1-docker.pkg.dev/devopsre/akeyless-public/akeyless-action:latest
+        uses: docker://us-west1-docker.pkg.dev/devopsre/akeyless-public/akeyless-action:sha256-26b7acdb3483678d2441a8744fb02184a85d5f275f07434dde8587d6b24944d6
         with:
           api-url: ${{ inputs.akeyless-api-gateway }}
           access-id: ${{ inputs.akeyless-github-access-id }}
@@ -138,7 +138,7 @@ jobs:
           service_account: ${{ inputs.service-account }}
           token_format: ${{ inputs.token-format }}
           access_token_scopes: ${{ inputs.access-token-scopes }}
-          access_token_lifetime: '20m'
+          access_token_lifetime: "20m"
 
       - name: set terraform variables
         id: config-vars
@@ -166,7 +166,7 @@ jobs:
       - name: Run Trivy Scan
         id: trivy-fs
         if: inputs.trivy-enabled
-        uses: celo-org/trivy-composite-action@v1.0.0
+        uses: celo-org/trivy-composite-action@v1.0.1
         with:
           scan-type: fs
           scan-ref: ${{ inputs.working-dir }}
@@ -195,7 +195,7 @@ jobs:
         run: terraform init
 
       # Terraform Format Check
- 
+
       - name: Terraform Format
         id: fmt
         run: terraform fmt -check
@@ -226,28 +226,28 @@ jobs:
           ORIGINAL_FILENAME: ${{ steps.config-vars.outputs.app-name }}-plan.txt
           FORMATTED_FILENAME: ${{ steps.config-vars.outputs.app-name }}-formatted-plan.txt
         run: |
-            cat > ${{ env.ORIGINAL_FILENAME }} <<'EOF'
-            ${{ steps.showplan.outputs.stdout }}
-            EOF
-            echo original-plan=${{ env.ORIGINAL_FILENAME }} >> $GITHUB_OUTPUT
+          cat > ${{ env.ORIGINAL_FILENAME }} <<'EOF'
+          ${{ steps.showplan.outputs.stdout }}
+          EOF
+          echo original-plan=${{ env.ORIGINAL_FILENAME }} >> $GITHUB_OUTPUT
 
-            # Removes the refreshing from the plan output and then moves the + and - all the way
-            # to the left of the pull request to trigger github's colors
-            sed -E 's/^([[:space:]]+)([-+])/\2\1/g' ${{ env.ORIGINAL_FILENAME }} > ${{ env.FORMATTED_FILENAME }}
+          # Removes the refreshing from the plan output and then moves the + and - all the way
+          # to the left of the pull request to trigger github's colors
+          sed -E 's/^([[:space:]]+)([-+])/\2\1/g' ${{ env.ORIGINAL_FILENAME }} > ${{ env.FORMATTED_FILENAME }}
 
-            PLAN=$(cat ${{ env.FORMATTED_FILENAME }})
-            check=${#PLAN}
-            # Delimiting plan size to avoid error "Argument list too long" when posting the plan
-            if [ "$check" -ge 65000 ];
-            then
-              PLAN='Terraform plan is too long to be posted in the PR comment. Please check the Action run to verify it'
-            fi
+          PLAN=$(cat ${{ env.FORMATTED_FILENAME }})
+          check=${#PLAN}
+          # Delimiting plan size to avoid error "Argument list too long" when posting the plan
+          if [ "$check" -ge 65000 ];
+          then
+            PLAN='Terraform plan is too long to be posted in the PR comment. Please check the Action run to verify it'
+          fi
+          echo "$PLAN"
+          {
+            echo "formatted-plan<<EOF"
             echo "$PLAN"
-            {
-              echo "formatted-plan<<EOF"
-              echo "$PLAN"
-              echo "EOF"
-            } >> "$GITHUB_OUTPUT"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
 
       - name: Upload Terraform Plan
         if: github.event_name == 'pull_request' && steps.plan.outputs.exitcode != '0'
