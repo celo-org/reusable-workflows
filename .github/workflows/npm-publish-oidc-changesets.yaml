@@ -156,7 +156,7 @@ jobs:
       # Setup Node JS with input from node version and set the registry url for github packages
       # DON'T USE registry-url due to https://github.com/changesets/action/issues/132
       - name: "Setup Node JS"
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: ${{ inputs.node-version }}
 
@@ -166,7 +166,7 @@ jobs:
 
       # must call twice because of chicken and egg problem with yarn and node
       # DON'T USE registry-url due to https://github.com/changesets/action/issues/132
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: ${{ inputs.node-version }}
           cache: "yarn"
