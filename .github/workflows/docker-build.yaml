@@ -149,7 +149,7 @@ jobs:
           limit-access-to-actor: true
 
       - name: "Checkout"
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         
       - name: Log checkout completion
         run: echo "✅ Checkout completed at $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
