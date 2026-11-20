@@ -142,7 +142,7 @@ jobs:
           echo "app-name=$(basename ${{ inputs.working-dir }})" >> $GITHUB_OUTPUT
 
       - name: Check if GHAS is Enabled
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         id: ghas-check
         with:
           script: |
